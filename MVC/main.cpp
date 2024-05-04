@@ -24,8 +24,8 @@ void readerDirectory(const fs::path& dirPath){
 
             if(file){
                 std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+                std::cout << content << std::endl;
                 file.close();
-                std::cout << "SHA256: " << path << " : " << std::endl;
             }
             else{
                 std::cerr << "Failed to open file/folder!" << std::endl;
@@ -35,18 +35,32 @@ void readerDirectory(const fs::path& dirPath){
             readerDirectory(path);
         }
     }
-}
 
-int main(){
+
     //fs::path workerPath = "C:/Users/vario/AppData/Local/Opera Software";
     //readerDirectory(workerPath);
-
     hash.Update((const byte*)msg.data(), msg.size());
     digest.resize(hash.DigestSize());
     hash.Final((byte*)&digest[0]);
-    std::cout << "Zalupa ";
+    std::cout << "SHA256: ";
     StringSource give_me_a_name(digest, true, new Redirector(encoder));
     std::cout << std::endl;
     //system("pause");
+}
+
+int main(){
+    const fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
+
+    for (const auto& entry : fs::recursive_directory_iterator(dirPath)){
+        const auto& path = entry.path();
+
+        if (fs::is_directory(path)){
+            std::cout << "Directory: " << path << std::endl;
+        }
+        else{
+            std::cout << "File: " << path << std::endl;
+        }
+    }
+
     return 0;
 }
