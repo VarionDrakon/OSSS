@@ -7,7 +7,6 @@ class FileSystemObject {
         std::string path;
         std::string getPath() const { return path; }
         
-
     public:
         virtual ~FileSystemObject() {}
         FileSystemObject(const std::string& path) : path(path) {}
