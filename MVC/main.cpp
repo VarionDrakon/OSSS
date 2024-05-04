@@ -49,17 +49,12 @@ void readerDirectory(const fs::path& dirPath){
 }
 
 int main(){
-    const fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
+    //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
 
-    for (const auto& entry : fs::recursive_directory_iterator(dirPath)){
-        const auto& path = entry.path();
+    LocalDirectory directoryPath("C:/Users/vario/AppData/Local/Opera Software");
 
-        if (fs::is_directory(path)){
-            std::cout << "Directory: " << path << std::endl;
-        }
-        else{
-            std::cout << "File: " << path << std::endl;
-        }
+    if(directoryPath.exist()){
+        directoryPath.getContents();
     }
 
     return 0;
