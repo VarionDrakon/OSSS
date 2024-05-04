@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "e:/Work/_Developer/Dragoncraft/OSSS",
+      "program": "e:/Work/_Developer/Dragoncraft/OSSS/bin/main.exe",
+      "preLaunchTask": "build",
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "build",
+        "command": "clang++",
+        "args": [
+          "-std=c++17",
+          "-g",
+          "${file}",
+          "-o",
+          "${workspaceFolder}\\bin\\${fileBasenameNoExtension}.exe",
+          "-L${workspaceFolder}/lib",
+          "-lcryptlib",
+        ],
+        "group": {
+           "kind": "build",
+           "isDefault": true
+        }
+      }
+    ]
+}
