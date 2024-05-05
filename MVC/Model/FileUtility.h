@@ -22,7 +22,7 @@ class Directory : public FileSystemObject {
         virtual std::vector<FileSystemObject*> getContents() = 0;
 };
 
-class LocalDirectory : Directory {
+class LocalDirectory : public Directory {
     public:
         LocalDirectory(const std::string& path) : Directory(path) {}
         
