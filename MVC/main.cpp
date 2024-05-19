@@ -4,7 +4,7 @@ int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
 
 
-    LocalDirectory directoryPath("C:/Users/vario/");
+    LocalDirectory directoryPath("E:/TempFilesProgramm/OSSS/TempFolder/");
 
     if(directoryPath.exist()){
         directoryPath.getContents();

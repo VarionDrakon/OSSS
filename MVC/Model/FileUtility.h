@@ -5,11 +5,8 @@
 #include <iterator>
 #include <string>
 #include <vector>
-/*Temp data*/
-#include "../../lib/cryptopp890/sha.h"
-#include "../../lib/cryptopp890/files.h"
-#include "../../lib/cryptopp890/hex.h"
-/*Temp data*/
+// FOR TEST FUNCTIONALITY!
+#include "HashUtility.h"
 
 class FileSystemObject {
     protected:
@@ -20,16 +17,16 @@ class FileSystemObject {
     public:
         virtual ~FileSystemObject() {}
         FileSystemObject(const std::string& path) : path(path) {}
+        
+        // Dynamic dispatch.
         virtual bool exist() const = 0;
+        virtual std::vector<FileSystemObject*> getContents() = 0;
 };
 
 class Directory : public FileSystemObject {
     public:
         Directory(const std::string& path) : FileSystemObject(path) {}
-        
-        bool exist() const override = 0;
-
-        virtual std::vector<FileSystemObject*> getContents() = 0;
+        virtual ~Directory() {}
 };
 
 class LocalDirectory : public Directory {
@@ -39,31 +36,8 @@ class LocalDirectory : public Directory {
         bool exist() const override final {
             return std::filesystem::exists(getPath());
         }
-        
-        std::string calcHashSHA256(const std::string& filePath){
-            std::string hash;
-            CryptoPP::SHA256 sha256;
 
-            std::ifstream file(filePath, std::ios::binary); 
-
-            if(!file){
-                std::cerr << "This not file or not could be read file." << std::endl;
-                return hash;
-            }
-
-            CryptoPP::FileSource(file, true, 
-                new CryptoPP::HashFilter(sha256, 
-                    new CryptoPP::HexEncoder(
-                        new CryptoPP::StringSink(hash)
-                    )
-                )
-            );
-
-            file.close();
-            return hash;
-        }
-
-        std::vector<FileSystemObject*> getContents() override {
+        std::vector<FileSystemObject*> getContents() override final {
             std::vector<FileSystemObject*> contents;
             
             for (const auto& entry : std::filesystem::recursive_directory_iterator(path)){
@@ -78,9 +52,12 @@ class LocalDirectory : public Directory {
                     //std::cout << "Folder path: " << path << std::endl;
                 }
 
+                SHA256Algorithm sha256;
+                
                 for (const auto& filePath : vectorPathFiles){
-                    std::string calcHash = calcHashSHA256(filePath);
-
+                    
+                    std::string calcHash = sha256.calcHash(filePath);
+                    
                     if(!calcHash.empty()){
                         std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
                     }
@@ -92,7 +69,5 @@ class LocalDirectory : public Directory {
             return contents;
         }
 
-
-
-        
+        virtual ~LocalDirectory() {}
 };
