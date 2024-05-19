@@ -12,7 +12,7 @@ class HashProviderObject {
 
 class HashAlgorithm : public HashProviderObject {
     public: 
-        virtual ~HashAlgorithm() {} 
+        virtual ~HashAlgorithm() = default; // Does not abstract class.
 };
 
 class SHA256Algorithm : public HashAlgorithm {

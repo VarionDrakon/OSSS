@@ -12,11 +12,10 @@ class FileSystemObject {
     protected:
         std::string path;
         std::string getPath() const { return path; }
-        std::vector<std::string> vectorPathFiles;
         
     public:
-        virtual ~FileSystemObject() {}
-        FileSystemObject(const std::string& path) : path(path) {}
+        virtual ~FileSystemObject() = default; // Does not abstract class.
+        FileSystemObject(const std::string& memberPath) : path(memberPath) {} // Before `:` The body of constructor, after `:` objects for initialization.
         
         // Dynamic dispatch.
         virtual bool exist() const = 0;
@@ -39,6 +38,7 @@ class LocalDirectory : public Directory {
 
         std::vector<FileSystemObject*> getContents() override final {
             std::vector<FileSystemObject*> contents;
+            std::vector<std::string> vectorPathFiles;
             
             for (const auto& entry : std::filesystem::recursive_directory_iterator(path)){
                 const auto& path = entry.path();
