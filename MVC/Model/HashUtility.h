@@ -6,13 +6,13 @@ class HashProviderObject {
     protected:
 
     public:
-        virtual ~HashProviderObject() {} // Virtual destructor.
+        virtual ~HashProviderObject() = default; // Virtual destructor.
         virtual std::string calcHash(const std::string& filePath) = 0;
 };
 
 class HashAlgorithm : public HashProviderObject {
     public: 
-        virtual ~HashAlgorithm() = default; // Does not abstract class.
+        virtual ~HashAlgorithm() {}
 };
 
 class SHA256Algorithm : public HashAlgorithm {
@@ -27,7 +27,7 @@ class SHA256Algorithm : public HashAlgorithm {
             if(!file){ // Check if this not file (Example: directory, not exist file) or file busy with another process or thread.
                 std::cerr << "This not file or not could be read file." << std::endl;
                 return hash;
-            }
+            } // Try cath is required here.
 
             CryptoPP::FileSource calculateHashSum(file, true, 
                 new CryptoPP::HashFilter(sha256,             // https://cryptopp.com/wiki/HashFilter (Types of algorithms).
