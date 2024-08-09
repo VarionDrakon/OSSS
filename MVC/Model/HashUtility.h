@@ -1,6 +1,6 @@
-#include "../../lib/cryptopp890/sha.h"
-#include "../../lib/cryptopp890/files.h"
-#include "../../lib/cryptopp890/hex.h"
+#include <cryptopp/hex.h>
+#include <cryptopp/sha.h>
+#include <cryptopp/files.h>
 
 class HashProviderObject {
     protected:

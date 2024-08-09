@@ -8,7 +8,8 @@
 #include <vector>
 // FOR TEST FUNCTIONALITY!
 #include "HashUtility.h"
-#include <windows.h>
+// #include <windows.h>
+#include <unistd.h>
 
 class FileSystemObject {
     protected:
@@ -81,7 +82,7 @@ class LocalDirectory : public Directory {
                 
                 std::cout << "Five! " << std::endl;
 
-                for(size_t i = 0; i < vectorFirst.size(); ++i){
+                for(ssize_t i = 0; i < vectorFirst.size(); ++i){
                     std::cout << "Current equals hash: " << vectorFirst[i] << " & " << vectorSecond[i] << std::endl;
                     if(vectorFirst[i] != vectorSecond[i]) {
                         std::cout << "Vector NOT equal`s!" << std::endl;
@@ -128,7 +129,8 @@ class LocalDirectory : public Directory {
             }
             
             std::cout << "One! " << std::endl;
-            Sleep(5000);
+            usleep(5000);
+            // (windows) Sleep(5000);
             std::cout << "Two! " << std::endl;
 
             for (const auto& filePath : getFileList()){
@@ -145,7 +147,7 @@ class LocalDirectory : public Directory {
             }
 
             std::cout << "Three! " << std::endl;
-            Sleep(5000);
+            usleep(5000);
             std::cout << "Four! " << std::endl;
 
             equalVectors(getHashOld(), getHashNew());

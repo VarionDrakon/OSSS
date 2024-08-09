@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/bin/${fileBasenameNoExtension}.bin",
+      "cwd": "e:/Work/_Developer/Dragoncraft/OSSS",
+      "program": "e:/Work/_Developer/Dragoncraft/OSSS/bin/main.exe",
       "preLaunchTask": "build",
     }
   ]

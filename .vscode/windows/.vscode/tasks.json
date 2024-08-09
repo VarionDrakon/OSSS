@@ -9,10 +9,10 @@
           "-std=c++17",
           "-g",
           "${file}",
-          "-L/usr/local/lib",
-          "-lcryptopp",
           "-o",
-          "${workspaceFolder}/bin/${fileBasenameNoExtension}.bin",
+          "${workspaceFolder}\\bin\\${fileBasenameNoExtension}.exe",
+          "-L${workspaceFolder}/lib",
+          "-lcryptlib",
         ],
         "group": {
            "kind": "build",
