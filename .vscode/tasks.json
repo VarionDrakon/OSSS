@@ -8,7 +8,9 @@
         "args": [
           "-std=c++17",
           "-g",
-          "${file}",
+          "${workspaceFolder}/MVC/main.cpp",
+          "-I${workspaceFolder}/MVC",
+          "${workspaceFolder}/MVC/mongoose.c",
           "-L/usr/local/lib",
           "-lcryptopp",
           "-o",

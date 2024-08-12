@@ -1,6 +1,8 @@
+#include "Model/WebUtility.h"
+#include "Model/FileUtility.h"
+
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
-#include "Model/FileUtility.h"
 #include "windows.h"
 
 int main(){
@@ -19,10 +21,15 @@ int main(){
 }
 #elif __linux__ //Linux platforms
 
-#include "Model/FileUtility.h"
-
 int main(){
 
+    struct mg_mgr mgr;  // Mongoose event manager. Holds all connections
+    mg_mgr_init(&mgr);  // Initialise event manager
+    mg_http_listen(&mgr, "http://0.0.0.0:8000", fn, nullptr);  // Setup listener
+    for (;;) {
+        mg_mgr_poll(&mgr, 1000);  // Infinite event loop
+    }
+    
     LocalDirectory directoryPath("/home/vdrakonov/Downloads");
 
     if(directoryPath.exist()){
