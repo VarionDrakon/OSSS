@@ -11,6 +11,6 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
       struct mg_http_serve_opts opts = {.root_dir = "Web.UI/"};  // For all other URLs,
       //mg_http_serve_file();
       mg_http_serve_dir(c, hm, &opts); // Serve static files
-    } 
+    }
   }
 }

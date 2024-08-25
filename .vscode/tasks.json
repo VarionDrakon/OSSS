@@ -14,7 +14,7 @@
           "-L/usr/local/lib",
           "-lcryptopp",
           "-o",
-          "${workspaceFolder}/bin/${fileBasenameNoExtension}.bin",
+          "${workspaceFolder}/bin/osss.bin",
         ],
         "group": {
            "kind": "build",
