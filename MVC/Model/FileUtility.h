@@ -8,8 +8,20 @@
 #include <vector>
 // FOR TEST FUNCTIONALITY!
 #include "HashUtility.h"
-// #include <windows.h>
+
+#if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
+
+#include <windows.h>
+#define slp(x) Sleep((x) * 1000)
+#define szt size_t
+
+#elif __linux__ //Linux platforms
+
 #include <unistd.h>
+#define slp(x) usleep((x) * 1000000)
+#define szt ssize_t
+
+#endif
 
 class FileSystemObject {
     protected:
@@ -82,7 +94,7 @@ class LocalDirectory : public Directory {
                 
                 std::cout << "Five! " << std::endl;
 
-                for(ssize_t i = 0; i < vectorFirst.size(); ++i){
+                for(szt i = 0; i < vectorFirst.size(); ++i){
                     std::cout << "Current equals hash: " << vectorFirst[i] << " & " << vectorSecond[i] << std::endl;
                     if(vectorFirst[i] != vectorSecond[i]) {
                         std::cout << "Vector NOT equal`s!" << std::endl;
@@ -129,7 +141,7 @@ class LocalDirectory : public Directory {
             }
             
             std::cout << "One! " << std::endl;
-            usleep(5000);
+            slp(5);
             // (windows) Sleep(5000);
             std::cout << "Two! " << std::endl;
 
@@ -147,7 +159,7 @@ class LocalDirectory : public Directory {
             }
 
             std::cout << "Three! " << std::endl;
-            usleep(5000);
+            slp(5);
             std::cout << "Four! " << std::endl;
 
             equalVectors(getHashOld(), getHashNew());

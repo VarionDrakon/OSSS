@@ -6,12 +6,10 @@ bool isTriggerCheckDirectory = false;
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
-#include "windows.h"
-
 int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
 
-    LocalDirectory dx1irectoryPath("./TempFolder/");
+    LocalDirectory directoryPath("E:/Program FilesSS/LLVM/lib/clang/17/lib/window");
 
     if(directoryPath.exist()){
         directoryPath.getContents();
