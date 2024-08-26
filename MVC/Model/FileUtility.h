@@ -23,7 +23,7 @@
 
 #endif
 
-class FileSystemObject {
+class FileSystemProviderObject {
     protected:
         std::string path;
         std::vector<std::string> directoryFileList;
@@ -32,12 +32,12 @@ class FileSystemObject {
         std::string getPath() const { return path; }
         
     public:
-        virtual ~FileSystemObject() = default; // Does abstract class.
-        FileSystemObject(const std::string& memberPath) : path(memberPath) {} // Before `:` The body of constructor, after `:` objects for initialization.
+        virtual ~FileSystemProviderObject() = default; // Does abstract class.
+        FileSystemProviderObject(const std::string& memberPath) : path(memberPath) {} // Before `:` The body of constructor, after `:` objects for initialization.
         
         // Dynamic dispatch.
         virtual bool exist() const = 0;
-        virtual std::vector<FileSystemObject*> getContents() = 0;
+        virtual std::vector<FileSystemProviderObject*> getContents() = 0;
 
         virtual void addFile(const std::string& fileName) = 0;
         virtual const std::vector<std::string>& getFileList() const = 0;
@@ -47,9 +47,9 @@ class FileSystemObject {
         virtual const std::vector<std::string>& getHashNew() const = 0;
 };
 
-class Directory : public FileSystemObject {
+class Directory : public FileSystemProviderObject {
     public:
-        Directory(const std::string& path) : FileSystemObject(path) {}
+        Directory(const std::string& path) : FileSystemProviderObject(path) {}
         virtual ~Directory() {}
 };
 
@@ -85,31 +85,27 @@ class LocalDirectory : public Directory {
         bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond){
             if(!vectorFirst.empty() && !vectorSecond.empty()){
 
-                std::cout << "Four X2! " << std::endl;
 
                 if(vectorFirst.size() != vectorSecond.size()) {
                     std::cout << "Size not equals: " << vectorFirst.size() << " & " << vectorSecond.size() << std::endl;
                     return false; // Size vectors must be equal.
                 }
-                
-                std::cout << "Five! " << std::endl;
+
 
                 for(szt i = 0; i < vectorFirst.size(); ++i){
                     std::cout << "Current equals hash: " << vectorFirst[i] << " & " << vectorSecond[i] << std::endl;
                     if(vectorFirst[i] != vectorSecond[i]) {
                         std::cout << "Vector NOT equal`s!" << std::endl;
-                        std::cout << "Five X3! " << std::endl;
                         return false; // Elements with the same index are not equal.
                     }
                 }
-                std::cout << "Six! " << std::endl;
             }
             std::cout << "Vector equal`s!" << std::endl;
             return true;
         }
 
-        std::vector<FileSystemObject*> getContents() override final {
-            std::vector<FileSystemObject*> contents;
+        std::vector<FileSystemProviderObject*> getContents() override final {
+            std::vector<FileSystemProviderObject*> contents;
             //std::vector<std::string> vectorPathFiles;
 
             for (const auto& entry : std::filesystem::recursive_directory_iterator(path)){
@@ -125,8 +121,21 @@ class LocalDirectory : public Directory {
                     //std::cout << "Folder path: " << path << std::endl;
                 }
             }
-            SHA256Algorithm sha256;
-                
+            
+
+
+            return contents;
+        }
+
+        virtual ~LocalDirectory() {}
+};
+
+class HasherFile : FileSystemProviderObject {
+    private:
+        SHA256Algorithm sha256;
+    
+    public:
+    /*
             for (const auto& filePath : getFileList()){
                     
                 std::string calcHash = sha256.calcHash(filePath);
@@ -139,11 +148,6 @@ class LocalDirectory : public Directory {
                     std::cerr << "Error calculate hash for file: " << filePath << std::endl;
                 }
             }
-            
-            std::cout << "One! " << std::endl;
-            slp(5);
-            // (windows) Sleep(5000);
-            std::cout << "Two! " << std::endl;
 
             for (const auto& filePath : getFileList()){
                     
@@ -158,16 +162,7 @@ class LocalDirectory : public Directory {
                 }
             }
 
-            std::cout << "Three! " << std::endl;
-            slp(5);
-            std::cout << "Four! " << std::endl;
-
-            equalVectors(getHashOld(), getHashNew());
-
-            return contents;
-        }
-
-        virtual ~LocalDirectory() {}
+            equalVectors(getHashOld(), getHashNew());*/
 };
 /*
 class CloudDirectory : public Directory{

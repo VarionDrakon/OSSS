@@ -1,4 +1,4 @@
-#include "mongoose.h"
+#include "../mongoose.h"
 
 // Connection event handler function
 static void fn(struct mg_connection *c, int ev, void *ev_data) {
