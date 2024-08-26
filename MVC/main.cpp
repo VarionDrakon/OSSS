@@ -9,9 +9,9 @@ bool isTriggerCheckDirectory = false;
 int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
 
-    LocalDirectory directoryPath("E:/Program FilesSS/LLVM/lib/clang/17/lib/window");
+    DirectoryLocal directoryPath("E:/Program FilesSS/LLVM/lib/clang/17/lib/window");
 
-    if(directoryPath.exist()){
+    if(directoryPath.isFolderExist()){
         directoryPath.getContents();
     }
     else {
@@ -39,9 +39,9 @@ int main(){
         }
 
         if(isTriggerCheckDirectory){
-            LocalDirectory directoryPath("/home/vdrakonov/Downloads");
+            DirectoryLocal directoryPath("/home/vdrakonov/Downloads");
 
-            if(directoryPath.exist()){
+            if(directoryPath.isFolderExist()){
                 directoryPath.getContents();
             }  
             else {

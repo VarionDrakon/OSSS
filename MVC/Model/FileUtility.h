@@ -23,65 +23,97 @@
 
 #endif
 
-class FileSystemProviderObject {
+class FileSystemProvider {
     protected:
         std::string path;
         std::vector<std::string> directoryFileList;
-        std::vector<std::string> vectorHashOld;
+        std::vector<std::string> vectorHashCur;
         std::vector<std::string> vectorHashNew;
         std::string getPath() const { return path; }
         
     public:
-        virtual ~FileSystemProviderObject() = default; // Does abstract class.
-        FileSystemProviderObject(const std::string& memberPath) : path(memberPath) {} // Before `:` The body of constructor, after `:` objects for initialization.
+        virtual ~FileSystemProvider() = default; // Does abstract class.
+        FileSystemProvider(const std::string& memberPath) : path(memberPath) {} // Before `:` The body of constructor, after `:` objects for initialization.
         
-        // Dynamic dispatch.
-        virtual bool exist() const = 0;
-        virtual std::vector<FileSystemProviderObject*> getContents() = 0;
+        virtual bool isFolderExist() const {
+            return std::filesystem::exists(getPath());
+        }
+        virtual std::vector<FileSystemProvider*> getContents() = 0;
 
-        virtual void addFile(const std::string& fileName) = 0;
-        virtual const std::vector<std::string>& getFileList() const = 0;
-        virtual void addHashOld(const std::string& fileName) = 0;
-        virtual const std::vector<std::string>& getHashOld() const = 0;
-        virtual void addHashNew(const std::string& fileName) = 0;
-        virtual const std::vector<std::string>& getHashNew() const = 0;
+        virtual void setFileList(const std::string& fileName) {
+            directoryFileList.push_back(fileName);
+        }
+        virtual const std::vector<std::string>& getFileList() const {
+            return directoryFileList;
+        }
+
+        virtual void addHashCur(const std::string& fileName) {
+            vectorHashCur.push_back(fileName);
+        }
+        virtual const std::vector<std::string>& getHashCur() const {
+            return vectorHashCur;
+        }
+        virtual void addHashNew(const std::string& fileName) {
+            vectorHashNew.push_back(fileName);
+        }
+        virtual const std::vector<std::string>& getHashNew() const {
+            return vectorHashNew;
+        }
 };
 
-class Directory : public FileSystemProviderObject {
+class Directory : public FileSystemProvider {
     public:
-        Directory(const std::string& path) : FileSystemProviderObject(path) {}
+        Directory(const std::string& path) : FileSystemProvider(path) {}
         virtual ~Directory() {}
 };
 
-class LocalDirectory : public Directory {
+class DirectoryLocal : public Directory {
     public:
-        LocalDirectory(const std::string& path) : Directory(path) {}
+        DirectoryLocal(const std::string& path) : Directory(path) {}
 
-        bool exist() const override final {
-            return std::filesystem::exists(getPath());
+        std::vector<FileSystemProvider*> getContents() override final {
+            std::vector<FileSystemProvider*> contents;
+            //std::vector<std::string> vectorPathFiles;
+
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(path)){
+                const auto& path = entry.path();
+
+                //std::vector<std::string> pathFiles;
+
+                if (!std::filesystem::is_directory(path)){
+                    setFileList(path.string());
+                }
+                else {
+                    //std::cout << "Folder path: " << path << std::endl;
+                }
+            }
+
+            return contents;
         }
-        ///
-        const std::vector<std::string>& getFileList() const override final {
-            return directoryFileList;
+
+        virtual ~DirectoryLocal() {}
+};
+
+class FileHasher : FileSystemProvider {
+    private:
+        SHA256Algorithm sha256;
+
+    public:
+        virtual void fileCalcHash(std::vector<std::string*>& fileName) {
+            for (const auto& filePath : getFileList()){
+                    
+                std::string calcHash = sha256.calcHash(filePath);
+                    
+                if(!calcHash.empty()){
+                    std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
+                    
+                }
+                else{
+                    std::cerr << "Error calculate hash for file: " << filePath << std::endl;
+                }
+            }
         }
-        void addFile(const std::string& fileName) override final {
-            directoryFileList.push_back(fileName);
-        }
-        ///
-        const std::vector<std::string>& getHashOld() const override final {
-            return vectorHashOld;
-        }
-        void addHashOld(const std::string& fileName) override final {
-            vectorHashOld.push_back(fileName);
-        }
-        ///
-        const std::vector<std::string>& getHashNew() const override final {
-            return vectorHashNew;
-        }
-        void addHashNew(const std::string& fileName) override final {
-            vectorHashNew.push_back(fileName);
-        }
-        ///
+
         bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond){
             if(!vectorFirst.empty() && !vectorSecond.empty()){
 
@@ -103,51 +135,8 @@ class LocalDirectory : public Directory {
             std::cout << "Vector equal`s!" << std::endl;
             return true;
         }
-
-        std::vector<FileSystemProviderObject*> getContents() override final {
-            std::vector<FileSystemProviderObject*> contents;
-            //std::vector<std::string> vectorPathFiles;
-
-            for (const auto& entry : std::filesystem::recursive_directory_iterator(path)){
-                const auto& path = entry.path();
-
-                //std::vector<std::string> pathFiles;
-
-                if (!std::filesystem::is_directory(path)){
-                    //vectorPathFiles.push_back(path.string());
-                    addFile(path.string());
-                }
-                else {
-                    //std::cout << "Folder path: " << path << std::endl;
-                }
-            }
-            
-
-
-            return contents;
-        }
-
-        virtual ~LocalDirectory() {}
-};
-
-class HasherFile : FileSystemProviderObject {
-    private:
-        SHA256Algorithm sha256;
-    
-    public:
     /*
-            for (const auto& filePath : getFileList()){
-                    
-                std::string calcHash = sha256.calcHash(filePath);
-                    
-                if(!calcHash.empty()){
-                    std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
-                    addHashOld(calcHash);
-                }
-                else{
-                    std::cerr << "Error calculate hash for file: " << filePath << std::endl;
-                }
-            }
+
 
             for (const auto& filePath : getFileList()){
                     
