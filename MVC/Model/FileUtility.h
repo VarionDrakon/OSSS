@@ -46,18 +46,12 @@ class FileSystemProvider {
         virtual const std::vector<std::string>& getFileList() const {
             return directoryFileList;
         }
-
-        virtual void addHashCur(const std::string& fileName) {
-            vectorHashCur.push_back(fileName);
+        
+        virtual void setVectorData(const std::string& fileHash, std::vector<std::string>& vectorData){
+            vectorData.push_back(fileHash);
         }
-        virtual const std::vector<std::string>& getHashCur() const {
-            return vectorHashCur;
-        }
-        virtual void addHashNew(const std::string& fileName) {
-            vectorHashNew.push_back(fileName);
-        }
-        virtual const std::vector<std::string>& getHashNew() const {
-            return vectorHashNew;
+        virtual const std::vector<std::string>& getVectorData(const std::vector<std::string>& vectorData) const{
+            return vectorData;
         }
 };
 
@@ -70,15 +64,12 @@ class Directory : public FileSystemProvider {
 class DirectoryLocal : public Directory {
     public:
         DirectoryLocal(const std::string& path) : Directory(path) {}
-
+    
         std::vector<FileSystemProvider*> getContents() override final {
             std::vector<FileSystemProvider*> contents;
-            //std::vector<std::string> vectorPathFiles;
 
             for (const auto& entry : std::filesystem::recursive_directory_iterator(path)){
                 const auto& path = entry.path();
-
-                //std::vector<std::string> pathFiles;
 
                 if (!std::filesystem::is_directory(path)){
                     setFileList(path.string());
@@ -87,6 +78,8 @@ class DirectoryLocal : public Directory {
                     //std::cout << "Folder path: " << path << std::endl;
                 }
             }
+
+            
 
             return contents;
         }
@@ -99,14 +92,14 @@ class FileHasher : FileSystemProvider {
         SHA256Algorithm sha256;
 
     public:
-        virtual void fileCalcHash(std::vector<std::string*>& fileName) {
+        virtual void fileCalculateHash(std::vector<std::string*>& fileName) {
             for (const auto& filePath : getFileList()){
                     
                 std::string calcHash = sha256.calcHash(filePath);
                     
                 if(!calcHash.empty()){
                     std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
-                    
+                    setVectorData(calcHash, vectorHashCur);
                 }
                 else{
                     std::cerr << "Error calculate hash for file: " << filePath << std::endl;

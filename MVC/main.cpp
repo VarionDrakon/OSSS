@@ -9,10 +9,10 @@ bool isTriggerCheckDirectory = false;
 int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
 
-    DirectoryLocal directoryPath("E:/Program FilesSS/LLVM/lib/clang/17/lib/window");
+    DirectoryLocal directoryLocal("E:/Program FilesSS/LLVM/lib/clang/17/lib/window");
 
-    if(directoryPath.isFolderExist()){
-        directoryPath.getContents();
+    if(directoryLocal.isFolderExist() & ){
+        directoryLocal.getContents();
     }
     else {
         std::cout << "Path not found" << std::endl;
@@ -39,10 +39,10 @@ int main(){
         }
 
         if(isTriggerCheckDirectory){
-            DirectoryLocal directoryPath("/home/vdrakonov/Downloads");
+            DirectoryLocal directoryLocal("/home/vdrakonov/Downloads");
 
-            if(directoryPath.isFolderExist()){
-                directoryPath.getContents();
+            if(directoryLocal.isFolderExist()){
+                directoryLocal.getContents();
             }  
             else {
                 std::cout << "Path not found" << std::endl;
