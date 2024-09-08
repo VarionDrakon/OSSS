@@ -1,5 +1,5 @@
 #include "Model/WebUtility.h"
-#include "Model/FileUtility.h"
+#include "Model/FileUtility.cpp"
 
 bool isEnabledWebInterface = false;
 bool isTriggerCheckDirectory = false;
@@ -8,15 +8,9 @@ bool isTriggerCheckDirectory = false;
 
 int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
+    FileHashAlgorithmProvider fhap;
 
-    DirectoryLocal directoryLocal("E:/Program FilesSS/LLVM/lib/clang/17/lib/window");
-
-    if(directoryLocal.isFolderExist() & ){
-        directoryLocal.getContents();
-    }
-    else {
-        std::cout << "Path not found" << std::endl;
-    }
+    fhap.triggerAlgorithm();
 
     return 0;
 }
@@ -42,7 +36,7 @@ int main(){
             DirectoryLocal directoryLocal("/home/vdrakonov/Downloads");
 
             if(directoryLocal.isFolderExist()){
-                directoryLocal.getContents();
+                directoryLocal.setContext();
             }  
             else {
                 std::cout << "Path not found" << std::endl;
