@@ -10,7 +10,10 @@ int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
     FileHashAlgorithmProvider fhap;
 
-    fhap.triggerAlgorithm();
+    while (true){
+        fhap.triggerAlgorithm();
+    }
+
 
     return 0;
 }

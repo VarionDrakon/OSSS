@@ -11,11 +11,10 @@ class FileHashAlgorithmProvider {
             if(dirLoc.isFolderExist()){
                 dirLoc.setContext();
 
-                fileHash.fileCalculateHash(dirLoc.hybridVectorHashCur());
-
-                fileHash.fileCalculateHash(dirLoc.hybridVectorHashNew());
-
-                fileHash.equalVectors(dirLoc.hybridVectorHashCur(), dirLoc.hybridVectorHashNew());
+                if(fileHash.fileCalculateHash(dirLoc.hybridVectorHashCur()) && fileHash.fileCalculateHash(dirLoc.hybridVectorHashNew())){
+                    fileHash.equalVectors(dirLoc.hybridVectorHashCur(), dirLoc.hybridVectorHashNew());
+                }
+                
 
                 std::cout << "Complete!" << std::endl;
             }

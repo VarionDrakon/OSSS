@@ -100,7 +100,9 @@ class FileHashProvider : FileSystemProvider {
         SHA256Algorithm sha256;
 
     public:
-        void fileCalculateHash(std::vector<std::string> vectorData) {
+        bool fileCalculateHash(std::vector<std::string> vectorData) {
+            bool isProcessFinished = true;
+
             for (const auto& filePath : getFileList()){
                     
                 std::string calcHash = sha256.calcHash(filePath);
@@ -111,13 +113,15 @@ class FileHashProvider : FileSystemProvider {
                 }
                 else{
                     std::cerr << "Error calculate hash for file: " << filePath << std::endl;
+                    isProcessFinished = false;
+                    break;
                 }
             }
+            return isProcessFinished;
         }
 
         bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond){
             if(!vectorFirst.empty() && !vectorSecond.empty()){
-
 
                 if(vectorFirst.size() != vectorSecond.size()) {
                     std::cout << "Size not equals: " << vectorFirst.size() << " & " << vectorSecond.size() << std::endl;
@@ -132,7 +136,6 @@ class FileHashProvider : FileSystemProvider {
                     }
                 }
             }
-            std::cout << "Vector equal`s!" << std::endl;
             return true;
         }
     /*
