@@ -12,7 +12,12 @@ class FileHashAlgorithmProvider {
                 dirLoc.setContext();
 
                 if(fileHash.fileCalculateHash(dirLoc.hybridVectorHashCur()) && fileHash.fileCalculateHash(dirLoc.hybridVectorHashNew())){
-                    fileHash.equalVectors(dirLoc.hybridVectorHashCur(), dirLoc.hybridVectorHashNew());
+                    if(fileHash.equalVectors(dirLoc.hybridVectorHashCur(), dirLoc.hybridVectorHashNew())){
+                        std::cout << "Comparison: YES" << std::endl;
+                    }
+                    else {
+                        std::cout << "Comparison: NO" << std::endl;
+                    }
                 }
                 
 
