@@ -80,13 +80,14 @@ class DirectoryLocal : public DirectoryProvider {
         void setContext() override final {
             
             for (const auto& entry : std::filesystem::recursive_directory_iterator(path)){
-                const auto& path = entry.path();
+                const auto& path = entry.path().u8string();
 
                 if (!std::filesystem::is_directory(path)){
-                    setFileList(path.string());
+                    setFileList(path);
+                    std::cout << "Folder path: " << path << std::endl;
                 }
                 else {
-                    //std::cout << "Folder path: " << path << std::endl;
+                    std::cout << "This is folder:" << path << " ?" << std::endl;
                 }
             }
 
@@ -137,6 +138,10 @@ class FileHashProvider : FileSystemProvider {
                 }
             }
             return true;
+        }
+
+        void fileMoving(){
+            // Sync data: checking the free disk space, calculating the required disk space, making a file map for moving files
         }
     /*
 
