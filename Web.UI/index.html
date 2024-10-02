@@ -12,34 +12,28 @@
     <button id="btn2">Call SUM(1, 2)</button>
     <div style="margin-top: 1em;">Action log:</div>
     <div id="log" style="background: #eee; height: 10em; padding: 0.5em; overflow:auto;"><div>
+
     <script>
-        var E = function(id) { return document.getElementById(id); };
-        var btn1 = E('btn1'), btn2 = E('btn2'), msglog = E('log');
-        var enable = function(en) { btn1.disabled = btn2.disabled = !en; };
+        var logEventFunc = function(id) { return document.getElementById(id); }; // To interact with elements on a WEB page
+        var btn1 = logEventFunc('btn1'), btn2 = logEventFunc('btn2'), msglog = logEventFunc('log'); // ID of the elements in the HTML file
+        var isEnableElementsById = function(en) { btn1.disabled = btn2.disabled = !en; }; // The state of the elements  on the page
+
         var log = text => msglog.innerHTML += text + '<br/>\n';
         
-        enable(true);
+        isEnableElementsById(false);
     
-        btn1.onclick = ev => fetch('/api/hello')
-          .then(r => r.json())
-          .then(r => {
+        btn1.onclick = ev => fetch('/api/hello').then(r => r.json()).then(r => {
             console.log(r);
             log('GET /api/hello: ' + JSON.stringify(r) + ' -> ' + JSON.stringify(r.result))
-          })
-          .catch(err => console.log(err));
+          }).catch(err => console.log(err));
     
-        const getsum = (a, b) =>
-          fetch('/api/sum', {method: 'POST', body:JSON.stringify([a, b])})
-            .then(r => r.json())
-            .catch(err => console.log(err));
+        const getsum = (a, b) => fetch('/api/hello', {  method: 'POST', body:JSON.stringify([a, b]) }).then(r => r.json()).catch(err => console.log(err));
 
 
-        btn2.onclick = ev => getsum(1, 2)
-          .then(r => {
+        btn2.onclick = ev => getsum(1, 2).then(r => {
             console.log(r);
             log('POST [1, 2] to /api/sum: ' + JSON.stringify(r) + ' -> ' + JSON.stringify(r.result))
-          })
-          .catch(err => console.log(err));
+          }).catch(err => console.log(err));
       </script>
 </body>
 </html>
