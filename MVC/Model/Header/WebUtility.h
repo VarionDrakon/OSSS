@@ -1,4 +1,6 @@
-#include "../mongoose.h"
+#include "../../mongoose.h"
+#include <sstream>
+#include <string>
 
 // Connection event handler function
 static void fn(struct mg_connection *c, int ev, void *ev_data) {
@@ -14,3 +16,4 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
     }
   }
 }
+

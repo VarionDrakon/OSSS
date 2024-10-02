@@ -1,7 +1,7 @@
-#include "Model/WebUtility.h"
+#include "Model/WebUtility.cpp"
 #include "Model/FileUtility.cpp"
 
-bool isEnabledWebInterface = false;
+bool isEnabledWebInterface = true;
 bool isTriggerCheckDirectory = false;
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
@@ -10,10 +10,22 @@ int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
     FileHashAlgorithmProvider fhap;
 
-    while (true){
+    /*while (true){
         fhap.triggerAlgorithm();
-    }
+    }*/
 
+    while(true) { // General Operation Mode - GOM
+
+        if(isEnabledWebInterface){
+            struct mg_mgr mgr;  // Mongoose event manager. Holds all connections
+            mg_log_set(MG_LL_DEBUG);
+            mg_mgr_init(&mgr);  // Initialise event manager
+            mg_http_listen(&mgr, "http://localhost:8000", fn, nullptr);  // Setup listener
+            for (;;) {
+                mg_mgr_poll(&mgr, 1000);  // Infinite event loop
+            }
+        }
+    }
 
     return 0;
 }

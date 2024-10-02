@@ -20,7 +20,7 @@ class FileHashAlgorithmProvider {
                     else {
                         std::cout << "Comparison: NO" << std::endl;
                     }
-
+ 
                 }
                 
                 std::cout << "Complete!" << std::endl;
