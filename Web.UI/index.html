@@ -4,36 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="Style.UI/style.css">
+    
 </head>
 <body>
-    <div style="height: 0.3em;">&nbsp;</div>
-    <button id="btn1">Call F1</button>
-    <button id="btn2">Call SUM(1, 2)</button>
-    <div style="margin-top: 1em;">Action log:</div>
-    <div id="log" style="background: #eee; height: 10em; padding: 0.5em; overflow:auto;"><div>
 
-    <script>
-        var logEventFunc = function(id) { return document.getElementById(id); }; // To interact with elements on a WEB page
-        var btn1 = logEventFunc('btn1'), btn2 = logEventFunc('btn2'), msglog = logEventFunc('log'); // ID of the elements in the HTML file
-        var isEnableElementsById = function(en) { btn1.disabled = btn2.disabled = !en; }; // The state of the elements  on the page
-
-        var log = text => msglog.innerHTML += text + '<br/>\n';
-        
-        isEnableElementsById(false);
+    <button id="btn.trigger.force.calc.hash">Force calculate hash</button>
+    <div style="margin-top: 1em;">File log:</div>
+    <div id="log" class="block"></div>
+    <div style="margin-top: 1em;">Hash log:</div>
+    <div id="log" class="block"></div>
     
-        btn1.onclick = ev => fetch('/api/hello').then(r => r.json()).then(r => {
-            console.log(r);
-            log('GET /api/hello: ' + JSON.stringify(r) + ' -> ' + JSON.stringify(r.result))
-          }).catch(err => console.log(err));
-    
-        const getsum = (a, b) => fetch('/api/hello', {  method: 'POST', body:JSON.stringify([a, b]) }).then(r => r.json()).catch(err => console.log(err));
-
-
-        btn2.onclick = ev => getsum(1, 2).then(r => {
-            console.log(r);
-            log('POST [1, 2] to /api/sum: ' + JSON.stringify(r) + ' -> ' + JSON.stringify(r.result))
-          }).catch(err => console.log(err));
-      </script>
+    <script src="Script.UI/main.js"></script>
 </body>
 </html>

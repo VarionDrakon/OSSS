@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 // FOR TEST FUNCTIONALITY!
-#include "../HashUtility.h"
+#include "HashUtility.h"
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
