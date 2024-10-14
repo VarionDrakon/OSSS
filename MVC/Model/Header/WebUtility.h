@@ -16,10 +16,10 @@ class WebUtility {
 
     static size_t printdata(mg_pfn_t out, void *ptr, va_list *ap) {
 
-        std::vector<std::string> data_array {"C:/Mod.mod", "C:/ddd.mod"};
+        std::vector<std::string> data_array {"C:/Mod.mod", "C:/ddd.mod", "C:/rrr.mod", "C:/aaa.mod", "C:/sss.mod", "C:/www.mod", "C:/yyy.mod"};
 
         unsigned start = 0;
-        unsigned chunk_size = 1;  // Max number returned in one API call
+        unsigned chunk_size = data_array.size();  // Max number returned in one API call
         unsigned max = start + chunk_size;
         const char *comma = "";
         size_t n = 0;
