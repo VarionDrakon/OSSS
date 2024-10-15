@@ -1,44 +1,49 @@
 #include "../../mongoose.h"
 #include <cstdarg>
 #include <cstddef>
+#include <cstdint>
 #include <sstream>
 #include <iostream>
 #include <string>
 #include <vector>
-
+static std::vector<std::string> dataArray;
 class WebUtility {
+    protected:
+        
 
-    static long getparam(struct mg_http_message *hm, const char *json_path) {
-        double dv = 0;
-        mg_json_get_num(hm->body, json_path, &dv);
-        return dv;
-    }
+    private:
+        static size_t printdata(mg_pfn_t out, void *ptr, va_list *ap) {
 
-    static size_t printdata(mg_pfn_t out, void *ptr, va_list *ap) {
+            unsigned start = 0;
+            unsigned chunk_size = dataArray.size();  // Max number returned in one API call
+            unsigned max = start + chunk_size;
+            const char *comma = "";
+            size_t n = 0;
+            if (max > dataArray.size()) max = static_cast<unsigned>(dataArray.size()); // Total number of elements
+            std::string dd = "";
 
-        std::vector<std::string> data_array {"C:/Mod.mod", "C:/ddd.mod", "C:/rrr.mod", "C:/aaa.mod", "C:/sss.mod", "C:/www.mod", "C:/yyy.mod"};
+            for(auto d : dataArray){
+                dd += d;
+            }
 
-        unsigned start = 0;
-        unsigned chunk_size = data_array.size();  // Max number returned in one API call
-        unsigned max = start + chunk_size;
-        const char *comma = "";
-        size_t n = 0;
-        if (max > data_array.size()) max = static_cast<unsigned>(data_array.size()); // Total number of elements
-        std::string dd = "";
-
-        for(auto d : data_array){
-            dd += d;
+            while (start < max){
+                n += mg_xprintf(out, ptr, dd.c_str());
+                dd.clear();
+                start++;           
+            }
+            return n;
         }
 
-        while (start < max){
-            n += mg_xprintf(out, ptr, dd.c_str());
-            dd.clear();
-            start++;           
+        static long getparam(struct mg_http_message *hm, const char *json_path) {
+            double dv = 0;
+            mg_json_get_num(hm->body, json_path, &dv);
+            return dv;
         }
-        return n;
-    }
-  
     public:
+        virtual std::vector<std::string>& hybridVectorDataArray() {
+            return dataArray;
+        }
+
         static void fn(struct mg_connection *c, int ev, void *ev_data) {
         if (ev == MG_EV_HTTP_MSG) {
             struct mg_http_message *hm =(struct mg_http_message*) ev_data;
@@ -56,6 +61,5 @@ class WebUtility {
             }
         }
     }
-
     virtual ~WebUtility() {}
 };

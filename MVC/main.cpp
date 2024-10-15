@@ -1,5 +1,7 @@
 #include "Model/WebUtility.cpp"
 #include "Model/FileUtility.cpp"
+#include <string>
+#include <vector>
 
 bool isEnabledWebInterface = true;
 bool isTriggerCheckDirectory = false;
@@ -13,6 +15,8 @@ int main(){
     /*while (true){
         fhap.triggerAlgorithm();
     }*/
+    std::vector<std::string> data = {"a", "b", "c"};
+    wu.hybridVectorDataArray() = data;
 
     while(true) { // General Operation Mode - GOM
 
