@@ -9,7 +9,6 @@
 static std::vector<std::string> dataArray;
 class WebUtility {
     protected:
-        
 
     private:
         static size_t printdata(mg_pfn_t out, void *ptr, va_list *ap) {

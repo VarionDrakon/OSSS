@@ -1,11 +1,5 @@
-#include <cstddef>
 #include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <ostream>
 #include <string>
-#include <vector>
 // FOR TEST FUNCTIONALITY!
 #include "HashUtility.h"
 
@@ -24,36 +18,42 @@
 #endif
 
 class FileSystemProvider {
-    protected:
+    private:
         std::vector<std::string> directoryFileList;
         std::vector<std::string> vectorHashCur;
         std::vector<std::string> vectorHashNew;
 
+    protected:
         virtual void setFileList(const std::string& fileName) {
             directoryFileList.push_back(fileName);
+            std::cout << "setFileList size: " << std::size(fileName) << " + " << fileName << " + " << sizeof(directoryFileList) << std::endl;
         }
-        
-    public:
-        virtual ~FileSystemProvider() = default; // Does abstract class.
-        
-        virtual const std::vector<std::string>& getFileList() {
-            return directoryFileList;
+        virtual void setVectorHashCur(std::string& value) {
+            vectorHashCur.push_back(value);
         }
-        
-        virtual std::vector<std::string>& hybridVectorHashCur() {
-            return vectorHashCur;
+        virtual void setVectorHashNew(std::string& value) {
+            vectorHashNew.push_back(value);
         }
-        
-        virtual std::vector<std::string>& hybridVectorHashNew() {
-            return vectorHashNew;
-        }
-
         virtual void setVectorData(const std::string& fileHash, std::vector<std::string>& vectorData) {
             vectorData.push_back(fileHash);
+        }
+        
+    public:     
+        virtual const std::vector<std::string>& getFileList() {
+            std::cout << "getFileList size: " << std::size(directoryFileList)  << std::endl;
+            return directoryFileList;
+        }
+        virtual const std::vector<std::string>& getVectorHashCur() {
+            return vectorHashCur;
+        }
+        virtual const std::vector<std::string>& getVectorHashNew() {
+            return vectorHashNew;
         }
         virtual const std::vector<std::string>& getVectorData(const std::vector<std::string>& vectorData) {
             return vectorData;
         }
+
+        virtual ~FileSystemProvider() = default; // Does abstract class.
 };
 
 class DirectoryProvider : public FileSystemProvider {
@@ -80,17 +80,18 @@ class DirectoryLocal : public DirectoryProvider {
         void setContext() override final {
             
             for (const auto& entry : std::filesystem::recursive_directory_iterator(path)){
-                const auto& path = entry.path().u8string();
+                const auto& fsObj = entry.path(); 
+                const std::string fsStr = fsObj.u8string();
 
-                if (!std::filesystem::is_directory(path)){
-                    setFileList(path);
-                    std::cout << "Folder path: " << path << std::endl;
+                if (!std::filesystem::is_directory(fsStr)){
+                    std::cout << "path size: " << std::size(fsStr)  << std::endl;
+                    std::cout << "Folder path: " << fsStr << std::endl;
+                    setFileList(fsStr);
                 }
                 else {
-                    std::cout << "This is folder:" << path << " ?" << std::endl;
+                    std::cout << "This is folder:" << fsStr << " ?" << std::endl;
                 }
             }
-
         }
 
         virtual ~DirectoryLocal() {}
@@ -122,6 +123,7 @@ class FileHashProvider : FileSystemProvider {
         }
 
         bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond){
+
             if(!vectorFirst.empty() && !vectorSecond.empty()){
 
                 if(vectorFirst.size() != vectorSecond.size()) {
@@ -136,6 +138,9 @@ class FileHashProvider : FileSystemProvider {
                         return false; // Elements with the same index are not equal.
                     }
                 }
+            }
+            else{
+                std::cout << "vector(!?).empty()" << std::endl;
             }
             return true;
         }
