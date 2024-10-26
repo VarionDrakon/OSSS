@@ -13,10 +13,11 @@ int main(){
     /*while (true){
         fhap.triggerAlgorithm();
     }*/
-    for (int i = 0; i <= 1; i++){
-        fhap.triggerAlgorithm();
-        //wu.hybridVectorDataArray() = fhap.hybridVectorDataArray();
-    }  
+    // for (int i = 0; i <= 1; i++){
+        
+    //     //wu.hybridVectorDataArray() = fhap.hybridVectorDataArray();
+    // }  
+    fhap.triggerAlgorithm();
 
     while(true) { // General Operation Mode - GOM
 

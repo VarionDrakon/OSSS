@@ -1,34 +1,36 @@
 #include "Header/FileUtility.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 class FileHashAlgorithmProvider {
+    private:
+
     protected:
-        FileSystemProvider fsp;
 
     public:
+
         virtual void triggerAlgorithm() {
-            FileHashProvider fileHash;
-            DirectoryLocal dirLoc("E:/testing");
-            auto files = fsp.getFileList();
+            FileHashProvider fhp;
+            DirectoryLocal dl("E:/testing");
             
-            if(dirLoc.isFolderExist()){
-                dirLoc.setContext();
+            if(dl.isFolderExist()){
+                dl.setContext();
+                dl.getFileList();
 
-                // if(fileHash.fileCalculateHash(dirLoc.getVectorHashCur()) & fileHash.fileCalculateHash(dirLoc.getVectorHashNew())){
+                if(fhp.fileCalculateHash(fhp.getVectorHashCur(), dl.getFileList()) & fhp.fileCalculateHash(fhp.getVectorHashNew(), dl.getFileList())){
 
-                //     if(fileHash.equalVectors(dirLoc.getVectorHashCur(), dirLoc.getVectorHashNew())){
-                //         std::cout << "Comparison: YES" << std::endl;
+                    if(fhp.equalVectors(fhp.getVectorHashCur(), fhp.getVectorHashNew())){
+                        std::cout << "Comparison: YES" << std::endl;
 
-                //         // return;
-                //     }
-                //     else {
-                //         std::cout << "Comparison: NO" << std::endl;
-                //     }
-                // }
-                std::cout << "Complete!" << std::endl;
-                // data = 
-                for (const auto& d : files){
-                    std::cout << " DATA: " << d << std::endl;
+                        // return;
+                    }
+                    else {
+                        std::cout << "Comparison: NO" << std::endl;
+                    }
                 }
+
+                std::cout << "Complete!" << std::endl;
             }
         };
 };
