@@ -13,7 +13,7 @@ class FileHashAlgorithmProvider {
 
         virtual void triggerAlgorithm() {
             FileHashProvider fhp;
-            DirectoryLocal dl("E:/testing");
+            DirectoryLocal dl("/home/sysadm/Downloads/");
             
             if(dl.isFolderExist()){
                 dl.setContext();
@@ -37,10 +37,5 @@ class FileHashAlgorithmProvider {
             else {
                 std::cout << "Folder not found!" << std::endl;
             }
-            else {
-                std::cout << "Folder not found!" << std::endl;
-            }
-        };
-};
         };
 };

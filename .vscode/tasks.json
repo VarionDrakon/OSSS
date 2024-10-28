@@ -11,10 +11,10 @@
           "${workspaceFolder}/MVC/main.cpp",
           "-I${workspaceFolder}/MVC",
           "${workspaceFolder}/MVC/mongoose.c",
-          "-L$E:/Program FilesSS/LLVM/lib/clang/17/lib/windows",
-          "-lcryptlib",
+          "-L/usr/local/lib",
+          "-lcryptopp",
           "-o",
-          "${workspaceFolder}/bin/osss.exe",
+          "${workspaceFolder}/bin/osss.bin",
         ],
         "group": {
            "kind": "build",

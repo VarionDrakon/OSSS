@@ -110,8 +110,7 @@ class FileHashProvider {
         bool fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList) {
             for (const auto& filePath : vectorFileList){
                 std::string calcHash = sha256.calcHash(filePath);
-                
-                    
+                                   
                 if(!calcHash.empty()){
                     std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
                     setVectorData(calcHash, vectorData);
