@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -65,7 +66,7 @@ class DirectoryLocal : public DirectoryProvider {
         DirectoryLocal(const std::string& path) : DirectoryProvider(path), path(path) {}
 
         virtual const std::vector<std::string>& getFileList() const override final {
-            std::cout << directoryFileList.size() << std::endl;
+            std::cout << "Cout elements in directoryFileList: " << directoryFileList.size() << std::endl;
             return directoryFileList;
         }
     
@@ -107,8 +108,6 @@ class FileHashProvider {
         }
 
         bool fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList) {
-            bool isProcessFinished = true;
-            std::cout << "fileCalculateHash()" << std::endl;
             for (const auto& filePath : vectorFileList){
                 std::string calcHash = sha256.calcHash(filePath);
                 
@@ -119,11 +118,10 @@ class FileHashProvider {
                 }
                 else{
                     std::cerr << "Error calculate hash for file: " << filePath << std::endl;
-                    isProcessFinished = false;
-                    break;
+                    return false;
                 }
             }
-            return isProcessFinished;
+            return true;
         }
 
         bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond){

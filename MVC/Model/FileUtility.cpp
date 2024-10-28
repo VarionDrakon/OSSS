@@ -1,4 +1,5 @@
 #include "Header/FileUtility.h"
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -16,18 +17,19 @@ class FileHashAlgorithmProvider {
             
             if(dl.isFolderExist()){
                 dl.setContext();
-                dl.getFileList();
 
-                if(fhp.fileCalculateHash(fhp.getVectorHashCur(), dl.getFileList()) & fhp.fileCalculateHash(fhp.getVectorHashNew(), dl.getFileList())){
+                if((fhp.fileCalculateHash(fhp.getVectorHashCur(), dl.getFileList()) == true) && (fhp.fileCalculateHash(fhp.getVectorHashNew(), dl.getFileList()) == true)){
 
                     if(fhp.equalVectors(fhp.getVectorHashCur(), fhp.getVectorHashNew())){
                         std::cout << "Comparison: YES" << std::endl;
-
-                        // return;
                     }
                     else {
                         std::cout << "Comparison: NO" << std::endl;
                     }
+                }
+                else{
+                    std::cout << "Comparison ERROR!" << std::endl;
+                    return;
                 }
 
                 std::cout << "Complete!" << std::endl;
