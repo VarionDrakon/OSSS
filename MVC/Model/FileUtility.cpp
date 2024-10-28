@@ -34,5 +34,13 @@ class FileHashAlgorithmProvider {
 
                 std::cout << "Complete!" << std::endl;
             }
+            else {
+                std::cout << "Folder not found!" << std::endl;
+            }
+            else {
+                std::cout << "Folder not found!" << std::endl;
+            }
+        };
+};
         };
 };
