@@ -19,7 +19,7 @@ int main(){
         
     //     //wu.hybridVectorDataArray() = fhap.hybridVectorDataArray();
     // }  
-    fhap.triggerAlgorithm();
+    // fhap.triggerAlgorithm();
 
     while(true) { // General Operation Mode - GOM
 
