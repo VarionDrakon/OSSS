@@ -1,4 +1,4 @@
-#include "../../mongoose.h"
+#include <mongoose/mongoose.h>
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 static std::vector<std::string> dataArray;
 class WebUtility {
     protected:

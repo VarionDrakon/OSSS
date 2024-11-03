@@ -7,7 +7,7 @@
       "request": "launch",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/bin/osss.bin",
+      "program": "${workspaceFolder}/bin/osss.exe",
       "preLaunchTask": "build",
     }
   ]

@@ -1,7 +1,7 @@
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
-#include <cryptopp890/hex.h>
-#include <cryptopp890/sha.h>
-#include <cryptopp890/files.h>
+#include <cryptopp/hex.h>
+#include <cryptopp/sha.h>
+#include <cryptopp/files.h>
 
 #elif __linux__ //Linux platforms
 #include <cryptopp/hex.h>
