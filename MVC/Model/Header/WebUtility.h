@@ -2,62 +2,56 @@
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <ostream>
 #include <sstream>
 #include <iostream>
 #include <string>
 #include <vector>
 
+struct fileProperties {
+    std::string fileName;
+    int fileSize;
+};
+
+
 static std::vector<std::string> dataArray;
 class WebUtility {
     protected:
 
-    private:
-        static size_t printdata(mg_pfn_t out, void *ptr, va_list *ap) {
 
-            unsigned start = 0;
-            unsigned chunk_size = dataArray.size();  // Max number returned in one API call
-            unsigned max = start + chunk_size;
-            const char *comma = "";
-            size_t n = 0;
-            if (max > dataArray.size()) max = static_cast<unsigned>(dataArray.size()); // Total number of elements
-            std::string dd = "";
 
-            for(auto d : dataArray){
-                dd += d;
+    private: 
+        static size_t printSctructure(void (*out) (char, void *), void *ptr, va_list *ap){
+            std::vector<fileProperties> files = {
+                {"fileName1.txt", 1234},
+                {"fileName2.txt", 5678},
+                {"fileName3.txt", 91011},
+                {"fileName4.txt", 121314}
+            };
+
+            for (int i = 0; i < files.size(); i++){
+                char file_entry[256];
+                mg_snprintf(file_entry, sizeof(files), "{\"file name\" : \"%s\", \"file size\" : \"%d\"}", files[i].fileName, files[i].fileSize);
             }
-
-            while (start < max){
-                n += mg_xprintf(out, ptr, dd.c_str());
-                dd.clear();
-                start++;           
-            }
-            return n;
         }
 
-        static long getparam(struct mg_http_message *hm, const char *json_path) {
-            double dv = 0;
-            mg_json_get_num(hm->body, json_path, &dv);
-            return dv;
-        }
+
     public:
-        virtual std::vector<std::string>& hybridVectorDataArray() {
-            return dataArray;
-        }
 
-        static void fn(struct mg_connection *c, int ev, void *ev_data) {
-        if (ev == MG_EV_HTTP_MSG) {
-            struct mg_http_message *hm =(struct mg_http_message*) ev_data;
+    static void fn(struct mg_connection *connection, int event, void *event_data) {
+        if (event == MG_EV_HTTP_MSG) {
+            struct mg_http_message *hm =(struct mg_http_message*) event_data;
             if (mg_match(hm->uri, mg_str("/api/data"), NULL)) {
-                const char *headers = "content-type: text/json\r\n";
-                long start = getparam(hm, "$.start");
-                MG_DEBUG(("%.*s", (int) hm->body.len, hm->body.buf));
-                // Return data, up to CHUNK_SIZE elements
-                mg_http_reply(c, 200, headers, "{%m:%m}",
-                                MG_ESC("data"), printdata);
+                
+                const char *headers = "content-type: application/json\r\n";
+
+                //char *msg = mg_mprintf("Build the message: %s %s", fP.filePath.c_str(), "ded");
+
+                mg_http_reply(connection, 200, headers, "{%m:\"%s\"}\n", MG_ESC("data"), );
             }
             else {
                 struct mg_http_serve_opts opts = {.root_dir = "Web.UI/"};
-                mg_http_serve_dir(c, hm, &opts);
+                mg_http_serve_dir(connection, hm, &opts);
             }
         }
     }
