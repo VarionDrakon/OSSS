@@ -105,12 +105,12 @@ class WebUtility {
 
 
             static size_t returnAttr(void (*out)(char, void *), void *ptr, va_list *ap) {
-                struct attr *atr = va_arg(*ap, struct attr *);
 
+                struct attr *atr = va_arg(*ap, struct attr *);
                 size_t len = 0;
 
                 for (int i = 0; atr[i].c != NULL; i++){
-                    len += mg_xprintf(out, ptr, {"%d:%d:%d:%s \n"}, atr[i].i, atr[i].s, atr[i].f, atr[i].c);
+                    len += mg_xprintf(out, ptr, {"%d:%d:%d:%s \n"}, atr[i].i, atr[i].s, atr[i].f, atr[i].c); // { "attr_data": "temp", }
                 }
 
                 return len;
@@ -143,7 +143,7 @@ class WebUtility {
                         { 234, 987, 456, "Value data" },
                         {0, 0, 0, NULL}
                     };
-                    mg_http_reply(connection, 200, headers, "%M", returnAttr, &temp);
+                    mg_http_reply(connection, 200, headers, "%M", returnAttr, &attr_data);
                     //free(msg);
                 }
                 else {
