@@ -38,14 +38,25 @@ struct attribute filePropertiesAttributes[] = {
 
 
 struct attr { 
-    int i, s, f; 
-    const char *c; 
+    const char *fileName;
+    int fileSize; 
+    const char *typeData, *owner, *dateTime, *hash; /*
+                *typeData: https://www.iana.org/assignments/media-types/media-types.xhtml, write format - "text/plain" 
+                *dateTime: https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time
+                */
 };
 
-struct attr attr_data[] = {
-    { 123, 234, 423, "name"},
-    { 456, 234, 456, "surname"},
-    { 0, 0, 0, NULL}
+struct attr attrKey[] = {
+    { NULL, 0, NULL, NULL, NULL, NULL },
+    { NULL, 0,NULL, NULL, NULL, NULL }
+};
+
+struct attr attrValue[] = {
+    { "fileName1.txt", 91011, "text/plain", "User",  "1997-07-16T19:20:30.45+03:00", "f5788b96310c9174411ea51777f675b8e0735fd51a4ae732c3d078987a953160" },
+    { "fileName2.txt", 67898, "text/plain", "User",  "1997-07-16T19:20:30.45+03:00", "f5788b96310c9174411ea51777f675b8e0735fd51a4ae732c3d078987a953160" },
+    { "fileName3.txt", 23452, "text/plain", "User",  "1997-07-16T19:20:30.45+03:00", "f5788b96310c9174411ea51777f675b8e0735fd51a4ae732c3d078987a953160" },
+    { "fileName4.txt", 23452, "text/plain", "User",  "1997-07-16T19:20:30.45+03:00", "f5788b96310c9174411ea51777f675b8e0735fd51a4ae732c3d078987a953160" },
+    { NULL, 0,NULL, NULL, NULL, NULL }
 };
 
 static std::vector<std::string> dataArray;
@@ -106,11 +117,22 @@ class WebUtility {
 
             static size_t returnAttr(void (*out)(char, void *), void *ptr, va_list *ap) {
 
-                struct attr *atr = va_arg(*ap, struct attr *);
+                struct attr *val = va_arg(*ap, struct attr *);
+                struct attr *key = attrKey;
                 size_t len = 0;
 
-                for (int i = 0; atr[i].c != NULL; i++){
-                    len += mg_xprintf(out, ptr, {"%d:%d:%d:%s \n"}, atr[i].i, atr[i].s, atr[i].f, atr[i].c); // { "attr_data": "temp", }
+                for (int i = 0; val[i].fileName != NULL; i++){
+                    // if (strcmp(key->typeData, "string") == 0){
+                    //     len += mg_xprintf(out, ptr, "\"string\"");
+                    // }
+                    // else if (strcmp(key->typeData, "int") == 0){
+                    //     len += mg_xprintf(out, ptr, "\"int\"");
+                    // }
+                    // else {
+                    //     std::cout << i << " null" << std::endl;
+                    // }
+                    // std::cout << i << " cycl" << std::endl;
+                    len += mg_xprintf(out, ptr, { "\"%s\": %d: \"%s\": \"%s\": \"%s\": \"%s\"\n"}, val[i].fileName, val[i].fileSize, val[i].typeData, val[i].owner, val[i].dateTime, val[i].hash); // { "attr_data": "temp", ( key: value )}
                 }
 
                 return len;
@@ -138,12 +160,7 @@ class WebUtility {
                     // }
 
                     //char *msg = mg_mprintf(var);
-                    struct attr temp[] = {
-                        { 42, 203, 345, "Val" },
-                        { 234, 987, 456, "Value data" },
-                        {0, 0, 0, NULL}
-                    };
-                    mg_http_reply(connection, 200, headers, "%M", returnAttr, &attr_data);
+                    mg_http_reply(connection, 200, headers, "%M", returnAttr, &attrValue);
                     //free(msg);
                 }
                 else {
