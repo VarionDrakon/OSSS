@@ -11,7 +11,7 @@ bool isTriggerCheckDirectory = false;
 int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
     FileHashAlgorithmProvider fhap;
-    WebUtility wu;
+    WebUtilityObject wuo;
     /*while (true){
         fhap.triggerAlgorithm();
     }*/
@@ -24,10 +24,11 @@ int main(){
     while(true) { // General Operation Mode - GOM
 
         if(isEnabledWebInterface){
+
             struct mg_mgr mgr;  // Mongoose event manager. Holds all connections
-            mg_log_set(MG_LL_DEBUG);
             mg_mgr_init(&mgr);  // Initialise event manager
-            mg_http_listen(&mgr, "http://localhost:8000", wu.fn, nullptr);  // Setup listener
+            mg_http_listen(&mgr, "http://localhost:8000", wuo.httpHandler, nullptr);  // Setup listener
+
             for (;;) {
                 mg_mgr_poll(&mgr, 1000);  // Infinite event loop
             }
