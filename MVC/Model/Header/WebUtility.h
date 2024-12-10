@@ -23,54 +23,18 @@ struct attr attrValue[] = {
     { NULL, 0,NULL, NULL, NULL, NULL }
 };
 
-class WebProviderObject {
+class WebUtility {
     protected:
 
     private: 
 
     public:
 
-        static size_t returnAttr(void (*out)(char, void *), void *ptr, va_list *ap) {
+        WebUtility();
 
-                struct attr *val = va_arg(*ap, struct attr *);
-                struct attr *key = attrKey;
-                size_t len = 0;
-                char *constructor = "\"%s\": \"%s\",\n";
-                char *endConstructor = "\"%s\": \"%s\"\n";
+        static void httpHandler(struct mg_connection *connection, int event, void *event_data);
 
-                len += mg_xprintf(out, ptr, "{\n");
-                len += mg_xprintf(out, ptr, "\"Files\": [ \n");
+        static size_t returnAttr(void (*out)(char, void *), void *ptr, va_list *ap);
 
-                const char *keys[] = { key->fileName, key->fileSize, key->typeData, key->owner, key->dateTime, key->hash };
-                
-
-                for (int i = 0; val[i].fileName != NULL; i++){
-                    const char *varFields[] = { val[i].fileName, val[i].fileSize, val[i].typeData, val[i].owner, val[i].dateTime, val[i].hash };
-
-                    len += mg_xprintf(out, ptr, "{\n");
-
-                    if(strcmp(val[i].fileName, "NULL") != 0){
-                        char buffer[1024];
-                        int offset = 0;
-
-                        offset += snprintf(buffer + offset, sizeof(buffer) - offset, constructor, key->fileName, val[i].fileName);
-                        offset += snprintf(buffer + offset, sizeof(buffer) - offset, constructor, key->fileSize, val[i].fileSize);
-                        offset += snprintf(buffer + offset, sizeof(buffer) - offset, constructor, key->typeData, val[i].typeData);
-                        offset += snprintf(buffer + offset, sizeof(buffer) - offset, constructor, key->owner, val[i].owner);
-                        offset += snprintf(buffer + offset, sizeof(buffer) - offset, constructor, key->dateTime, val[i].dateTime);
-                        offset += snprintf(buffer + offset, sizeof(buffer) - offset, endConstructor, key->hash, val[i].hash);
-
-                        len += mg_xprintf(out, ptr, "%s", buffer);
-                    }
-
-                    if (val[i + 1].fileName != NULL) {
-                        len += mg_xprintf(out, ptr, "},\n");
-                    } else {
-                        len += mg_xprintf(out, ptr, "}\n");
-                    }
-                }
-                return len += mg_xprintf(out, ptr, "]}");
-            }
-
-    virtual ~WebProviderObject() {}
+        virtual ~WebUtility() {}
 };

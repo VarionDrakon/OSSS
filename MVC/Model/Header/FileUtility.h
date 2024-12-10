@@ -21,29 +21,32 @@
 
 #endif
 
-class FileSystemProvider {
+class FileUtility {
     private:
         std::string path;
 
     protected:
 
     public:
-        FileSystemProvider(const std::string& path) : path(path) {}
-
+        FileUtility(const std::string& path) : path(path) {}
+        FileUtility();
+        
         virtual const std::vector<std::string>& getFileList() const = 0;
 
-        virtual ~FileSystemProvider() = default;
+        virtual ~FileUtility() = default;
 };
 
-class DirectoryProvider : public FileSystemProvider {
+class FileUtilityProvider : public FileUtility {
     private:
         std::string path;
 
     protected:
         
     public:
-        DirectoryProvider(const std::string& path) : FileSystemProvider(path), path(path){}
+        FileUtilityProvider(const std::string& path) : FileUtility(path), path(path){}
+        FileUtilityProvider();
 
+        virtual void setContext() = 0;
         const std::vector<std::string>& getFileList() const override = 0;
         std::string getPath() const { return path; }
 
@@ -51,43 +54,28 @@ class DirectoryProvider : public FileSystemProvider {
             return std::filesystem::exists(getPath());
         }
 
-        virtual void setContext() = 0;
-        
-        
-        virtual ~DirectoryProvider() = default;
+        virtual ~FileUtilityProvider() = default;
 };
 
-class DirectoryLocal : public DirectoryProvider {
+class FileUtilityProviderLocal : public FileUtilityProvider {
     private:
         std::vector<std::string> directoryFileList;
         std::string path;
 
     public:
-        DirectoryLocal(const std::string& path) : DirectoryProvider(path), path(path) {}
+        FileUtilityProviderLocal(const std::string& path) : FileUtilityProvider(path), path(path) {}
+        FileUtilityProviderLocal();
 
+        virtual void setContext() override final;
         virtual const std::vector<std::string>& getFileList() const override final {
-            std::cout << "Cout elements in directoryFileList: " << directoryFileList.size() << std::endl;
             return directoryFileList;
         }
-    
-        void setContext() override final {
-            
-            for (const auto& entry : std::filesystem::recursive_directory_iterator(getPath())){
-                const auto& fsObj = entry.path(); 
-                const std::string fsStr = fsObj.u8string();
 
-                if (!std::filesystem::is_directory(fsStr)){
-                    std::cout <<  "Path size: " << std::size(fsStr) << " Folder path: " << fsStr  <<  std::endl;
-                    directoryFileList.push_back(fsStr);
-                }
-                else {
-                    std::cout << "This is folder:" << fsStr << " ?" << std::endl;
-                }
-            }
-        }
-
-        virtual ~DirectoryLocal() = default;
+        virtual ~FileUtilityProviderLocal() = default;
 };
+
+
+
 
 class FileHashProvider {
     private:
