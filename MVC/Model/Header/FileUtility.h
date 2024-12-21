@@ -30,8 +30,6 @@ class FileUtility {
     public:
         FileUtility(const std::string& path) : path(path) {}
         FileUtility();
-        
-        virtual const std::vector<std::string>& getFileList() const = 0;
 
         virtual ~FileUtility() = default;
 };
@@ -47,12 +45,10 @@ class FileUtilityProvider : public FileUtility {
         FileUtilityProvider();
 
         virtual void setContext() = 0;
-        const std::vector<std::string>& getFileList() const override = 0;
+        virtual const std::vector<std::string>& getFileList() = 0;
         std::string getPath() const { return path; }
 
-        virtual bool isFolderExist() const {
-            return std::filesystem::exists(getPath());
-        }
+        bool isFolderExist() const;
 
         virtual ~FileUtilityProvider() = default;
 };
@@ -67,78 +63,44 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
         FileUtilityProviderLocal();
 
         virtual void setContext() override final;
-        virtual const std::vector<std::string>& getFileList() const override final {
-            return directoryFileList;
-        }
+        virtual const std::vector<std::string>& getFileList() override final;
 
         virtual ~FileUtilityProviderLocal() = default;
 };
 
 
+class FileUtilityAlgorithmProvider : public FileUtility {
 
+    protected:
 
-class FileHashProvider {
-    private:
         SHA256Algorithm sha256;
         std::vector<std::string> vectorHashCur;
         std::vector<std::string> vectorHashNew;
-
-        virtual void setVectorData(const std::string& fileHash, std::vector<std::string>& vectorData) {
-            vectorData.push_back(fileHash);
-        }
+                
+        void setVectorData(const std::string& fileHash, std::vector<std::string>& vectorData);
 
     public:
-        virtual std::vector<std::string>& getVectorHashCur() {
-            return vectorHashCur;
-        }
-        virtual std::vector<std::string>& getVectorHashNew() {
-            return vectorHashNew;
-        }
+        FileUtilityAlgorithmProvider();
+        
+        std::vector<std::string>& getVectorHashCur();
+        std::vector<std::string>& getVectorHashNew();
+        void triggerAlgorithm();
 
-        bool fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList) {
-            for (const auto& filePath : vectorFileList){
-                std::string calcHash = sha256.calcHash(filePath);
-                                   
-                if(!calcHash.empty()){
-                    std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
-                    setVectorData(calcHash, vectorData);
-                }
-                else{
-                    std::cerr << "Error calculate hash for file: " << filePath << std::endl;
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond){
-
-            if(!vectorFirst.empty() && !vectorSecond.empty()){
-
-                if(vectorFirst.size() != vectorSecond.size()) {
-                    std::cout << "Size not equals: " << vectorFirst.size() << " & " << vectorSecond.size() << std::endl;
-                    return false; // Size vectors must be equal.
-                }
-
-                for(szt i = 0; i < vectorFirst.size(); ++i){
-                    std::cout << "Current equals hash: " << vectorFirst[i] << " & " << vectorSecond[i] << std::endl;
-                    if(vectorFirst[i] != vectorSecond[i]) {
-                        std::cout << "Vector NOT equal`s!" << std::endl;
-                        return false; // Elements with the same index are not equal.
-                    }
-                }
-            }
-            else{
-                std::cout << "vector(!?).empty()" << std::endl;
-            }
-            return true;
-        }
-
-        void fileMoving(){
-            // Sync data: checking the free disk space, calculating the required disk space, making a file map for moving files
-        }
-            virtual ~FileHashProvider() = default;
+        virtual ~FileUtilityAlgorithmProvider() = default;
 };
+
+class FileUtilityHashProvider : public FileUtilityAlgorithmProvider {
+
+    public:
+        FileUtilityHashProvider();
+
+        bool fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList);
+        bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond);
+        // virtual void fileMoving();
+        
+        virtual ~FileUtilityHashProvider() = default;
+};
+
 /*
 class CloudDirectory : public Directory{
     public:

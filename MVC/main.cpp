@@ -10,11 +10,12 @@ bool isTriggerCheckDirectory = false;
 
 int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
-    FileHashAlgorithmProvider fhap;
+    FileUtilityAlgorithmProvider fhap;
     WebUtility wu;
-    /*while (true){
-        fhap.triggerAlgorithm();
-    }*/
+    // while (true){
+        
+    // }
+    fhap.triggerAlgorithm();
     // for (int i = 0; i <= 1; i++){
         
     //     //wu.hybridVectorDataArray() = fhap.hybridVectorDataArray();
