@@ -8,11 +8,11 @@ size_t WebUtility::returnAttr(void (*out)(char, void *), void *ptr, va_list *ap)
     struct attr *val = va_arg(*ap, struct attr *);
     struct attr *key = attrKey;
 
-    char *constructor = "\"%s\": \"%s\",\n";
-    char *endConstructor = "\"%s\": \"%s\"\n";
+    char *constructor = "\"%s\": \"%s\",";
+    char *endConstructor = "\"%s\": \"%s\"";
 
-    len += mg_xprintf(out, ptr, "{\n");
-    len += mg_xprintf(out, ptr, "\"Files\": [ \n");
+    len += mg_xprintf(out, ptr, "{");
+    len += mg_xprintf(out, ptr, "\"Files\": [");
 
     const char *keys[] = { key->fileName, key->fileSize, key->typeData, key->owner, key->dateTime, key->hash };
 
@@ -20,7 +20,7 @@ size_t WebUtility::returnAttr(void (*out)(char, void *), void *ptr, va_list *ap)
 
         const char *varFields[] = { val[i].fileName, val[i].fileSize, val[i].typeData, val[i].owner, val[i].dateTime, val[i].hash };
 
-        len += mg_xprintf(out, ptr, "{\n");
+        len += mg_xprintf(out, ptr, "{");
 
         if(strcmp(val[i].fileName, "NULL") != 0){
             char buffer[1024];
@@ -37,9 +37,9 @@ size_t WebUtility::returnAttr(void (*out)(char, void *), void *ptr, va_list *ap)
         }
 
         if (val[i + 1].fileName != NULL) {
-            len += mg_xprintf(out, ptr, "},\n");
+            len += mg_xprintf(out, ptr, "},");
         } else {
-            len += mg_xprintf(out, ptr, "}\n");
+            len += mg_xprintf(out, ptr, "}");
         }
     }
     return len += mg_xprintf(out, ptr, "]}");

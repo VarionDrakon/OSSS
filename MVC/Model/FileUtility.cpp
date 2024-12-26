@@ -1,5 +1,4 @@
 #include "Header/FileUtility.h"
-#include <vector>
 
 FileUtility::FileUtility() {}
 
@@ -11,6 +10,15 @@ FileUtilityAlgorithmProvider::FileUtilityAlgorithmProvider() {}
 
 FileUtilityHashProvider::FileUtilityHashProvider() {}
 
+/** @see FileUtilityProviderLocal::setContext()
+    Sets the execution context within which the algorithm will be executed, namely the path to the directory that will be the root of the job. 
+
+    @param getPath() - get path to root folder
+    @param entry.path() - check directory existence
+    @param fsStr - Returns the internal pathname in native pathname format, converted to specific string type
+
+    @return directoryFileList - vector storing file path
+*/
 void FileUtilityProviderLocal::setContext() {
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(getPath())){
@@ -22,17 +30,17 @@ void FileUtilityProviderLocal::setContext() {
             directoryFileList.push_back(fsStr);
         } else {
             std::cout << "This is folder:" << fsStr << " ?" << std::endl;
-        }   
+        }
     }
 
-};
+}
 
 bool FileUtilityProvider::isFolderExist() const {
     return std::filesystem::exists(getPath());
 }
 
 const std::vector<std::string>& FileUtilityProviderLocal::getFileList()  {
-    return FileUtilityProviderLocal::directoryFileList;
+    return directoryFileList;
 }
 
 void FileUtilityAlgorithmProvider::setVectorData(const std::string& fileHash, std::vector<std::string>& vectorData) {
@@ -42,20 +50,21 @@ void FileUtilityAlgorithmProvider::setVectorData(const std::string& fileHash, st
 std::vector<std::string>& FileUtilityAlgorithmProvider::getVectorHashCur() {
     return vectorHashCur;
 }
+
 std::vector<std::string>& FileUtilityAlgorithmProvider::getVectorHashNew() {
     return vectorHashNew;
 }
 
 void FileUtilityAlgorithmProvider::triggerAlgorithm() {
-    FileUtilityHashProvider fhp;
-    FileUtilityProviderLocal dl("E:/TempFilesProgramm/OSSS/TempFolder/rename_factions");
+    FileUtilityHashProvider fuhp;
+    FileUtilityProviderLocal fupl("E:/TempFilesProgramm/OSSS/TempFolder/rename_factions");
 
-    if(dl.isFolderExist()){
-        dl.setContext();
+    if(fupl.isFolderExist()){
+        fupl.setContext();
 
-        if((fhp.fileCalculateHash(fhp.getVectorHashCur(), dl.getFileList()) == true) && (fhp.fileCalculateHash(fhp.getVectorHashNew(), dl.getFileList()) == true)){
+        if((fuhp.fileCalculateHash(fuhp.getVectorHashCur(), fupl.getFileList()) == true) && (fuhp.fileCalculateHash(fuhp.getVectorHashNew(), fupl.getFileList()) == true)){
 
-            if(fhp.equalVectors(fhp.getVectorHashCur(), fhp.getVectorHashNew())){
+            if(fuhp.equalVectors(fuhp.getVectorHashCur(), fuhp.getVectorHashNew())){
                 std::cout << "Comparison: YES" << std::endl;
             }
             else {
@@ -74,6 +83,17 @@ void FileUtilityAlgorithmProvider::triggerAlgorithm() {
     }
 }
 
+/** @see FileUtilityHashProvider::fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList) 
+    calculates hashes for files, skipping directories, returning true or false
+
+    @param vectorFileList - accepts a vector with path
+    @param vectorData - temporary hash storage 
+    @param filePath - path to the file
+    @param calcHash - calls a function to calculate the hash
+    @see FileUtilityAlgorithmProvider::setVectorData
+
+    @return true, if hash calculate successful, else false with error message.
+*/
 bool FileUtilityHashProvider::fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList) {
 
     for (const auto& filePath : vectorFileList){
@@ -90,22 +110,20 @@ bool FileUtilityHashProvider::fileCalculateHash(std::vector<std::string>& vector
     }
 
     return true;
-
 }
 
 bool FileUtilityHashProvider::equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond){
 
     if(!vectorFirst.empty() && !vectorSecond.empty()){
-
-        if(vectorFirst.size() != vectorSecond.size()) {
+        if(vectorFirst.size() != vectorSecond.size()){
             std::cout << "Size not equals: " << vectorFirst.size() << " & " << vectorSecond.size() << std::endl;
             return false; // Size vectors must be equal.
         }
 
         for(szt i = 0; i < vectorFirst.size(); ++i){
-            std::cout << "Current equals hash: " << vectorFirst[i] << " & " << vectorSecond[i] << std::endl;
-            if(vectorFirst[i] != vectorSecond[i]) {
-                std::cout << "Vector NOT equal`s!" << std::endl;
+            std::cout << "Current hashes being compared: " << vectorFirst[i] << " & " << vectorSecond[i] << std::endl;
+            if(vectorFirst[i] != vectorSecond[i]){
+                std::cout << "Vectors are not equal!" << std::endl;
                 return false; // Elements with the same index are not equal.
             }
         }

@@ -33,7 +33,6 @@ class WebUtility {
         WebUtility();
 
         static void httpHandler(struct mg_connection *connection, int event, void *event_data);
-
         static size_t returnAttr(void (*out)(char, void *), void *ptr, va_list *ap);
 
         virtual ~WebUtility() {}
