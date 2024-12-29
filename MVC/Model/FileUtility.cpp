@@ -13,11 +13,11 @@ FileUtilityHashProvider::FileUtilityHashProvider() {}
 /** @see FileUtilityProviderLocal::setContext()
     Sets the execution context within which the algorithm will be executed, namely the path to the directory that will be the root of the job. 
 
-    @param getPath() - get path to root folder
-    @param entry.path() - check directory existence
-    @param fsStr - Returns the internal pathname in native pathname format, converted to specific string type
+    @param getPath() - get path to root folder.
+    @param entry.path() - check directory existence.
+    @param fsStr - Returns the internal pathname in native pathname format, converted to specific string type.
 
-    @return directoryFileList - vector storing file path
+    @return directoryFileList - vector storing file path.
 */
 void FileUtilityProviderLocal::setContext() {
 
@@ -84,13 +84,13 @@ void FileUtilityAlgorithmProvider::triggerAlgorithm() {
 }
 
 /** @see FileUtilityHashProvider::fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList) 
-    calculates hashes for files, skipping directories, returning true or false
+    calculates hashes for files, skipping directories, returning true or false.
 
-    @param vectorFileList - accepts a vector with path
-    @param vectorData - temporary hash storage 
-    @param filePath - path to the file
-    @param calcHash - calls a function to calculate the hash
-    @see FileUtilityAlgorithmProvider::setVectorData
+    @param vectorFileList - accepts a vector with path.
+    @param vectorData - temporary hash storage.
+    @param filePath - path to the file.
+    @param calcHash - calls a function to calculate the hash.
+    @param setVectorData - @see FileUtilityAlgorithmProvider::setVectorData
 
     @return true, if hash calculate successful, else false with error message.
 */
