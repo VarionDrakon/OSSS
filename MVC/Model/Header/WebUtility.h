@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdarg>
 
 struct attr { 
     const char *fileName, *fileSize, *typeData, *owner, *dateTime, *hash; /*

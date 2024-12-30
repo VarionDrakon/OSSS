@@ -1,9 +1,5 @@
 #include "Header/WebUtility.h"
-#include <cstdarg>
-#include <cstddef>
-#include <iostream>
-#include <string>
-#include <vector>
+
 
 WebUtility::WebUtility() {}
 
@@ -53,7 +49,7 @@ WebUtility::WebUtility() {}
 size_t WebUtility::returnApiListFiles(void (*out)(char, void *), void *ptr, va_list *ap){
     
     size_t len = 0;
-    struct attr *val = va_arg(*ap, struct attr *);
+    // struct attr *val = va_arg(*ap, struct attr *);
     struct attr *key = attrKey;
     std::vector<attr> atr;
 
@@ -83,10 +79,6 @@ size_t WebUtility::returnApiListFiles(void (*out)(char, void *), void *ptr, va_l
     }
 
     len += mg_xprintf(out, ptr, "]}");
-
-    for(int w = 0; w < atr.size(); w++) {
-        std::cout << atr[w].fileName << atr[w].fileSize << atr[w].typeData << atr[w].owner << atr[w].dateTime << atr[w].hash << std::endl;
-    }
 
     return len;
 }
