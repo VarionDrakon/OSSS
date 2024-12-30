@@ -1,4 +1,5 @@
 #include "Header/FileUtility.h"
+#include <algorithm>
 
 FileUtility::FileUtility() {}
 
@@ -23,9 +24,10 @@ void FileUtilityProviderLocal::setContext() {
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(getPath())){
         const auto& fsObj = entry.path(); 
-        const std::string fsStr = fsObj.u8string();
+        std::string fsStr = fsObj.u8string();
 
         if (!std::filesystem::is_directory(fsStr)){
+            std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
             std::cout <<  "Path size: " << std::size(fsStr) << " Folder path: " << fsStr  <<  std::endl;
             directoryFileList.push_back(fsStr);
         } else {
