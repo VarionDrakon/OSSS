@@ -26,10 +26,13 @@ class WebUtility {
 
     private: 
 
+        static std::vector<std::string> VectorFilesProperties;
+
     public:
 
         WebUtility();
 
+        static std::vector<std::string>& getVectorFilesProperties();
         static std::vector<std::string>& getHash(std::vector<std::string>);
         static void httpHandler(struct mg_connection *connection, int event, void *event_data);
         static size_t returnApiListFiles(void (*out)(char, void *), void *ptr, va_list *ap);

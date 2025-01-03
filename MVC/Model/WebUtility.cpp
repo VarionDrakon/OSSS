@@ -1,8 +1,15 @@
 #include "Header/WebUtility.h"
+#include <string>
 
 
 WebUtility::WebUtility() {}
 
+std::vector<std::string> WebUtility::VectorFilesProperties;
+
+std::vector<std::string>& WebUtility::getVectorFilesProperties(){
+    std::cout << "vectorFilePath size: " << VectorFilesProperties.size() << std::endl;
+    return VectorFilesProperties;
+}
 // size_t WebUtility::returnAttr(void (*out)(char, void *), void *ptr, va_list *ap) {
 
 //     size_t len = 0;
@@ -54,8 +61,6 @@ size_t WebUtility::returnApiListFiles(void (*out)(char, void *), void *ptr, va_l
     std::vector<attr> atr;
 
     atr.push_back({ " E:/TempFilesProgramm/OSSS/TempFolder/rename_factions/rename_factions/localisation/rename_faction_l_english.yml ", " 91011 ", " text/plain ", " User ",  " 1997-07-16T19:20:30.45+03:00 ", " f5788b96310c9174411ea51777f675b8e0735fd51a4ae732c3d078987a953160 " });
-    atr.push_back({ " fileName2.txt ", " 91011 ", " text/plain ", " User ",  " 1997-07-16T19:20:30.45+03:00 ", " f5788b96310c9174411ea51777f675b8e0735fd51a4ae732c3d078987a953160 " });
-    atr.push_back({ " fileName3.txt ", " 91011 ", " text/plain ", " User ",  " 1997-07-16T19:20:30.45+03:00 ", " f5788b96310c9174411ea51777f675b8e0735fd51a4ae732c3d078987a953160 " });
 
     char *constructor = "{\"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\"}";
 
@@ -63,13 +68,13 @@ size_t WebUtility::returnApiListFiles(void (*out)(char, void *), void *ptr, va_l
 
     len += mg_xprintf(out, ptr, "{\"%s\": [", keyHead );
 
-    for(int n = 0; n < atr.size(); n++) {
+    for(int n = 0; n < getVectorFilesProperties().size(); n++) {
         char buffer[1024];
         size_t dataBuffer = 0;
 
-        dataBuffer += snprintf(buffer + dataBuffer, sizeof(buffer) - dataBuffer, constructor, attrKey->fileName, atr[n].fileName, attrKey->fileSize, atr[n].fileSize, attrKey->typeData, atr[n].typeData, attrKey->owner, atr[n].owner, attrKey->dateTime, atr[n].dateTime, attrKey->hash, atr[n].hash);
+        dataBuffer += snprintf(buffer + dataBuffer, sizeof(buffer) - dataBuffer, constructor, attrKey->fileName, getVectorFilesProperties()[n].data(), attrKey->fileSize, atr[0].fileSize, attrKey->typeData, atr[0].typeData, attrKey->owner, atr[0].owner, attrKey->dateTime, atr[0].dateTime, attrKey->hash, atr[0].hash);
 
-        if(n >= (atr.size() - 1)) {
+        if(n >= (getVectorFilesProperties().size() - 1)) {
             dataBuffer += snprintf(buffer + dataBuffer, sizeof(buffer) - dataBuffer, "");
         }
         else {

@@ -13,18 +13,14 @@ int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
     FileUtilityAlgorithmProvider fhap;
     WebUtility wu;
+    FileUtilityProviderLocal fupl;
     
 
     // while (true){
-        
-    // }
-    fhap.triggerAlgorithm();
+        fhap.triggerAlgorithm("E:/TempFilesProgramm/OSSS/TempFolder/rename_factions", wu.getVectorFilesProperties());
 
-    // for (int i = 0; i <= 1; i++){
-        
-    //     //wu.hybridVectorDataArray() = fhap.hybridVectorDataArray();
-    // }  
-    // fhap.triggerAlgorithm();
+    // }         std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
+
 
     while(true) { // General Operation Mode - GOM
 

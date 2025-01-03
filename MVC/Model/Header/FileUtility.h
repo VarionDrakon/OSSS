@@ -1,15 +1,11 @@
-#include <cstddef>
 #include <filesystem>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
 // FOR TEST FUNCTIONALITY!
 #include "HashUtility.h"
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
-#include <windows.h>
+#include <Windows.h> // I didn't want to use third-party libraries, so I'll use the real evil - Windows API...
+#include <sstream>
 #define slp(x) Sleep((x) * 1000)
 #define szt size_t
 
@@ -21,6 +17,12 @@
 
 #endif
 
+enum class filePropertiesTimeTypeEnum {
+    TimeCreation,
+    TimeModified,
+    TimeAccess
+};
+
 class FileUtility {
     private:
         std::string path;
@@ -31,7 +33,9 @@ class FileUtility {
         FileUtility(const std::string& path) : path(path) {}
         FileUtility();
 
-        virtual ~FileUtility() = default;
+        virtual ~FileUtility()  {
+            std::cout << "FileUtility destroyed." << std::endl;
+        };
 };
 
 class FileUtilityProvider : public FileUtility {
@@ -44,13 +48,16 @@ class FileUtilityProvider : public FileUtility {
         FileUtilityProvider(const std::string& path) : FileUtility(path), path(path){}
         FileUtilityProvider();
 
+        virtual void getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) = 0;
         virtual void setContext() = 0;
-        virtual const std::vector<std::string>& getFileList() = 0;
+        virtual std::vector<std::string>& getFileList() = 0;
         std::string getPath() const { return path; }
 
         bool isFolderExist() const;
 
-        virtual ~FileUtilityProvider() = default;
+        virtual ~FileUtilityProvider() {
+            std::cout << "FileUtilityProvider destroyed." << std::endl;
+        };
 };
 
 class FileUtilityProviderLocal : public FileUtilityProvider {
@@ -63,9 +70,13 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
         FileUtilityProviderLocal();
 
         virtual void setContext() override final;
-        virtual const std::vector<std::string>& getFileList() override final;
+        virtual std::vector<std::string>& getFileList() override final;
+        virtual void getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) override final;
+        virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
 
-        virtual ~FileUtilityProviderLocal() = default;
+        virtual ~FileUtilityProviderLocal() {
+            std::cout << "FileUtilityProviderLocal destroyed." << std::endl;
+        };
 };
 
 
@@ -84,9 +95,11 @@ class FileUtilityAlgorithmProvider : public FileUtility {
         
         std::vector<std::string>& getVectorHashCur();
         std::vector<std::string>& getVectorHashNew();
-        void triggerAlgorithm();
+        void triggerAlgorithm(std::string contextPath, std::vector<std::string>& vectorProperties);
 
-        virtual ~FileUtilityAlgorithmProvider() = default;
+        virtual ~FileUtilityAlgorithmProvider() {
+            std::cout << "FileUtilityAlgorithmProvider destroyed." << std::endl;
+        };
 };
 
 class FileUtilityHashProvider : public FileUtilityAlgorithmProvider {
@@ -98,7 +111,9 @@ class FileUtilityHashProvider : public FileUtilityAlgorithmProvider {
         bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond);
         // virtual void fileMoving();
         
-        virtual ~FileUtilityHashProvider() = default;
+        virtual ~FileUtilityHashProvider() {
+            std::cout << "FileUtilityHashProvider destroyed." << std::endl;
+        };
 };
 
 /*
