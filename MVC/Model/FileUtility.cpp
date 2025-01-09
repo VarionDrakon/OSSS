@@ -1,4 +1,6 @@
 #include "Header/FileUtility.h"
+#include <cstddef>
+#include <filesystem>
 #include <timezoneapi.h>
 
 FileUtility::FileUtility() {}
@@ -11,8 +13,19 @@ FileUtilityAlgorithmProvider::FileUtilityAlgorithmProvider() {}
 
 FileUtilityHashProvider::FileUtilityHashProvider() {}
 
-/** @see FileUtilityProviderLocal::setContext()
-    Sets the execution context within which the algorithm will be executed, namely the path to the directory that will be the root of the job. 
+void FileUtilityProviderLocal::getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) {
+
+    if(VectorFilesProperties.empty()) {
+        VectorFilesProperties.reserve(vectorFileList.size());
+        VectorFilesProperties.insert(VectorFilesProperties.end(), vectorFileList.begin(), vectorFileList.end());
+    }
+    else {
+        std::cout << "vectorListPathFiles is not empty! Vector size: " << VectorFilesProperties.size() << std::endl;
+    }
+
+}
+/** @see FileUtilityProviderLocal::getFilePropertiesTime() EDITED
+    
 
     @param getPath() - get path to root folder.
     @param entry.path() - check directory existence.
@@ -77,9 +90,9 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
             CloseHandle(fileHandle);
             
             GetTimeZoneInformation(&systemObjectTimeZoneTZI);
-            int offsetHoursUTC = systemObjectTimeZoneTZI.Bias / 60;
-            int offsetMinutesUTC = std::abs(systemObjectTimeZoneTZI.Bias - (offsetHoursUTC * 60));
             char offsetSignUTC = systemObjectTimeZoneTZI.Bias > 0 ? '-' : '+';
+            int offsetHoursUTC = -systemObjectTimeZoneTZI.Bias / 60;
+            int offsetMinutesUTC = std::abs(systemObjectTimeZoneTZI.Bias + (offsetHoursUTC * 60));
 
             timeReturnBuffer += snprintf(timeReturnBufferData + timeReturnBuffer, sizeof(timeReturnBufferData) - timeReturnBuffer,timeReturnConstructor,
                 fileSystemObjectPropertiesST.wYear, 
@@ -100,6 +113,13 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
     return timeReturnBufferData;
 }
 
+size_t FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath){
+
+    size_t sizeReturn = std::filesystem::file_size(fileSystemObjectPath) / unitSize;
+    
+    return sizeReturn;
+}
+
 /** @see FileUtilityProviderLocal::setContext()
     Sets the execution context within which the algorithm will be executed, namely the path to the directory that will be the root of the job. 
 
@@ -118,7 +138,7 @@ void FileUtilityProviderLocal::setContext() {
         if (!std::filesystem::is_directory(fsStr)) {
             std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
             
-            std::cout <<  "Path size: " << std::size(fsStr) << " Folder path: " << fsStr << " Last time: " << getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeCreation) <<  std::endl;
+            std::cout <<  "Path size: " << getFilePropertiesSize(fsStr) << " Folder path: " << fsStr << " Last time: " << getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess) <<  std::endl;
             directoryFileList.push_back(fsStr);
         } else {
             std::cout << "This is folder:" << fsStr << " ?" << std::endl;
@@ -146,18 +166,6 @@ std::vector<std::string>& FileUtilityAlgorithmProvider::getVectorHashCur() {
 
 std::vector<std::string>& FileUtilityAlgorithmProvider::getVectorHashNew() {
     return vectorHashNew;
-}
-
-void FileUtilityProviderLocal::getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) {
-
-    if(VectorFilesProperties.empty()) {
-        VectorFilesProperties.reserve(vectorFileList.size());
-        VectorFilesProperties.insert(VectorFilesProperties.end(), vectorFileList.begin(), vectorFileList.end());
-    }
-    else {
-        std::cout << "vectorListPathFiles is not empty! Vector size: " << VectorFilesProperties.size() << std::endl;
-    }
-
 }
 
 void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string contextPath, std::vector<std::string>& vectorProperties) {

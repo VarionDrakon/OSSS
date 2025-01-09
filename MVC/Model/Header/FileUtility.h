@@ -8,12 +8,14 @@
 #include <sstream>
 #define slp(x) Sleep((x) * 1000)
 #define szt size_t
+#define unitSize 1000
 
 #elif __linux__ //Linux platforms
 
 #include <unistd.h>
 #define slp(x) usleep((x) * 1000000)
 #define szt ssize_t
+#define unitSize 1024
 
 #endif
 
@@ -73,6 +75,7 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
         virtual std::vector<std::string>& getFileList() override final;
         virtual void getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) override final;
         virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
+        virtual size_t getFilePropertiesSize(std::filesystem::path fileSystemObjectPath);
 
         virtual ~FileUtilityProviderLocal() {
             std::cout << "FileUtilityProviderLocal destroyed." << std::endl;
