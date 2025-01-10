@@ -24,14 +24,20 @@ void FileUtilityProviderLocal::getFileProperties(std::vector<std::string>& Vecto
     }
 
 }
-/** @see FileUtilityProviderLocal::getFilePropertiesTime() EDITED
-    
+/** @see FileUtilityProviderLocal::getFilePropertiesTime()
+    This function creates and returns an object representing the size of the object in memory and the number of elements in it. The function takes two arguments, the path to the file and the desired return file time, and then forms a string from the constructor. Since some file systems have two or three file time options, some can be combined into one value. Also, inside each constructor, the time is converted to local time at the same address where the original time is stored.
 
-    @param getPath() - get path to root folder.
-    @param entry.path() - check directory existence.
-    @param fsStr - Returns the internal pathname in native pathname format, converted to specific string type.
+    @param fileSystemObjectPropertiesFT - this structure is used for representations of time in hundred of nanoseconds, starting from 1 january 1601 years (UTC).
+    @param fileSystemObjectPropertiesST - this structure is used for representations of time in a format convenient for humans. Example wYear - years, wMonth is month and so on.
+    @param systemObjectTimeZoneTZI - this structure keep info about the current timezone.  
+    @param fileHandle - this abstraction is used to manage system object. It is also a pointer to a system object.
+    @param timeReturnBufferData - this buffer that limits the capacity of characters and also stores data written to it.
+    @param timeReturnConstructor - this constructor string is used to format the return value.
+    @param timeReturnBuffer - returns the data passed to it from the function.
+    @param offsetSignUTC - returns a character depending on the time zone offset.
+    @param offsetHoursUTC - returns a hours depending on the time zone offset
+    @param offsetMinutesUTC - returns a minutes depending on the time zone offset
 
-    @return directoryFileList - vector storing file path.
 */
 std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum) {
     
@@ -40,7 +46,6 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
         TIME_ZONE_INFORMATION systemObjectTimeZoneTZI;
         size_t timeReturnBuffer = 0;
         
-        char timeFormattedUTC[5];
         char timeReturnBufferData[36]; // String buffer length:  1997-07-16T19:20:30.45+03:00 (28) + \0 (2) + 20% (6) | ISO 8601 format
         char *timeReturnConstructor = "%d-%d-%dT%d:%d.%d%c%d:%d";
 
