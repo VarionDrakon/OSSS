@@ -6,6 +6,11 @@
 
 #include <Windows.h> // I didn't want to use third-party libraries, so I'll use the real evil - Windows API...
 #include <sstream>
+#include <cstddef>
+#include <filesystem>
+#include <timezoneapi.h>
+#include <AclAPI.h>
+
 #define slp(x) Sleep((x) * 1000)
 #define szt size_t
 #define unitSize 1000
@@ -76,6 +81,7 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
         virtual void getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) override final;
         virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
         virtual size_t getFilePropertiesSize(std::filesystem::path fileSystemObjectPath);
+        virtual void getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath);
 
         virtual ~FileUtilityProviderLocal() {
             std::cout << "FileUtilityProviderLocal destroyed." << std::endl;

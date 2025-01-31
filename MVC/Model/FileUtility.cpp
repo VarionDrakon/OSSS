@@ -1,7 +1,12 @@
 #include "Header/FileUtility.h"
+#include <AclAPI.h>
+#include <accctrl.h>
 #include <cstddef>
-#include <filesystem>
-#include <timezoneapi.h>
+#include <errhandlingapi.h>
+#include <minwindef.h>
+#include <securitybaseapi.h>
+#include <winbase.h>
+#include <winnt.h>
 
 FileUtility::FileUtility() {}
 
@@ -118,6 +123,77 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
     return timeReturnBufferData;
 }
 
+void FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath){
+    
+    PSID pointerSIDOwner = NULL;
+    PSECURITY_DESCRIPTOR pointerSecurityDescriptor = NULL;
+
+    const size_t maxName = 256;
+    DWORD dwordSize = maxName;
+    char accountName[maxName];
+    char domainName[maxName];
+    BOOL isSIDAccountFound = TRUE;
+    SID_NAME_USE eUse = SidTypeUnknown;
+
+    // Get the handle of the file object.
+    HANDLE fileHandle = CreateFileW(
+                    fileSystemObjectPath.c_str(),
+                    GENERIC_READ,
+                    FILE_SHARE_READ,
+                    NULL,
+                    OPEN_EXISTING,
+                    FILE_ATTRIBUTE_NORMAL,
+                    NULL);
+
+    // Check GetLastError for Handle file error code.
+    if (fileHandle == INVALID_HANDLE_VALUE) {
+        DWORD dwErrorCode = 0;
+        std::cout << "Handle file error: "  << dwErrorCode << std::endl;
+        dwErrorCode = GetLastError();
+    }
+
+    // Get the owner SID of the file.
+    DWORD dwordSecurityInfoReturn = GetSecurityInfo(
+                    fileHandle,                                 // Descriptor object from extracted information.
+                    SE_FILE_OBJECT,                         // Object type, indication the type oj object.
+                    OWNER_SECURITY_INFORMATION,           // Type security information, defines value which set or queried.
+                    &pointerSIDOwner,                       // Receives identifier security of the owner in the security descriptor returned in ppSecurityDescriptor.
+                    NULL,                                   // Receives pointer to the identifier security main group in returned descriptor security.
+                    NULL,                                       // Receives a pointer to the DACL(?) in the returned security descriptor.
+                    NULL,                                       // Receives a pointer to the saCL(?) in the returned security descriptor.
+                    &pointerSecurityDescriptor);  // Receives a pointer to the security descriptor object.
+
+    // Check GetLastError for GetSecurityInfo error condition.
+    if (dwordSecurityInfoReturn != ERROR_SUCCESS) {
+            DWORD dwordErrorCode = 0;
+            std::cout << "GetSecurityInfo error: "  << dwordErrorCode << std::endl;
+            dwordErrorCode = GetLastError();
+    }
+
+
+    // Call to LookupAccountSid to get 
+    isSIDAccountFound = LookupAccountSid(
+                    NULL,                                 // Uses address machine, if "NULL" - local computer.
+                    pointerSIDOwner,                               // Pointer to a security identification for search.
+                    accountName,                                  // Receiving null-terminated string, containing account name corresponding to the para meter LpSID.
+                    &dwordSize,                                // Sets the size LpName. The Function fails if size buffer cattle or equals zero, otherwise receives size of the buffer with null symbol.
+                    domainName,                   // Same as in accountName.
+                    &dwordSize,
+                    &eUse);                                      // A pointer to a variable that receives a SID_NAME_USE value that indicates the type of the account.
+
+    // Check isSIDAccountFound to the final value and if equals FALSE, then resets dwordErrorCode=0. And then an error is returned, otherwise the account name will be returned with or without the domain name.
+    if (isSIDAccountFound == FALSE) {
+        DWORD dwordErrorCode = 0;
+        dwordErrorCode = GetLastError();
+        if (dwordErrorCode == ERROR_NONE_MAPPED)
+            std::cout << "Account owner not found for specified SID: "  << dwordErrorCode << std::endl; 
+        else
+            std::cout << "Error in LookupAccountSid: "  << dwordErrorCode << std::endl; 
+    } else if (isSIDAccountFound == TRUE){
+        std::cout << "Account owner: "  << accountName << domainName << std::endl; 
+    }
+}
+
 size_t FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath){
 
     size_t sizeReturn = std::filesystem::file_size(fileSystemObjectPath) / unitSize;
@@ -142,7 +218,7 @@ void FileUtilityProviderLocal::setContext() {
 
         if (!std::filesystem::is_directory(fsStr)) {
             std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
-            
+            getFilePropertiesOwner(fsStr);
             std::cout <<  "Path size: " << getFilePropertiesSize(fsStr) << " Folder path: " << fsStr << " Last time: " << getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess) <<  std::endl;
             directoryFileList.push_back(fsStr);
         } else {
