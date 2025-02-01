@@ -81,7 +81,7 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
         virtual void getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) override final;
         virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
         virtual size_t getFilePropertiesSize(std::filesystem::path fileSystemObjectPath);
-        virtual void getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath);
+        virtual std::string getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath);
 
         virtual ~FileUtilityProviderLocal() {
             std::cout << "FileUtilityProviderLocal destroyed." << std::endl;

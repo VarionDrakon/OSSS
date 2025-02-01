@@ -5,6 +5,7 @@
 #include <errhandlingapi.h>
 #include <minwindef.h>
 #include <securitybaseapi.h>
+#include <string>
 #include <winbase.h>
 #include <winnt.h>
 
@@ -123,7 +124,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
     return timeReturnBufferData;
 }
 
-void FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath){
+std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath){
     
     PSID pointerSIDOwner = NULL;
     PSECURITY_DESCRIPTOR pointerSecurityDescriptor = NULL;
@@ -148,7 +149,7 @@ void FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path file
     // Check GetLastError for Handle file error code.
     if (fileHandle == INVALID_HANDLE_VALUE) {
         DWORD dwErrorCode = 0;
-        std::cout << "Handle file error: "  << dwErrorCode << std::endl;
+        std::cout << "Handle file error: "  << dwErrorCode << std::endl; // Debug info
         dwErrorCode = GetLastError();
     }
 
@@ -166,7 +167,7 @@ void FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path file
     // Check GetLastError for GetSecurityInfo error condition.
     if (dwordSecurityInfoReturn != ERROR_SUCCESS) {
             DWORD dwordErrorCode = 0;
-            std::cout << "GetSecurityInfo error: "  << dwordErrorCode << std::endl;
+            std::cout << "GetSecurityInfo error: "  << dwordErrorCode << std::endl; // Debug info
             dwordErrorCode = GetLastError();
     }
 
@@ -186,12 +187,14 @@ void FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path file
         DWORD dwordErrorCode = 0;
         dwordErrorCode = GetLastError();
         if (dwordErrorCode == ERROR_NONE_MAPPED)
-            std::cout << "Account owner not found for specified SID: "  << dwordErrorCode << std::endl; 
+            std::cout << "Account owner not found for specified SID: "  << dwordErrorCode << std::endl; // Debug info
         else
-            std::cout << "Error in LookupAccountSid: "  << dwordErrorCode << std::endl; 
+            std::cout << "Error in LookupAccountSid: "  << dwordErrorCode << std::endl; // Debug info
     } else if (isSIDAccountFound == TRUE){
-        std::cout << "Account owner: "  << accountName << domainName << std::endl; 
+        std::cout << "Account owner: "  << accountName << domainName << std::endl; // Debug info
     }
+
+    return accountName;
 }
 
 size_t FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath){
