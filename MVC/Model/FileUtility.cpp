@@ -4,8 +4,10 @@
 #include <cstddef>
 #include <errhandlingapi.h>
 #include <minwindef.h>
+#include <ostream>
 #include <securitybaseapi.h>
 #include <string>
+#include <vector>
 #include <winbase.h>
 #include <winnt.h>
 
@@ -19,17 +21,37 @@ FileUtilityAlgorithmProvider::FileUtilityAlgorithmProvider() {}
 
 FileUtilityHashProvider::FileUtilityHashProvider() {}
 
-void FileUtilityProviderLocal::getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) {
+/**
 
-    if(VectorFilesProperties.empty()) {
-        VectorFilesProperties.reserve(vectorFileList.size());
-        VectorFilesProperties.insert(VectorFilesProperties.end(), vectorFileList.begin(), vectorFileList.end());
-    }
-    else {
-        std::cout << "vectorListPathFiles is not empty! Vector size: " << VectorFilesProperties.size() << std::endl;
-    }
+*/
+// void FileUtilityProviderLocal::getFileProperties(std::string fileName, std::string fileSize, std::string typeData, std::string owner, std::string dateTime, std::string hash) {
 
-}
+//     // vectorFilePropertiesInfo.push_back({&fileName, &fileSize, &typeData, &owner, &dateTime, &hash});
+
+//     // filePropertiesInfo.push_back(fileName);
+//     // filePropertiesInfo.push_back(fileSize);
+//     // filePropertiesInfo.push_back(typeData);
+//     // filePropertiesInfo.push_back(owner);
+//     // filePropertiesInfo.push_back(dateTime);
+//     // filePropertiesInfo.push_back(hash);
+    
+// }
+
+// void FileUtilityProviderLocal::getFilePropertiesVector(std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) {
+
+
+
+// }
+// void FileUtilityProviderLocal::getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) {
+//     if(VectorFilesProperties.empty()) {
+//         VectorFilesProperties.reserve(vectorFileList.size());
+//         VectorFilesProperties.insert(VectorFilesProperties.end(), vectorFileList.begin(), vectorFileList.end());
+//     }
+//     else {
+//         std::cout << "vectorListPathFiles is not empty! Vector size: " << VectorFilesProperties.size() << std::endl;
+//     }
+// }
+
 /** @see FileUtilityProviderLocal::getFilePropertiesTime()
     This function creates and returns an object representing the size of the object in memory and the number of elements in it. The function takes two arguments, the path to the file and the desired return file time, and then forms a string from the constructor. Since some file systems have two or three file time options, some can be combined into one value. Also, inside each constructor, the time is converted to local time at the same address where the original time is stored.
 
@@ -124,16 +146,19 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
     return timeReturnBufferData;
 }
 
+/**
+
+*/
 std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath){
     
-    PSID pointerSIDOwner = NULL;
+    PSID pointerSidOwner = NULL;
     PSECURITY_DESCRIPTOR pointerSecurityDescriptor = NULL;
 
     const size_t maxName = 256;
     DWORD dwordSize = maxName;
     char accountName[maxName];
     char domainName[maxName];
-    BOOL isSIDAccountFound = TRUE;
+    BOOL isSidAccountFound = TRUE;
     SID_NAME_USE eUse = SidTypeUnknown;
 
     // Get the handle of the file object.
@@ -158,7 +183,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
                     fileHandle,                                 // Descriptor object from extracted information.
                     SE_FILE_OBJECT,                         // Object type, indication the type oj object.
                     OWNER_SECURITY_INFORMATION,           // Type security information, defines value which set or queried.
-                    &pointerSIDOwner,                       // Receives identifier security of the owner in the security descriptor returned in ppSecurityDescriptor.
+                    &pointerSidOwner,                       // Receives identifier security of the owner in the security descriptor returned in ppSecurityDescriptor.
                     NULL,                                   // Receives pointer to the identifier security main group in returned descriptor security.
                     NULL,                                       // Receives a pointer to the DACL(?) in the returned security descriptor.
                     NULL,                                       // Receives a pointer to the saCL(?) in the returned security descriptor.
@@ -171,35 +196,34 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
             dwordErrorCode = GetLastError();
     }
 
-
     // Call to LookupAccountSid to get 
-    isSIDAccountFound = LookupAccountSid(
+    isSidAccountFound = LookupAccountSid(
                     NULL,                                 // Uses address machine, if "NULL" - local computer.
-                    pointerSIDOwner,                               // Pointer to a security identification for search.
+                    pointerSidOwner,                               // Pointer to a security identification for search.
                     accountName,                                  // Receiving null-terminated string, containing account name corresponding to the para meter LpSID.
                     &dwordSize,                                // Sets the size LpName. The Function fails if size buffer cattle or equals zero, otherwise receives size of the buffer with null symbol.
                     domainName,                   // Same as in accountName.
                     &dwordSize,
                     &eUse);                                      // A pointer to a variable that receives a SID_NAME_USE value that indicates the type of the account.
 
-    // Check isSIDAccountFound to the final value and if equals FALSE, then resets dwordErrorCode=0. And then an error is returned, otherwise the account name will be returned with or without the domain name.
-    if (isSIDAccountFound == FALSE) {
+    // Check isSidAccountFound to the final value and if equals FALSE, then resets dwordErrorCode=0. And then an error is returned, otherwise the account name will be returned with or without the domain name.
+    if (isSidAccountFound == FALSE) {
         DWORD dwordErrorCode = 0;
         dwordErrorCode = GetLastError();
         if (dwordErrorCode == ERROR_NONE_MAPPED)
             std::cout << "Account owner not found for specified SID: "  << dwordErrorCode << std::endl; // Debug info
         else
             std::cout << "Error in LookupAccountSid: "  << dwordErrorCode << std::endl; // Debug info
-    } else if (isSIDAccountFound == TRUE){
+    } else if (isSidAccountFound == TRUE){
         std::cout << "Account owner: "  << accountName << domainName << std::endl; // Debug info
     }
 
     return accountName;
 }
 
-size_t FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath){
+std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath){
 
-    size_t sizeReturn = std::filesystem::file_size(fileSystemObjectPath) / unitSize;
+    std::string sizeReturn = std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
     
     return sizeReturn;
 }
@@ -213,7 +237,7 @@ size_t FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fil
 
     @return directoryFileList - vector storing file path.
 */
-void FileUtilityProviderLocal::setContext() {
+void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) {
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(getPath())) {
         const std::filesystem::path& fsObj = entry.path(); 
@@ -221,14 +245,24 @@ void FileUtilityProviderLocal::setContext() {
 
         if (!std::filesystem::is_directory(fsStr)) {
             std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
-            getFilePropertiesOwner(fsStr);
-            std::cout <<  "Path size: " << getFilePropertiesSize(fsStr) << " Folder path: " << fsStr << " Last time: " << getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess) <<  std::endl;
+            std::cout <<  "Path size: " << getFilePropertiesSize(fsStr) << " Folder path: " << fsStr << " Last time: " << getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess) << std::endl;
+
             directoryFileList.push_back(fsStr);
+
+            vectorPropertiesFileName.push_back(fsStr);
+            vectorPropertiesFileSize.push_back(getFilePropertiesSize(fsStr));
+            vectorPropertiesFileType.push_back("none");
+            vectorPropertiesOwner.push_back(getFilePropertiesOwner(fsStr));
+            vectorPropertiesDateTime.push_back(getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess));
+            vectorPropertiesHash.push_back("none");
+
+            //getFileProperties(fsStr, getFilePropertiesSize(fsStr), "none", getFilePropertiesOwner(fsStr), getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess), "none");
+
+            
         } else {
             std::cout << "This is folder:" << fsStr << " ?" << std::endl;
         }
     }
-
 }
 
 bool FileUtilityProvider::isFolderExist() const {
@@ -236,7 +270,7 @@ bool FileUtilityProvider::isFolderExist() const {
 }
 
 std::vector<std::string>& FileUtilityProviderLocal::getFileList() {
-    std::cout << "addr in method: " << &directoryFileList << " size: " << directoryFileList.size() << std::endl;
+    std::cout << "addr in method: " << &directoryFileList << " size: " << directoryFileList.size() << std::endl; // Debug info.
     return directoryFileList;
 }
 
@@ -252,12 +286,12 @@ std::vector<std::string>& FileUtilityAlgorithmProvider::getVectorHashNew() {
     return vectorHashNew;
 }
 
-void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string contextPath, std::vector<std::string>& vectorProperties) {
+void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string contextPath, std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) {
     FileUtilityHashProvider fuhp;
     FileUtilityProviderLocal fupl(contextPath);
 
     if(fupl.isFolderExist()){
-        fupl.setContext();
+        fupl.setContext(vectorPropertiesFileName, vectorPropertiesFileSize, vectorPropertiesFileType, vectorPropertiesOwner, vectorPropertiesDateTime, vectorPropertiesHash);
 
         if((fuhp.fileCalculateHash(fuhp.getVectorHashCur(), fupl.getFileList()) == true) && (fuhp.fileCalculateHash(fuhp.getVectorHashNew(), fupl.getFileList()) == true)){
 
@@ -279,7 +313,6 @@ void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string contextPath, std
         std::cout << "Folder not found!" << std::endl;
     }
 
-    fupl.getFileProperties(vectorProperties, fupl.getFileList());
 }
 
 /** @see FileUtilityHashProvider::fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList) 
@@ -297,7 +330,7 @@ bool FileUtilityHashProvider::fileCalculateHash(std::vector<std::string>& vector
 
     for (const auto& filePath : vectorFileList){
         std::string calcHash = sha256.calcHash(filePath);
-                            
+
         if(!calcHash.empty()){
             std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
             setVectorData(calcHash, vectorData);

@@ -24,15 +24,26 @@ struct attr attrKey[] = {
 class WebUtility {
     protected:
 
-    private: 
+    private:
 
-        static std::vector<std::string> VectorFilesProperties;
+        static std::vector<std::string> vectorFilesPropertiesFileName;
+        static std::vector<std::string> vectorFilesPropertiesFileSize;
+        static std::vector<std::string> vectorFilesPropertiesFileType;
+        static std::vector<std::string> vectorFilesPropertiesOwner;
+        static std::vector<std::string> vectorFilesPropertiesDateTime;
+        static std::vector<std::string> vectorFilesPropertiesHash;
 
     public:
 
         WebUtility();
 
-        static std::vector<std::string>& getVectorFilesProperties();
+        static std::vector<std::string>& getVectorFilePropertiesFileName();
+        static std::vector<std::string>& getVectorFilePropertiesFileSize();
+        static std::vector<std::string>& getVectorFilePropertiesFileType();
+        static std::vector<std::string>& getVectorFilePropertiesOwner();
+        static std::vector<std::string>& getVectorFilePropertiesDateTime();
+        static std::vector<std::string>& getVectorFilePropertiesHash();
+        
         static std::vector<std::string>& getHash(std::vector<std::string>);
         static void httpHandler(struct mg_connection *connection, int event, void *event_data);
         static size_t returnApiListFiles(void (*out)(char, void *), void *ptr, va_list *ap);

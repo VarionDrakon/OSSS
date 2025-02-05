@@ -15,12 +15,10 @@ int main(){
     WebUtility wu;
     FileUtilityProviderLocal fupl;
     
-
     // while (true){
-        fhap.triggerAlgorithm("E:/TempFilesProgramm/OSSS/TempFolder/rename_factions", wu.getVectorFilesProperties());
+        fhap.triggerAlgorithm("C:/Users/vario/AppData/Local/Opera Software", wu.getVectorFilePropertiesFileName(), wu.getVectorFilePropertiesFileSize(), wu.getVectorFilePropertiesFileType(), wu.getVectorFilePropertiesOwner(), wu.getVectorFilePropertiesDateTime(), wu.getVectorFilePropertiesHash());
 
-    // }         std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
-
+    // } std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 
     while(true) { // General Operation Mode - GOM
 

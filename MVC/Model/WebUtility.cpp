@@ -4,11 +4,41 @@
 
 WebUtility::WebUtility() {}
 
-std::vector<std::string> WebUtility::VectorFilesProperties;
+std::vector<std::string> WebUtility::vectorFilesPropertiesFileName;
+std::vector<std::string> WebUtility::vectorFilesPropertiesFileSize;
+std::vector<std::string> WebUtility::vectorFilesPropertiesFileType;
+std::vector<std::string> WebUtility::vectorFilesPropertiesOwner;
+std::vector<std::string> WebUtility::vectorFilesPropertiesDateTime;
+std::vector<std::string> WebUtility::vectorFilesPropertiesHash;
 
-std::vector<std::string>& WebUtility::getVectorFilesProperties(){
-    std::cout << "vectorFilePath size: " << VectorFilesProperties.size() << std::endl;
-    return VectorFilesProperties;
+std::vector<std::string>& WebUtility::getVectorFilePropertiesFileName(){
+    std::cout << "vectorFilesPropertiesFileName size: " << vectorFilesPropertiesFileName.size() << std::endl;
+    return vectorFilesPropertiesFileName;
+}
+
+std::vector<std::string>& WebUtility::getVectorFilePropertiesFileSize(){
+    std::cout << "vectorFilesPropertiesFileSize size: " << vectorFilesPropertiesFileSize.size() << std::endl;
+    return vectorFilesPropertiesFileSize;
+}
+
+std::vector<std::string>& WebUtility::getVectorFilePropertiesFileType(){
+    std::cout << "vectorFilesPropertiesFileType size: " << vectorFilesPropertiesFileType.size() << std::endl;
+    return vectorFilesPropertiesFileType;
+}
+
+std::vector<std::string>& WebUtility::getVectorFilePropertiesOwner(){
+    std::cout << "vectorFilesPropertiesOwner size: " << vectorFilesPropertiesOwner.size() << std::endl;
+    return vectorFilesPropertiesOwner;
+}
+
+std::vector<std::string>& WebUtility::getVectorFilePropertiesDateTime(){
+    std::cout << "vectorFilesPropertiesDateTime size: " << vectorFilesPropertiesDateTime.size() << std::endl;
+    return vectorFilesPropertiesDateTime;
+}
+
+std::vector<std::string>& WebUtility::getVectorFilePropertiesHash(){
+    std::cout << "vectorFilesPropertiesHash size: " << vectorFilesPropertiesHash.size() << std::endl;
+    return vectorFilesPropertiesHash;
 }
 // size_t WebUtility::returnAttr(void (*out)(char, void *), void *ptr, va_list *ap) {
 
@@ -54,7 +84,7 @@ std::vector<std::string>& WebUtility::getVectorFilesProperties(){
 // }
 
 size_t WebUtility::returnApiListFiles(void (*out)(char, void *), void *ptr, va_list *ap){
-    
+
     size_t len = 0;
     // struct attr *val = va_arg(*ap, struct attr *);
     struct attr *key = attrKey;
@@ -68,13 +98,13 @@ size_t WebUtility::returnApiListFiles(void (*out)(char, void *), void *ptr, va_l
 
     len += mg_xprintf(out, ptr, "{\"%s\": [", keyHead );
 
-    for(int n = 0; n < getVectorFilesProperties().size(); n++) {
+    for(int n = 0; n < getVectorFilePropertiesFileName().size(); n++) {
         char buffer[1024];
         size_t dataBuffer = 0;
 
-        dataBuffer += snprintf(buffer + dataBuffer, sizeof(buffer) - dataBuffer, constructor, attrKey->fileName, getVectorFilesProperties()[n].data(), attrKey->fileSize, atr[0].fileSize, attrKey->typeData, atr[0].typeData, attrKey->owner, atr[0].owner, attrKey->dateTime, atr[0].dateTime, attrKey->hash, atr[0].hash);
+        dataBuffer += snprintf(buffer + dataBuffer, sizeof(buffer) - dataBuffer, constructor, attrKey->fileName, getVectorFilePropertiesFileName()[n].data(), attrKey->fileSize, getVectorFilePropertiesFileSize()[n].data(), attrKey->typeData, getVectorFilePropertiesFileType()[n].data(), attrKey->owner, getVectorFilePropertiesOwner()[n].data(), attrKey->dateTime, getVectorFilePropertiesDateTime()[n].data(), attrKey->hash, getVectorFilePropertiesHash()[n].data());
 
-        if(n >= (getVectorFilesProperties().size() - 1)) {
+        if(n >= (getVectorFilePropertiesFileName().size() - 1)) {
             dataBuffer += snprintf(buffer + dataBuffer, sizeof(buffer) - dataBuffer, "");
         }
         else {
