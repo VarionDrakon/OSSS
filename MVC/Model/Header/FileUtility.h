@@ -103,18 +103,11 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
 
 class FileUtilityAlgorithmProvider : public FileUtility {
     protected:
-
         SHA256Algorithm sha256;
-        std::vector<std::string> vectorHashCur;
-        std::vector<std::string> vectorHashNew;
-                
-        void setVectorData(const std::string& fileHash, std::vector<std::string>& vectorData);
 
     public:
         FileUtilityAlgorithmProvider();
         
-        std::vector<std::string>& getVectorHashCur();
-        std::vector<std::string>& getVectorHashNew();
         void triggerAlgorithm(std::string contextPath, std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash);
 
         virtual ~FileUtilityAlgorithmProvider() {
@@ -126,7 +119,7 @@ class FileUtilityHashProvider : public FileUtilityAlgorithmProvider {
     public:
         FileUtilityHashProvider();
 
-        bool fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList);
+        std::string fileCalculateHash(const std::string& filePath);
         bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond);
         // virtual void fileMoving();
         

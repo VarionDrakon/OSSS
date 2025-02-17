@@ -21,37 +21,6 @@ FileUtilityAlgorithmProvider::FileUtilityAlgorithmProvider() {}
 
 FileUtilityHashProvider::FileUtilityHashProvider() {}
 
-/**
-
-*/
-// void FileUtilityProviderLocal::getFileProperties(std::string fileName, std::string fileSize, std::string typeData, std::string owner, std::string dateTime, std::string hash) {
-
-//     // vectorFilePropertiesInfo.push_back({&fileName, &fileSize, &typeData, &owner, &dateTime, &hash});
-
-//     // filePropertiesInfo.push_back(fileName);
-//     // filePropertiesInfo.push_back(fileSize);
-//     // filePropertiesInfo.push_back(typeData);
-//     // filePropertiesInfo.push_back(owner);
-//     // filePropertiesInfo.push_back(dateTime);
-//     // filePropertiesInfo.push_back(hash);
-    
-// }
-
-// void FileUtilityProviderLocal::getFilePropertiesVector(std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) {
-
-
-
-// }
-// void FileUtilityProviderLocal::getFileProperties(std::vector<std::string>& VectorFilesProperties, const std::vector<std::string>& vectorFileList) {
-//     if(VectorFilesProperties.empty()) {
-//         VectorFilesProperties.reserve(vectorFileList.size());
-//         VectorFilesProperties.insert(VectorFilesProperties.end(), vectorFileList.begin(), vectorFileList.end());
-//     }
-//     else {
-//         std::cout << "vectorListPathFiles is not empty! Vector size: " << VectorFilesProperties.size() << std::endl;
-//     }
-// }
-
 /** @see FileUtilityProviderLocal::getFilePropertiesTime()
     This function creates and returns an object representing the size of the object in memory and the number of elements in it. The function takes two arguments, the path to the file and the desired return file time, and then forms a string from the constructor. Since some file systems have two or three file time options, some can be combined into one value. Also, inside each constructor, the time is converted to local time at the same address where the original time is stored.
 
@@ -239,6 +208,8 @@ std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::pat
 */
 void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) {
 
+    FileUtilityHashProvider fuhp;
+
     for (const auto& entry : std::filesystem::recursive_directory_iterator(getPath())) {
         const std::filesystem::path& fsObj = entry.path(); 
         std::string fsStr = fsObj.u8string();
@@ -254,10 +225,7 @@ void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorProper
             vectorPropertiesFileType.push_back("none");
             vectorPropertiesOwner.push_back(getFilePropertiesOwner(fsStr));
             vectorPropertiesDateTime.push_back(getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess));
-            vectorPropertiesHash.push_back("none");
-
-            //getFileProperties(fsStr, getFilePropertiesSize(fsStr), "none", getFilePropertiesOwner(fsStr), getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess), "none");
-
+            vectorPropertiesHash.push_back(fuhp.fileCalculateHash(fsStr));
             
         } else {
             std::cout << "This is folder:" << fsStr << " ?" << std::endl;
@@ -274,74 +242,35 @@ std::vector<std::string>& FileUtilityProviderLocal::getFileList() {
     return directoryFileList;
 }
 
-void FileUtilityAlgorithmProvider::setVectorData(const std::string& fileHash, std::vector<std::string>& vectorData) {
-    vectorData.push_back(fileHash);
-}
-
-std::vector<std::string>& FileUtilityAlgorithmProvider::getVectorHashCur() {
-    return vectorHashCur;
-}
-
-std::vector<std::string>& FileUtilityAlgorithmProvider::getVectorHashNew() {
-    return vectorHashNew;
-}
-
 void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string contextPath, std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) {
     FileUtilityHashProvider fuhp;
     FileUtilityProviderLocal fupl(contextPath);
-
-    if(fupl.isFolderExist()){
-        fupl.setContext(vectorPropertiesFileName, vectorPropertiesFileSize, vectorPropertiesFileType, vectorPropertiesOwner, vectorPropertiesDateTime, vectorPropertiesHash);
-
-        if((fuhp.fileCalculateHash(fuhp.getVectorHashCur(), fupl.getFileList()) == true) && (fuhp.fileCalculateHash(fuhp.getVectorHashNew(), fupl.getFileList()) == true)){
-
-            if(fuhp.equalVectors(fuhp.getVectorHashCur(), fuhp.getVectorHashNew())) {
-                std::cout << "Comparison: YES" << std::endl;
-            }
-            else {
-                std::cout << "Comparison: NO" << std::endl;
-            }
-        }
-        else{
-            std::cout << "Comparison ERROR!" << std::endl;
-            return;
-        }
-
-        std::cout << "Complete!" << std::endl;
-    }
-    else {
-        std::cout << "Folder not found!" << std::endl;
-    }
+    
+    fupl.setContext(vectorPropertiesFileName, vectorPropertiesFileSize, vectorPropertiesFileType, vectorPropertiesOwner, vectorPropertiesDateTime, vectorPropertiesHash);
 
 }
 
-/** @see FileUtilityHashProvider::fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList) 
+/** @see std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath)
     Calculates hashes for files, skipping directories, returning true or false.
 
-    @param vectorFileList - accepts a vector with path.
-    @param vectorData - temporary hash storage.
     @param filePath - path to the file.
     @param calcHash - calls a function to calculate the hash.
-    @param setVectorData - @see FileUtilityAlgorithmProvider::setVectorData
 
     @return true, if hash calculate successful, else false with error message.
 */
-bool FileUtilityHashProvider::fileCalculateHash(std::vector<std::string>& vectorData, const std::vector<std::string>& vectorFileList) {
+std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath) {
 
-    for (const auto& filePath : vectorFileList){
         std::string calcHash = sha256.calcHash(filePath);
 
         if(!calcHash.empty()){
             std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
-            setVectorData(calcHash, vectorData);
         }
         else{
             std::cerr << "Error calculate hash for file: " << filePath << std::endl;
             return false;
         }
-    }
 
-    return true;
+    return calcHash;
 }
 
 bool FileUtilityHashProvider::equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond) {
