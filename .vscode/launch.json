@@ -14,7 +14,7 @@
       }
     },
     {
-      "name": "Debug (Linux/Mac)",
+      "name": "Debug (Linux)",
       "type": "lldb",
       "request": "launch",
       "args": [],
