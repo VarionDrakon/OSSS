@@ -1,24 +1,39 @@
 {
   "version": "2.0.0",
-    "tasks": [
-      {
-        "type": "shell",
-        "label": "build",
-        "command": "clang++",
-        "args": [
-          "-std=c++17",
-          "-g",
-          "${workspaceFolder}/MVC/main.cpp",
-          "${workspaceFolder}/lib/mongoose/mongoose.c",
-          "-L$E:/Program FilesSS/LLVM/lib/clang/17/lib/windows",
-          "-lcryptlib",
-          "-o",
-          "${workspaceFolder}/bin/osss.exe",
-        ],
-        "group": {
-           "kind": "build",
-           "isDefault": true
-        }
-      }
-    ]
+  "tasks": [
+    {
+      "label": "build-windows",
+      "type": "shell",
+      "command": "clang++",
+      "args": [
+        "-std=c++17",
+        "-g",
+        "${workspaceFolder}/MVC/main.cpp",
+        "${workspaceFolder}/lib/mongoose/mongoose.c",
+        "-I${workspaceFolder}/MVC",
+        "-L\"E:/Program FilesSS/LLVM/lib/clang/17/lib/windows\"",
+        "-lcryptlib",
+        "-o",
+        "${workspaceFolder}/bin/osss.exe"
+      ],
+      "group": "build"
+    },
+    {
+      "label": "build-linux",
+      "type": "shell",
+      "command": "clang++",
+      "args": [
+        "-std=c++17",
+        "-g",
+        "${workspaceFolder}/MVC/main.cpp",
+        "${workspaceFolder}/MVC/mongoose.c",
+        "-I${workspaceFolder}/MVC",
+        "-L/usr/local/lib",
+        "-lcryptopp",
+        "-o",
+        "${workspaceFolder}/bin/osss.bin"
+      ],
+      "group": "build"
+    }
+  ]
 }

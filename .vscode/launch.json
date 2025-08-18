@@ -2,13 +2,31 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "C/C++ Runner: Debug Session",
+      "name": "Debug (Windows)",
       "type": "lldb",
       "request": "launch",
       "args": [],
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/bin/osss.exe",
-      "preLaunchTask": "build",
+      "preLaunchTask": "build-windows",
+      "windows": {
+        "program": "${workspaceFolder}/bin/osss.exe"
+      }
+    },
+    {
+      "name": "Debug (Linux/Mac)",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/bin/osss.bin",
+      "preLaunchTask": "build-linux",
+      "linux": {
+        "program": "${workspaceFolder}/bin/osss.bin"
+      },
+      "osx": {
+        "program": "${workspaceFolder}/bin/osss.bin"
+      }
     }
   ]
 }
