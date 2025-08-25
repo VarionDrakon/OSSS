@@ -1,12 +1,18 @@
+#include <string>
+#include <fstream>
+#include <iostream> 
+
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
-#include <cryptopp/hex.h>
-#include <cryptopp/sha.h>
-#include <cryptopp/files.h>
+
+#include "lib/cryptopp/hex.h"
+#include "lib/cryptopp/sha.h"
+#include "lib/cryptopp/files.h"
 
 #elif __linux__ //Linux platforms
-#include <cryptopp/hex.h>
-#include <cryptopp/sha.h>
-#include <cryptopp/files.h>
+
+#include "../../../lib/cryptopp/sources/hex.h"
+#include "../../../lib/cryptopp/sources/sha.h"
+#include "../../../lib/cryptopp/sources/files.h"
 
 #endif
 

@@ -1,39 +1,57 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "build-windows",
-      "type": "shell",
-      "command": "clang++",
-      "args": [
-        "-std=c++17",
-        "-g",
-        "${workspaceFolder}/MVC/main.cpp",
-        "${workspaceFolder}/lib/mongoose/mongoose.c",
-        "-I${workspaceFolder}/MVC",
-        "-L\"E:/Program FilesSS/LLVM/lib/clang/17/lib/windows\"",
-        "-lcryptlib",
-        "-o",
-        "${workspaceFolder}/bin/osss.exe"
-      ],
-      "group": "build"
-    },
-    {
-      "label": "build-linux",
-      "type": "shell",
-      "command": "clang++",
-      "args": [
-        "-std=c++17",
-        "-g",
-        "${workspaceFolder}/MVC/main.cpp",
-        "${workspaceFolder}/MVC/mongoose.c",
-        "-I${workspaceFolder}/MVC",
-        "-L/usr/local/lib",
-        "-lcryptopp",
-        "-o",
-        "${workspaceFolder}/bin/osss.bin"
-      ],
-      "group": "build"
-    }
-  ]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "cmake-configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-S",
+                "${workspaceFolder}",
+                "-B",
+                "${workspaceFolder}/build",
+                "-DCMAKE_BUILD_TYPE=Debug"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "cmake-build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug"
+            ],
+            "group": "build",
+            "dependsOn": "cmake-configure"
+        },
+        {
+            "label": "build-linux",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug"
+            ],
+            "group": "build",
+            "dependsOn": "cmake-configure"
+        },
+        {
+            "label": "build-windows",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug"
+            ],
+            "group": "build",
+            "dependsOn": "cmake-configure"
+        }
+    ]
 }

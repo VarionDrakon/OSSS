@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/osss.dir/link.d CMakeFiles/osss.dir/MVC/main.cpp.o CMakeFiles/osss.dir/MVC/Model/FileUtility.cpp.o CMakeFiles/osss.dir/MVC/Model/WebUtility.cpp.o CMakeFiles/osss.dir/lib/mongoose/mongoose.c.o -o bin/debug/osss.bin  lib/cryptopp/cryptopp/libcryptopp.a

@@ -1,5 +1,5 @@
-#include "Model/WebUtility.cpp"
-#include "Model/FileUtility.cpp"
+#include "Model/Header/WebUtility.h"
+#include "Model/Header/FileUtility.h"
 
 bool isEnabledWebInterface = true;
 bool isTriggerCheckDirectory = false;
@@ -16,7 +16,7 @@ int main(){
     FileUtilityProviderLocal fupl;
     
     // while (true){
-        fhap.triggerAlgorithm("C:/Users/vario/AppData/Local/Opera Software", wu.getVectorFilePropertiesFileName(), wu.getVectorFilePropertiesFileSize(), wu.getVectorFilePropertiesFileType(), wu.getVectorFilePropertiesOwner(), wu.getVectorFilePropertiesDateTime(), wu.getVectorFilePropertiesHash());
+    //    fhap.triggerAlgorithm("/home/varion_drakon/Documents/Blender/", wu.getVectorFilePropertiesFileName(), wu.getVectorFilePropertiesFileSize(), wu.getVectorFilePropertiesFileType(), wu.getVectorFilePropertiesOwner(), wu.getVectorFilePropertiesDateTime(), wu.getVectorFilePropertiesHash());
 
     // } std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 

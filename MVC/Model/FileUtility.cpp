@@ -1,15 +1,24 @@
 #include "Header/FileUtility.h"
+#include <cstddef>
+#include <ostream>
+#include <string>
+#include <filesystem>
+#include <vector>
+#include <unistd.h>
+
+#if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
+
 #include <AclAPI.h>
 #include <accctrl.h>
-#include <cstddef>
 #include <errhandlingapi.h>
 #include <minwindef.h>
-#include <ostream>
 #include <securitybaseapi.h>
-#include <string>
-#include <vector>
 #include <winbase.h>
 #include <winnt.h>
+
+#define slp(x) Sleep((x) * 1000)
+#define szt size_t
+#define unitSize 1000
 
 FileUtility::FileUtility() {}
 
@@ -295,3 +304,84 @@ bool FileUtilityHashProvider::equalVectors(const std::vector<std::string> vector
 
     return true;
 }
+
+#elif __linux__ //Linux platforms
+
+#define slp(x) usleep((x) * 1000000)
+#define szt ssize_t
+#define unitSize 1024
+
+void FileUtilityProviderLocal::setContext(
+    std::vector<std::string>& vectorPropertiesFileName, 
+    std::vector<std::string>& vectorPropertiesFileSize, 
+    std::vector<std::string>& vectorPropertiesFileType, 
+    std::vector<std::string>& vectorPropertiesOwner, 
+    std::vector<std::string>& vectorPropertiesDateTime, 
+    std::vector<std::string>& vectorPropertiesHash) {
+    
+    std::cout << "setContext called on Linux (not implemented)" << std::endl;
+}
+
+std::vector<std::string>& FileUtilityProviderLocal::getFileList() {
+    std::cout << "addr in method: " << &directoryFileList << " size: " << directoryFileList.size() << std::endl; // Debug info.
+    return directoryFileList;
+}
+
+FileUtility::FileUtility() {}
+
+FileUtilityProvider::FileUtilityProvider() {}
+
+FileUtilityProviderLocal::FileUtilityProviderLocal() {}
+
+FileUtilityAlgorithmProvider::FileUtilityAlgorithmProvider() {}
+
+FileUtilityHashProvider::FileUtilityHashProvider() {}
+
+std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum) {
+    return "2024-01-01T00:00:00+00:00";
+}
+
+std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath) {
+    try {
+        return std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
+    } catch (...) {
+        return "0";
+    }
+}
+
+std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath) {
+    return "unknown";
+}
+
+void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string algo, 
+                                                  std::vector<std::string>& input,
+                                                  std::vector<std::string>& output,
+                                                  std::vector<std::string>& params,
+                                                  std::vector<std::string>& options,
+                                                  std::vector<std::string>& flags,
+                                                  std::vector<std::string>& result) {
+    throw std::runtime_error("Method not implemented yet");
+}
+
+FileUtilityProviderLocal::~FileUtilityProviderLocal() {
+    std::cout << "FileUtilityProviderLocal destroyed." << std::endl;
+}
+
+FileUtilityAlgorithmProvider::~FileUtilityAlgorithmProvider() {
+    std::cout << "FileUtilityAlgorithmProvider destroyed." << std::endl;
+}
+
+FileUtilityHashProvider::~FileUtilityHashProvider() {
+    std::cout << "FileUtilityHashProvider destroyed." << std::endl;
+}
+
+FileUtility::~FileUtility() {
+    std::cout << "FileUtility destroyed." << std::endl;
+}
+
+FileUtilityProvider::~FileUtilityProvider() {
+    std::cout << "FileUtilityProvider destroyed." << std::endl;
+}
+
+
+#endif

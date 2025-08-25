@@ -1,3 +1,6 @@
+#ifndef WEBUTILITY_H
+#define WEBUTILITY_H
+
 #include "../../../lib/mongoose/mongoose.h"
 #include <cstddef>
 #include <iostream>
@@ -16,10 +19,7 @@ struct attr {
     }
 };
 
-struct attr attrKey[] = {
-    { "File name", "File size", "File type", "Owner", "Date creation", "Hash" },
-    { NULL, NULL,NULL, NULL, NULL, NULL }
-};
+extern struct attr attrKey[];
 
 class WebUtility {
     protected:
@@ -51,3 +51,5 @@ class WebUtility {
 
         virtual ~WebUtility() {}
 };
+
+#endif // WEBUTILITY_H

@@ -1,16 +1,15 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-// FOR TEST FUNCTIONALITY!
+#include <unistd.h>
+#include <iostream>
 #include "HashUtility.h"
-//using namespace std;
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
 #include <Windows.h> // I didn't want to use third-party libraries, so I'll use the real evil - Windows API...
 #include <sstream>
 #include <cstddef>
-#include <filesystem>
 #include <timezoneapi.h>
 #include <AclAPI.h>
 
@@ -20,7 +19,6 @@
 
 #elif __linux__ //Linux platforms
 
-#include <unistd.h>
 #define slp(x) usleep((x) * 1000000)
 #define szt ssize_t
 #define unitSize 1024
@@ -41,7 +39,7 @@ struct FilePropertiesInfo {
                 */
 };
 
-std::vector<FilePropertiesInfo> vectorFilePropertiesInfo;
+extern std::vector<FilePropertiesInfo> vectorFilePropertiesInfo;
 
 class FileUtility {
     private:
@@ -53,9 +51,7 @@ class FileUtility {
         FileUtility(const std::string& path) : path(path) {}
         FileUtility();
 
-        virtual ~FileUtility()  {
-            std::cout << "FileUtility destroyed." << std::endl;
-        };
+        virtual ~FileUtility();
 };
 
 class FileUtilityProvider : public FileUtility {
@@ -68,15 +64,20 @@ class FileUtilityProvider : public FileUtility {
         FileUtilityProvider(const std::string& path) : FileUtility(path), path(path){}
         FileUtilityProvider();
 
-        virtual void setContext(std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) = 0;
+        virtual void setContext(
+            std::vector<std::string>& vectorPropertiesFileName, 
+            std::vector<std::string>& vectorPropertiesFileSize, 
+            std::vector<std::string>& vectorPropertiesFileType, 
+            std::vector<std::string>& vectorPropertiesOwner, 
+            std::vector<std::string>& vectorPropertiesDateTime, 
+            std::vector<std::string>& vectorPropertiesHash
+        ) = 0;
         virtual std::vector<std::string>& getFileList() = 0;
         std::string getPath() const { return path; }
 
         bool isFolderExist() const;
 
-        virtual ~FileUtilityProvider() {
-            std::cout << "FileUtilityProvider destroyed." << std::endl;
-        };
+        virtual ~FileUtilityProvider();
 };
 
 class FileUtilityProviderLocal : public FileUtilityProvider {
@@ -89,15 +90,20 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
         FileUtilityProviderLocal(const std::string& path) : FileUtilityProvider(path), path(path) {}
         FileUtilityProviderLocal();
 
-        virtual void setContext(std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) override final;
+        virtual void setContext(
+            std::vector<std::string>& vectorPropertiesFileName, 
+            std::vector<std::string>& vectorPropertiesFileSize, 
+            std::vector<std::string>& vectorPropertiesFileType, 
+            std::vector<std::string>& vectorPropertiesOwner, 
+            std::vector<std::string>& vectorPropertiesDateTime, 
+            std::vector<std::string>& vectorPropertiesHash
+        ) override final;
         virtual std::vector<std::string>& getFileList() override final;
         virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
         virtual std::string getFilePropertiesSize(std::filesystem::path fileSystemObjectPath);
         virtual std::string getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath);
 
-        virtual ~FileUtilityProviderLocal() {
-            std::cout << "FileUtilityProviderLocal destroyed." << std::endl;
-        };
+        virtual ~FileUtilityProviderLocal();
 };
 
 
@@ -110,9 +116,7 @@ class FileUtilityAlgorithmProvider : public FileUtility {
         
         void triggerAlgorithm(std::string contextPath, std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash);
 
-        virtual ~FileUtilityAlgorithmProvider() {
-            std::cout << "FileUtilityAlgorithmProvider destroyed." << std::endl;
-        };
+        virtual ~FileUtilityAlgorithmProvider();
 };
 
 class FileUtilityHashProvider : public FileUtilityAlgorithmProvider {
@@ -123,9 +127,7 @@ class FileUtilityHashProvider : public FileUtilityAlgorithmProvider {
         bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond);
         // virtual void fileMoving();
         
-        virtual ~FileUtilityHashProvider() {
-            std::cout << "FileUtilityHashProvider destroyed." << std::endl;
-        };
+        virtual ~FileUtilityHashProvider();
 };
 
 /*

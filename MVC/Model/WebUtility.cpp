@@ -1,6 +1,10 @@
 #include "Header/WebUtility.h"
 #include <string>
 
+struct attr attrKey[] = {
+    { "File name", "File size", "File type", "Owner", "Date creation", "Hash" },
+    { NULL, NULL,NULL, NULL, NULL, NULL }
+};
 
 WebUtility::WebUtility() {}
 

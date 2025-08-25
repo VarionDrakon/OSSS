@@ -1,0 +1,12 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/varion_drakon/Documents/Dev/TestOfFate/OSSS/build/cmake_install.cmake",
+		"/home/varion_drakon/Documents/Dev/TestOfFate/OSSS/build/lib/cryptopp/cmake_install.cmake",
+		"/home/varion_drakon/Documents/Dev/TestOfFate/OSSS/build/lib/cryptopp/test/cmake_install.cmake",
+		"/home/varion_drakon/Documents/Dev/TestOfFate/OSSS/build/lib/cryptopp/test/unit/cmake_install.cmake",
+		"/home/varion_drakon/Documents/Dev/TestOfFate/OSSS/build/lib/cryptopp/test/integration/cmake_install.cmake",
+		"/home/varion_drakon/Documents/Dev/TestOfFate/OSSS/build/lib/cryptopp/cryptopp/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
