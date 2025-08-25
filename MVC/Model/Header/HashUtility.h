@@ -4,15 +4,15 @@
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
-#include "lib/cryptopp/hex.h"
-#include "lib/cryptopp/sha.h"
-#include "lib/cryptopp/files.h"
+#include <cryptopp/hex.h>
+#include <cryptopp/sha.h>
+#include <cryptopp/files.h>
 
 #elif __linux__ //Linux platforms
 
-#include "../../../lib/cryptopp/sources/hex.h"
-#include "../../../lib/cryptopp/sources/sha.h"
-#include "../../../lib/cryptopp/sources/files.h"
+#include <cryptopp/hex.h>
+#include <cryptopp/sha.h>
+#include <cryptopp/files.h>
 
 #endif
 

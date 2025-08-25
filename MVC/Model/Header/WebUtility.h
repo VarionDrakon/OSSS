@@ -1,7 +1,7 @@
 #ifndef WEBUTILITY_H
 #define WEBUTILITY_H
 
-#include "../../../lib/mongoose/mongoose.h"
+#include <mongoose/mongoose.h>
 #include <cstddef>
 #include <iostream>
 #include <string>

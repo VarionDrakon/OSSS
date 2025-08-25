@@ -5,8 +5,8 @@ project(OSSS VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CRYPTOPP_SOURCES "${CMAKE_SOURCE_DIR}/lib/cryptopp/sources" CACHE PATH "Path to local Crypto++ sources")
 add_subdirectory(lib/cryptopp)
+add_subdirectory(lib/mongoose)
 
 # Automatic search for all sources
 set(SRC_FILES
@@ -15,23 +15,24 @@ set(SRC_FILES
     MVC/Model/WebUtility.cpp
 )
 
-set(LIB_FILES
-    lib/mongoose/mongoose.c
+set(HEADER_FILES
+    MVC/Model/FileUtility.h
+    MVC/Model/WebUtility.h
 )
 
 # Create an executable file
-add_executable(osss ${SRC_FILES} ${LIB_FILES})
+add_executable(osss ${SRC_FILES} ${HEADER_FILES})
 
 # Directories include
 target_include_directories(osss PRIVATE
-    MVC
-    MVC/Model/Header
-    lib/mongoose
-    lib/cryptopp
+    lib/
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
-
 # Link cryptopp library
-target_link_libraries(osss PRIVATE cryptopp)
+target_link_libraries(osss PRIVATE 
+    cryptopp
+    mongoose
+)
 
 set_target_properties(osss PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin/debug
