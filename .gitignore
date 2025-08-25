@@ -37,8 +37,11 @@
 # Built Visual Studio Code Extensions
 *.vsix
 
-#Custom settings: 
-#Libray folder...
+# Custom settings: 
+# Libray folder...
 
-#Binary folder...
+# Binary folder...
 bin
+
+# Folder for cmake.
+build
