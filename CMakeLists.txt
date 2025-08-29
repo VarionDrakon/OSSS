@@ -5,6 +5,8 @@ project(OSSS VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CRYPTOPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/lib/cryptopp)
+
 add_subdirectory(lib/cryptopp)
 add_subdirectory(lib/mongoose)
 
@@ -16,8 +18,8 @@ set(SRC_FILES
 )
 
 set(HEADER_FILES
-    MVC/Model/FileUtility.h
-    MVC/Model/WebUtility.h
+    MVC/Model/Header/FileUtility.h
+    MVC/Model/Header/WebUtility.h
 )
 
 # Create an executable file
