@@ -44,6 +44,9 @@ class SHA256Algorithm : public HashAlgorithm {
                     std::cerr << "This not file or not could be read file." << std::endl;
                     return hashResult;
                 }
+
+                sha256.Restart();
+
                 CryptoPP::FileSource(
                     filePath.c_str(), 
                     true, 

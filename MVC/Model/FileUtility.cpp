@@ -208,6 +208,9 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
 #define szt ssize_t
 #define unitSize 1024
 
+#include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
 
 std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum) {
  
@@ -249,7 +252,30 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
 }
 
 std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath) {
-    return "unknown";
+
+    struct stat fileStat;
+
+    if (stat(fileSystemObjectPath.c_str(), &fileStat) == 0) {
+
+        uid_t uid = fileStat.st_uid;
+        gid_t gid = fileStat.st_gid;
+
+        // Get username.
+        struct passwd* pw = getpwuid(uid);
+        std::string ownerName = pw ? pw->pw_name : std::to_string(uid);
+        
+        // Get username group.
+        struct group* gr = getgrgid(gid);
+        std::string groupName = gr ? gr->gr_name : std::to_string(gid);
+        // 
+        std::cout << "Owner: " << ownerName << ":" << groupName << std::endl;
+
+        //
+        return ownerName + ":" + groupName;
+    }
+    else {
+        throw std::system_error(errno, std::system_category(), "Error stat for file.");
+    }
 }
 
 #endif
