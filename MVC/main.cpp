@@ -15,10 +15,10 @@ int main(){
     WebUtility wu;
     FileUtilityProviderLocal fupl;
     
-    // while (true){
-    //    fhap.triggerAlgorithm("/home/varion_drakon/Documents/Blender/", wu.getVectorFilePropertiesFileName(), wu.getVectorFilePropertiesFileSize(), wu.getVectorFilePropertiesFileType(), wu.getVectorFilePropertiesOwner(), wu.getVectorFilePropertiesDateTime(), wu.getVectorFilePropertiesHash());
+    while (true){
+        fhap.triggerAlgorithm("/home/varion_drakon/Documents/Blender/", wu.getVectorFilePropertiesFileName(), wu.getVectorFilePropertiesFileSize(), wu.getVectorFilePropertiesFileType(), wu.getVectorFilePropertiesOwner(), wu.getVectorFilePropertiesDateTime(), wu.getVectorFilePropertiesHash());
 
-    // } std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
+    } std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 
     while(true) { // General Operation Mode - GOM
 

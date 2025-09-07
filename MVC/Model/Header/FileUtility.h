@@ -26,9 +26,9 @@
 #endif
 
 enum class filePropertiesTimeTypeEnum {
-    TimeCreation,
-    TimeModified,
-    TimeAccess
+    TimeCreation, // Birth
+    TimeModified, // Modify
+    TimeAccess    // Access
 };
 
 struct FilePropertiesInfo { 

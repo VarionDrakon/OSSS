@@ -5,6 +5,17 @@
 #include <filesystem>
 #include <vector>
 #include <unistd.h>
+#include <chrono>
+
+FileUtility::FileUtility() {}
+
+FileUtilityProvider::FileUtilityProvider() {}
+
+FileUtilityProviderLocal::FileUtilityProviderLocal() {}
+
+FileUtilityAlgorithmProvider::FileUtilityAlgorithmProvider() {}
+
+FileUtilityHashProvider::FileUtilityHashProvider() {}
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
@@ -20,15 +31,7 @@
 #define szt size_t
 #define unitSize 1000
 
-FileUtility::FileUtility() {}
 
-FileUtilityProvider::FileUtilityProvider() {}
-
-FileUtilityProviderLocal::FileUtilityProviderLocal() {}
-
-FileUtilityAlgorithmProvider::FileUtilityAlgorithmProvider() {}
-
-FileUtilityHashProvider::FileUtilityHashProvider() {}
 
 /** @see FileUtilityProviderLocal::getFilePropertiesTime()
     This function creates and returns an object representing the size of the object in memory and the number of elements in it. The function takes two arguments, the path to the file and the desired return file time, and then forms a string from the constructor. Since some file systems have two or three file time options, some can be combined into one value. Also, inside each constructor, the time is converted to local time at the same address where the original time is stored.
@@ -199,12 +202,57 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
     return accountName;
 }
 
-std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath){
+#elif __linux__ //Linux platforms
 
-    std::string sizeReturn = std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
-    
-    return sizeReturn;
+#define slp(x) usleep((x) * 1000000)
+#define szt ssize_t
+#define unitSize 1024
+
+
+std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum) {
+ 
+    // Get last write file time.
+    auto timeLastWrite = std::filesystem::last_write_time(fileSystemObjectPath);
+
+    // Convert file_time в system_clock::time_point
+    auto systemTime = std::chrono::system_clock::now() + (timeLastWrite - std::filesystem::file_time_type::clock::now());
+
+    std::time_t time = std::chrono::system_clock::to_time_t(systemTime); // Convert time_point to arithmetic type capable of representing times.
+    std::tm timeManagement = *std::localtime(&time); // Get local time.
+
+    std::ostringstream result;
+    result << std::put_time(&timeManagement, "%Y-%m-%dT%H:%M:%S.00"); // 1997-07-16T19:20:30.45+03:00 \0 | ISO 8601 format
+
+    // Get the time zone offset in hours.
+    std::time_t nowTime = std::time(nullptr);
+    std::tm local_tm = *std::localtime(&nowTime);
+    std::tm utc_tm = *std::gmtime(&nowTime);
+
+    // Calculate the offset in hours.
+    int timezoneOffset = local_tm.tm_hour - utc_tm.tm_hour;
+    if (local_tm.tm_mday != utc_tm.tm_mday) {
+        if (local_tm.tm_mday > utc_tm.tm_mday) {
+            timezoneOffset += 24;
+        } else {
+            timezoneOffset -= 24;
+        }
+    }
+
+    // Format the offset.
+    if (timezoneOffset >= 0) {
+        result << "+" << std::setfill('0') << std::setw(2) << timezoneOffset << ":00";
+    } else {
+        result << "-" << std::setfill('0') << std::setw(2) << -timezoneOffset << ":00";
+    }
+
+    return result.str();
 }
+
+std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath) {
+    return "unknown";
+}
+
+#endif
 
 /** @see FileUtilityProviderLocal::setContext()
     Sets the execution context within which the algorithm will be executed, namely the path to the directory that will be the root of the job. 
@@ -215,7 +263,12 @@ std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::pat
 
     @return directoryFileList - vector storing file path.
 */
-void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) {
+void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorPropertiesFileName, 
+                                        std::vector<std::string>& vectorPropertiesFileSize, 
+                                        std::vector<std::string>& vectorPropertiesFileType, 
+                                        std::vector<std::string>& vectorPropertiesOwner, 
+                                        std::vector<std::string>& vectorPropertiesDateTime, 
+                                        std::vector<std::string>& vectorPropertiesHash) {
 
     FileUtilityHashProvider fuhp;
 
@@ -242,44 +295,26 @@ void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorProper
     }
 }
 
-bool FileUtilityProvider::isFolderExist() const {
-    return std::filesystem::exists(getPath());
+std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath){
+
+    std::string sizeReturn = std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
+    
+    return sizeReturn;
 }
 
-std::vector<std::string>& FileUtilityProviderLocal::getFileList() {
-    std::cout << "addr in method: " << &directoryFileList << " size: " << directoryFileList.size() << std::endl; // Debug info.
-    return directoryFileList;
-}
+void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string contextPath, 
+                                                    std::vector<std::string>& vectorPropertiesFileName, 
+                                                    std::vector<std::string>& vectorPropertiesFileSize, 
+                                                    std::vector<std::string>& vectorPropertiesFileType, 
+                                                    std::vector<std::string>& vectorPropertiesOwner, 
+                                                    std::vector<std::string>& vectorPropertiesDateTime, 
+                                                    std::vector<std::string>& vectorPropertiesHash) {
 
-void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string contextPath, std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash) {
     FileUtilityHashProvider fuhp;
     FileUtilityProviderLocal fupl(contextPath);
     
     fupl.setContext(vectorPropertiesFileName, vectorPropertiesFileSize, vectorPropertiesFileType, vectorPropertiesOwner, vectorPropertiesDateTime, vectorPropertiesHash);
 
-}
-
-/** @see std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath)
-    Calculates hashes for files, skipping directories, returning true or false.
-
-    @param filePath - path to the file.
-    @param calcHash - calls a function to calculate the hash.
-
-    @return true, if hash calculate successful, else false with error message.
-*/
-std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath) {
-
-        std::string calcHash = sha256.calcHash(filePath);
-
-        if(!calcHash.empty()){
-            std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
-        }
-        else{
-            std::cerr << "Error calculate hash for file: " << filePath << std::endl;
-            return false;
-        }
-
-    return calcHash;
 }
 
 bool FileUtilityHashProvider::equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond) {
@@ -305,21 +340,8 @@ bool FileUtilityHashProvider::equalVectors(const std::vector<std::string> vector
     return true;
 }
 
-#elif __linux__ //Linux platforms
-
-#define slp(x) usleep((x) * 1000000)
-#define szt ssize_t
-#define unitSize 1024
-
-void FileUtilityProviderLocal::setContext(
-    std::vector<std::string>& vectorPropertiesFileName, 
-    std::vector<std::string>& vectorPropertiesFileSize, 
-    std::vector<std::string>& vectorPropertiesFileType, 
-    std::vector<std::string>& vectorPropertiesOwner, 
-    std::vector<std::string>& vectorPropertiesDateTime, 
-    std::vector<std::string>& vectorPropertiesHash) {
-    
-    std::cout << "setContext called on Linux (not implemented)" << std::endl;
+bool FileUtilityProvider::isFolderExist() const {
+    return std::filesystem::exists(getPath());
 }
 
 std::vector<std::string>& FileUtilityProviderLocal::getFileList() {
@@ -327,41 +349,30 @@ std::vector<std::string>& FileUtilityProviderLocal::getFileList() {
     return directoryFileList;
 }
 
-FileUtility::FileUtility() {}
+/** @see std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath)
+    Calculates hashes for files, skipping directories, returning true or false.
 
-FileUtilityProvider::FileUtilityProvider() {}
+    @param filePath - path to the file.
+    @param calcHash - calls a function to calculate the hash.
 
-FileUtilityProviderLocal::FileUtilityProviderLocal() {}
+    @return true, if hash calculate successful, else false with error message.
+*/
+std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath) {
 
-FileUtilityAlgorithmProvider::FileUtilityAlgorithmProvider() {}
+        std::string calcHash = sha256.calcHash(filePath);
 
-FileUtilityHashProvider::FileUtilityHashProvider() {}
+        if (!calcHash.empty()) {
+            std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
+        }
+        else {
+            std::cerr << "Error calculate hash for file: " << filePath << std::endl;
+            return "";
+        }
 
-std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum) {
-    return "2024-01-01T00:00:00+00:00";
+    return calcHash;
 }
 
-std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath) {
-    try {
-        return std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
-    } catch (...) {
-        return "0";
-    }
-}
-
-std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath) {
-    return "unknown";
-}
-
-void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string algo, 
-                                                  std::vector<std::string>& input,
-                                                  std::vector<std::string>& output,
-                                                  std::vector<std::string>& params,
-                                                  std::vector<std::string>& options,
-                                                  std::vector<std::string>& flags,
-                                                  std::vector<std::string>& result) {
-    throw std::runtime_error("Method not implemented yet");
-}
+// Block of destructors
 
 FileUtilityProviderLocal::~FileUtilityProviderLocal() {
     std::cout << "FileUtilityProviderLocal destroyed." << std::endl;
@@ -382,6 +393,3 @@ FileUtility::~FileUtility() {
 FileUtilityProvider::~FileUtilityProvider() {
     std::cout << "FileUtilityProvider destroyed." << std::endl;
 }
-
-
-#endif
