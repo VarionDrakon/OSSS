@@ -217,7 +217,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
     // Get last write file time.
     auto timeLastWrite = std::filesystem::last_write_time(fileSystemObjectPath);
 
-    // Convert file_time to system_clock::time_point
+    // Convert file_time to system_clock::time_point.
     auto systemTime = std::chrono::system_clock::now() + (timeLastWrite - std::filesystem::file_time_type::clock::now());
 
     std::time_t time = std::chrono::system_clock::to_time_t(systemTime); // Convert time_point to arithmetic ty pe capable of representing times.
@@ -238,7 +238,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
     // auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration - seconds);    
 
     std::ostringstream result;
-    result << std::put_time(&timeManagement, "%Y-%m-%dT%H:%M:%S") << "." << std::setfill('0') << std::setw(2) << centiseconds.count();; // 1997-07-16T19:20:30.45+03:00 \0 | ISO 8601 format
+    result << std::put_time(&timeManagement, "%Y-%m-%dT%H:%M:%S") << "." << std::setfill('0') << std::setw(2) << centiseconds.count();; // 1997-07-16T19:20:30.45+03:00 \0 | ISO 8601 format.
 
     // Get the time zone offset in hours.
     std::time_t nowTime = std::time(nullptr);
