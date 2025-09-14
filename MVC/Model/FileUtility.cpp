@@ -1,4 +1,4 @@
-#include "Header/FileUtility.h"
+#include "Headers/FileUtility.h"
 #include <cstddef>
 #include <ostream>
 #include <string>
@@ -217,14 +217,28 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
     // Get last write file time.
     auto timeLastWrite = std::filesystem::last_write_time(fileSystemObjectPath);
 
-    // Convert file_time в system_clock::time_point
+    // Convert file_time to system_clock::time_point
     auto systemTime = std::chrono::system_clock::now() + (timeLastWrite - std::filesystem::file_time_type::clock::now());
 
-    std::time_t time = std::chrono::system_clock::to_time_t(systemTime); // Convert time_point to arithmetic type capable of representing times.
+    std::time_t time = std::chrono::system_clock::to_time_t(systemTime); // Convert time_point to arithmetic ty pe capable of representing times.
     std::tm timeManagement = *std::localtime(&time); // Get local time.
 
+    // Get the total length of time since the "epoch" (usually 00:00:00 January 1, 1970 UTC for system_clock).
+    auto duration = systemTime.time_since_epoch();
+    // Convert the total duration to whole seconds, discarding the fractional part. For example: 1234567890 milliseconds → 1234567 seconds (discard 890 ms).
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    // Calculate the fractional part of a second and convert it to hundredths (centiseconds). (duration - seconds) - get only the fractional part (what is left after whole seconds).
+    auto centiseconds = std::chrono::duration_cast<std::chrono::duration<int, std::centi>>(duration - seconds);
+
+    // Milliseconds (thousandths)
+    // auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration - seconds);
+    // Microseconds (millionths)
+    // auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration - seconds);
+    // Nanoseconds (billionths)
+    // auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration - seconds);    
+
     std::ostringstream result;
-    result << std::put_time(&timeManagement, "%Y-%m-%dT%H:%M:%S.00"); // 1997-07-16T19:20:30.45+03:00 \0 | ISO 8601 format
+    result << std::put_time(&timeManagement, "%Y-%m-%dT%H:%M:%S") << "." << std::setfill('0') << std::setw(2) << centiseconds.count();; // 1997-07-16T19:20:30.45+03:00 \0 | ISO 8601 format
 
     // Get the time zone offset in hours.
     std::time_t nowTime = std::time(nullptr);
@@ -240,7 +254,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
             timezoneOffset -= 24;
         }
     }
-
+    
     // Format the offset.
     if (timezoneOffset >= 0) {
         result << "+" << std::setfill('0') << std::setw(2) << timezoneOffset << ":00";

@@ -15,11 +15,12 @@ set(SRC_FILES
     MVC/main.cpp
     MVC/Model/FileUtility.cpp
     MVC/Model/WebUtility.cpp
+    MVC/Model/HashUtility.cpp
 )
 
 set(HEADER_FILES
-    MVC/Model/Header/FileUtility.h
-    MVC/Model/Header/WebUtility.h
+    MVC/Model/Headers/FileUtility.h
+    MVC/Model/Headers/WebUtility.h
 )
 
 # Create an executable file
