@@ -1,3 +1,5 @@
+#ifndef HASHUTILITY_H
+#define HASHUTILITY_H
 #include <string>
 #include <fstream>
 #include <iostream> 
@@ -69,3 +71,4 @@ class SHA256Algorithm : public HashAlgorithm {
 
         virtual ~SHA256Algorithm() {}
 };
+#endif // HASHUTILITY_H

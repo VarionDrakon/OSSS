@@ -1,3 +1,5 @@
+#ifndef FILEUTILITY_H
+#define FILEUTILITY_H
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -150,3 +152,39 @@ class MultiOSDirectory : public Directory{
     public:
         virtual ~MultiOSDirectory() {}
 };*/
+
+/*struct FilePropertiesInfo { 
+    const std::string *fileName, *fileSize, *typeData, *owner, *dateTime, *hash; /*
+                *fileSize: It's necessary :)
+                *typeData: https://www.iana.org/assignments/media-types/media-types.xhtml, write format - "text/plain" 
+                *dateTime: https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time
+};*/
+
+class FileCache {
+    private:
+        struct FileMetadata {
+            std::string filePath;
+            std::string fileName;
+            std::string fileSize;
+            std::string typeData;
+            std::string owner;
+            std::string dateTime;
+            std::string hash;
+        };
+        
+        std::unordered_map<std::string, FileMetadata> cache;
+    
+    public:
+        
+        void cacheUpdate();
+
+        bool cacheContains();
+
+        FileMetadata cacheGet();
+
+        void cacheSaveToFile();
+
+        void cacheLoadFromFile();
+}
+
+#endif // FILEUTILITY_H

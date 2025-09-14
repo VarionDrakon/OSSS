@@ -316,21 +316,41 @@ void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorProper
         const std::filesystem::path& fsObj = entry.path(); 
         std::string fsStr = fsObj.u8string();
 
-        if (!std::filesystem::is_directory(fsStr)) {
-            std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
-            std::cout <<  "Path size: " << getFilePropertiesSize(fsStr) << " Folder path: " << fsStr << " Last time: " << getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess) << std::endl;
-
-            directoryFileList.push_back(fsStr);
-
-            vectorPropertiesFileName.push_back(fsStr);
-            vectorPropertiesFileSize.push_back(getFilePropertiesSize(fsStr));
-            vectorPropertiesFileType.push_back("none");
-            vectorPropertiesOwner.push_back(getFilePropertiesOwner(fsStr));
-            vectorPropertiesDateTime.push_back(getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess));
-            vectorPropertiesHash.push_back(fuhp.fileCalculateHash(fsStr));
+        try {
             
-        } else {
-            std::cout << "This is folder:" << fsStr << " ?" << std::endl;
+            if (!std::filesystem::exists(fsStr)){
+                std::cout << "File not found: " << fsStr << std::endl;
+                continue;
+            }
+
+            if (!std::filesystem::is_directory(fsStr)) {
+                std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
+
+                std::cout <<  "Path size: " << getFilePropertiesSize(fsStr) << " Folder path: " << fsStr << " Last time: " << getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess) << std::endl;
+
+                directoryFileList.push_back(fsStr);
+
+                vectorPropertiesFileName.push_back(fsStr);
+                
+                try { vectorPropertiesFileSize.push_back(getFilePropertiesSize(fsStr)); } 
+                catch (...) { vectorPropertiesFileSize.push_back("0"); }
+                
+                vectorPropertiesFileType.push_back("none");
+                
+                try { vectorPropertiesOwner.push_back(getFilePropertiesOwner(fsStr)); } 
+                catch (...) { vectorPropertiesOwner.push_back("unknown"); }
+                
+                try { vectorPropertiesDateTime.push_back(getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess)); } 
+                catch (...) { vectorPropertiesDateTime.push_back("unknown"); }
+                
+                try { vectorPropertiesHash.push_back(fuhp.fileCalculateHash(fsStr)); } 
+                catch (...) { vectorPropertiesHash.push_back("error"); }
+                
+            } else {
+                std::cout << "This is folder or file not found:" << fsStr << " ?" << std::endl;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Error getting size for: " << fsStr << " - " << e.what() << std::endl;
         }
     }
 }
