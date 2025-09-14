@@ -180,5 +180,4 @@ class FileCache {
         void cacheLoadFromFile();
 }
 
-
 #endif // FILEUTILITY_H
