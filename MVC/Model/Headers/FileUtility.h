@@ -153,6 +153,9 @@ class MultiOSDirectory : public Directory{
         virtual ~MultiOSDirectory() {}
 };*/
 
+#include <list>
+#include <unordered_map>
+
 class FileCache {
     private:
         struct FileMetadata {
@@ -168,16 +171,22 @@ class FileCache {
         std::unordered_map<std::string, FileMetadata> cache;
     
     public:
-        
-        void cacheUpdate();
 
-        bool cacheContains();
+        void cacheUpdate(const FileMetadata& metadata) {
+            cache[metadata.filePath] = metadata;
+        }
 
-        FileMetadata cacheGet();
+        bool cacheContains(const std::string& path) const {
+            return cache.find(path) != cache.end();
+        }
+
+        FileMetadata cacheGet(const std::string& path) const {
+            return cache.at(path);
+        }
 
         void cacheSaveToFile();
 
         void cacheLoadFromFile();
-}
+};
 
 #endif // FILEUTILITY_H
