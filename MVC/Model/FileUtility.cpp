@@ -294,7 +294,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
 
 #endif
 
-/** @see FileUtilityProviderLocal::setContext()
+/** @see FileUtilityProviderLocal::fileMetadataCollectRecursively()
     Sets the execution context within which the algorithm will be executed, namely the path to the directory that will be the root of the job. 
 
     @param getPath() - get path to root folder.
@@ -303,12 +303,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
 
     @return directoryFileList - vector storing file path.
 */
-void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorPropertiesFileName, 
-                                        std::vector<std::string>& vectorPropertiesFileSize, 
-                                        std::vector<std::string>& vectorPropertiesFileType, 
-                                        std::vector<std::string>& vectorPropertiesOwner, 
-                                        std::vector<std::string>& vectorPropertiesDateTime, 
-                                        std::vector<std::string>& vectorPropertiesHash) {
+void FileUtilityProviderLocal::fileMetadataCollectRecursively() {
 
     FileUtilityHashProvider fuhp;
 
@@ -328,24 +323,33 @@ void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorProper
 
                 std::cout <<  "Path size: " << getFilePropertiesSize(fsStr) << " Folder path: " << fsStr << " Last time: " << getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess) << std::endl;
 
+                currentFileMetadata.filePath = fsStr;
+                currentFileMetadata.fileName = fsStr;
+                currentFileMetadata.fileSize = getFilePropertiesSize(fsStr);
+                currentFileMetadata.fileTypeData = "none";
+                currentFileMetadata.fileOwner = getFilePropertiesOwner(fsStr);
+                currentFileMetadata.fileDateTime = getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess);
+                currentFileMetadata.fileHash = fuhp.fileCalculateHash(fsStr);
+                
+            /*
                 directoryFileList.push_back(fsStr);
 
                 vectorPropertiesFileName.push_back(fsStr);
                 
                 try { vectorPropertiesFileSize.push_back(getFilePropertiesSize(fsStr)); } 
                 catch (...) { vectorPropertiesFileSize.push_back("0"); }
-                
+            
                 vectorPropertiesFileType.push_back("none");
                 
-                try { vectorPropertiesOwner.push_back(getFilePropertiesOwner(fsStr)); } 
+                try { vectorPropertiesOwner.push_back(); } 
                 catch (...) { vectorPropertiesOwner.push_back("unknown"); }
                 
-                try { vectorPropertiesDateTime.push_back(getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess)); } 
+                try { vectorPropertiesDateTime.push_back(); } 
                 catch (...) { vectorPropertiesDateTime.push_back("unknown"); }
                 
-                try { vectorPropertiesHash.push_back(fuhp.fileCalculateHash(fsStr)); } 
+                try { vectorPropertiesHash.push_back(); } 
                 catch (...) { vectorPropertiesHash.push_back("error"); }
-                
+            */
             } else {
                 std::cout << "This is folder or file not found:" << fsStr << " ?" << std::endl;
             }
@@ -355,25 +359,23 @@ void FileUtilityProviderLocal::setContext(std::vector<std::string>& vectorProper
     }
 }
 
-std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath){
+FileMetadata FileUtilityProviderLocal::getFileMetadata() {
+    this->fileMetadataCollectRecursively();
+    return currentFileMetadata;
+}
+
+std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath) {
 
     std::string sizeReturn = std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
     
     return sizeReturn;
 }
 
-void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string contextPath, 
-                                                    std::vector<std::string>& vectorPropertiesFileName, 
-                                                    std::vector<std::string>& vectorPropertiesFileSize, 
-                                                    std::vector<std::string>& vectorPropertiesFileType, 
-                                                    std::vector<std::string>& vectorPropertiesOwner, 
-                                                    std::vector<std::string>& vectorPropertiesDateTime, 
-                                                    std::vector<std::string>& vectorPropertiesHash) {
+void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string directoryRoot) {
 
-    FileUtilityHashProvider fuhp;
-    FileUtilityProviderLocal fupl(contextPath);
+    FileUtilityProviderLocal fupl(directoryRoot);
     
-    fupl.setContext(vectorPropertiesFileName, vectorPropertiesFileSize, vectorPropertiesFileType, vectorPropertiesOwner, vectorPropertiesDateTime, vectorPropertiesHash);
+    fupl.fileMetadataCollectRecursively();
 
 }
 
@@ -433,6 +435,10 @@ std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePa
 }
 
 // Block of destructors
+
+void FileUtilityProviderLocal::clearFileMetadata() {
+    currentFileMetadata = FileMetadata{};
+}
 
 FileUtilityProviderLocal::~FileUtilityProviderLocal() {
     std::cout << "FileUtilityProviderLocal destroyed." << std::endl;

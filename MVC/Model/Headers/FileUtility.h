@@ -5,6 +5,8 @@
 #include <vector>
 #include <unistd.h>
 #include <iostream>
+#include <list>
+#include <unordered_map>
 #include "HashUtility.h"
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
@@ -33,15 +35,15 @@ enum class filePropertiesTimeTypeEnum {
     TimeAccess    // Access
 };
 
-struct FilePropertiesInfo { 
-    const std::string *fileName, *fileSize, *typeData, *owner, *dateTime, *hash; /*
-                *fileSize: It's necessary :)
-                *typeData: https://www.iana.org/assignments/media-types/media-types.xhtml, write format - "text/plain" 
-                *dateTime: https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time
-                */
+struct FileMetadata {
+    std::string filePath;
+    std::string fileName;
+    std::string fileSize;
+    std::string fileTypeData; // * https://www.iana.org/assignments/media-types/media-types.xhtml, write format - "text/plain" 
+    std::string fileOwner;
+    std::string fileDateTime; // * https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time
+    std::string fileHash;
 };
-
-extern std::vector<FilePropertiesInfo> vectorFilePropertiesInfo;
 
 class FileUtility {
     private:
@@ -50,8 +52,9 @@ class FileUtility {
     protected:
 
     public:
-        FileUtility(const std::string& path) : path(path) {}
         FileUtility();
+
+        FileUtility(const std::string& path) : path(path) {}
 
         virtual ~FileUtility();
 };
@@ -63,17 +66,10 @@ class FileUtilityProvider : public FileUtility {
     protected:
         
     public:
-        FileUtilityProvider(const std::string& path) : FileUtility(path), path(path){}
+        FileUtilityProvider(const std::string& path) : FileUtility(path), path(path) {}
         FileUtilityProvider();
 
-        virtual void setContext(
-            std::vector<std::string>& vectorPropertiesFileName, 
-            std::vector<std::string>& vectorPropertiesFileSize, 
-            std::vector<std::string>& vectorPropertiesFileType, 
-            std::vector<std::string>& vectorPropertiesOwner, 
-            std::vector<std::string>& vectorPropertiesDateTime, 
-            std::vector<std::string>& vectorPropertiesHash
-        ) = 0;
+        virtual void fileMetadataCollectRecursively() = 0;
         virtual std::vector<std::string>& getFileList() = 0;
         std::string getPath() const { return path; }
 
@@ -86,24 +82,20 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
     private:
         std::vector<std::string> directoryFileList;
         std::string path;
-        std::vector<FilePropertiesInfo> filePropertiesInfo;
+        FileMetadata currentFileMetadata;
 
     public:
         FileUtilityProviderLocal(const std::string& path) : FileUtilityProvider(path), path(path) {}
         FileUtilityProviderLocal();
 
-        virtual void setContext(
-            std::vector<std::string>& vectorPropertiesFileName, 
-            std::vector<std::string>& vectorPropertiesFileSize, 
-            std::vector<std::string>& vectorPropertiesFileType, 
-            std::vector<std::string>& vectorPropertiesOwner, 
-            std::vector<std::string>& vectorPropertiesDateTime, 
-            std::vector<std::string>& vectorPropertiesHash
-        ) override final;
+        virtual void fileMetadataCollectRecursively() override final;
         virtual std::vector<std::string>& getFileList() override final;
         virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
         virtual std::string getFilePropertiesSize(std::filesystem::path fileSystemObjectPath);
         virtual std::string getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath);
+
+        virtual FileMetadata getFileMetadata();
+        virtual void clearFileMetadata();
 
         virtual ~FileUtilityProviderLocal();
 };
@@ -112,11 +104,12 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
 class FileUtilityAlgorithmProvider : public FileUtility {
     protected:
         SHA256Algorithm sha256;
+        FileMetadata metadata;
 
     public:
         FileUtilityAlgorithmProvider();
         
-        void triggerAlgorithm(std::string contextPath, std::vector<std::string>& vectorPropertiesFileName, std::vector<std::string>& vectorPropertiesFileSize, std::vector<std::string>& vectorPropertiesFileType, std::vector<std::string>& vectorPropertiesOwner, std::vector<std::string>& vectorPropertiesDateTime, std::vector<std::string>& vectorPropertiesHash);
+        void triggerAlgorithm(std::string directoryRoot);
 
         virtual ~FileUtilityAlgorithmProvider();
 };
@@ -152,22 +145,10 @@ class MultiOSDirectory : public Directory{
     public:
         virtual ~MultiOSDirectory() {}
 };*/
-
-#include <list>
-#include <unordered_map>
+// LRU
 
 class FileCache {
     private:
-        struct FileMetadata {
-            std::string filePath;
-            std::string fileName;
-            std::string fileSize;
-            std::string typeData;
-            std::string owner;
-            std::string dateTime;
-            std::string hash;
-        };
-        
         std::unordered_map<std::string, FileMetadata> cache;
     
     public:
