@@ -13,7 +13,7 @@ int main(){
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
     FileUtilityAlgorithmProvider fhap;
     // WebUtility wu;
-    FileUtilityProviderLocal fupl("/home/varion_drakon/Documents/Temp/test/");
+    FileUtilityProviderLocal fupl;
     
     while (true){
         fhap.triggerAlgorithm("/home/varion_drakon/Documents/Temp/test/");

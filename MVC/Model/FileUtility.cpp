@@ -7,16 +7,6 @@
 #include <unistd.h>
 #include <chrono>
 
-FileUtility::FileUtility() {}
-
-FileUtilityProvider::FileUtilityProvider() {}
-
-FileUtilityProviderLocal::FileUtilityProviderLocal() {}
-
-FileUtilityAlgorithmProvider::FileUtilityAlgorithmProvider() {}
-
-FileUtilityHashProvider::FileUtilityHashProvider() {}
-
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
 #include <AclAPI.h>
@@ -297,17 +287,16 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
 /** @see FileUtilityProviderLocal::fileMetadataCollectRecursively()
     Sets the execution context within which the algorithm will be executed, namely the path to the directory that will be the root of the job. 
 
-    @param getPath() - get path to root folder.
     @param entry.path() - check directory existence.
     @param fsStr - Returns the internal pathname in native pathname format, converted to specific string type.
 
     @return directoryFileList - vector storing file path.
 */
-void FileUtilityProviderLocal::fileMetadataCollectRecursively() {
+void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string directoryRoot) {
 
     FileUtilityHashProvider fuhp;
 
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(getPath())) {
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
         const std::filesystem::path& fsObj = entry.path(); 
         std::string fsStr = fsObj.u8string();
 
@@ -360,7 +349,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively() {
 }
 
 FileMetadata FileUtilityProviderLocal::getFileMetadata() {
-    this->fileMetadataCollectRecursively();
+    // fileMetadataCollectRecursively();
     return currentFileMetadata;
 }
 
@@ -373,9 +362,9 @@ std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::pat
 
 void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string directoryRoot) {
 
-    FileUtilityProviderLocal fupl(directoryRoot);
+    FileUtilityProviderLocal fupl;
     
-    fupl.fileMetadataCollectRecursively();
+    fupl.fileMetadataCollectRecursively(directoryRoot);
 
 }
 
@@ -402,9 +391,9 @@ bool FileUtilityHashProvider::equalVectors(const std::vector<std::string> vector
     return true;
 }
 
-bool FileUtilityProvider::isFolderExist() const {
-    return std::filesystem::exists(getPath());
-}
+// bool FileUtilityProvider::isFolderExist() const {
+//     return std::filesystem::exists(getPath());
+// }
 
 std::vector<std::string>& FileUtilityProviderLocal::getFileList() {
     std::cout << "addr in method: " << &directoryFileList << " size: " << directoryFileList.size() << std::endl; // Debug info.
