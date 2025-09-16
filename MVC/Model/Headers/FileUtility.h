@@ -47,49 +47,36 @@ struct FileMetadata {
 
 class FileUtility {
     private:
-        // std::string path;
 
     protected:
 
     public:
         FileUtility() {};
 
-        // FileUtility(const std::string& path) : path(path) {}
-
         virtual ~FileUtility();
 };
 
 class FileUtilityProvider : public FileUtility {
     private:
-        // std::string path;
 
     protected:
         
     public:
-        // FileUtilityProvider(const std::string& path) : FileUtility(path), path(path) {}
         FileUtilityProvider() {};
 
         virtual void fileMetadataCollectRecursively(std::string directoryRoot) = 0;
-        virtual std::vector<std::string>& getFileList() = 0;
-        // std::string getPath() const { return path; }
-
-        // bool isFolderExist() const;
 
         virtual ~FileUtilityProvider();
 };
 
 class FileUtilityProviderLocal : public FileUtilityProvider {
     private:
-        std::vector<std::string> directoryFileList;
-        // std::string path;
         FileMetadata currentFileMetadata;
 
     public:
-        // FileUtilityProviderLocal(const std::string& path) : FileUtilityProvider(path), path(path) {}
         FileUtilityProviderLocal() {};
 
         virtual void fileMetadataCollectRecursively(std::string directoryRoot) override final;
-        virtual std::vector<std::string>& getFileList() override final;
         virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
         virtual std::string getFilePropertiesSize(std::filesystem::path fileSystemObjectPath);
         virtual std::string getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath);
@@ -108,8 +95,6 @@ class FileUtilityAlgorithmProvider : public FileUtility {
 
     public:
         FileUtilityAlgorithmProvider() {};
-        
-        void triggerAlgorithm(std::string directoryRoot);
 
         virtual ~FileUtilityAlgorithmProvider();
 };

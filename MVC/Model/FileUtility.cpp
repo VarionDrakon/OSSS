@@ -284,6 +284,42 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
 
 #endif
 
+
+FileMetadata FileUtilityProviderLocal::getFileMetadata() {
+    // fileMetadataCollectRecursively();
+    return currentFileMetadata;
+}
+
+std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath) {
+
+    std::string sizeReturn = std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
+    
+    return sizeReturn;
+}
+
+/** @see std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath)
+    Calculates hashes for files, skipping directories, returning true or false.
+
+    @param filePath - path to the file.
+    @param calcHash - calls a function to calculate the hash.
+
+    @return true, if hash calculate successful, else false with error message.
+*/
+std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath) {
+
+        std::string calcHash = sha256.calcHash(filePath);
+
+        if (!calcHash.empty()) {
+            std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
+        }
+        else {
+            std::cerr << "Error calculate hash for file: " << filePath << std::endl;
+            return "";
+        }
+
+    return calcHash;
+}
+
 /** @see FileUtilityProviderLocal::fileMetadataCollectRecursively()
     Sets the execution context within which the algorithm will be executed, namely the path to the directory that will be the root of the job. 
 
@@ -320,25 +356,6 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
                 currentFileMetadata.fileDateTime = getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess);
                 currentFileMetadata.fileHash = fuhp.fileCalculateHash(fsStr);
                 
-            /*
-                directoryFileList.push_back(fsStr);
-
-                vectorPropertiesFileName.push_back(fsStr);
-                
-                try { vectorPropertiesFileSize.push_back(getFilePropertiesSize(fsStr)); } 
-                catch (...) { vectorPropertiesFileSize.push_back("0"); }
-            
-                vectorPropertiesFileType.push_back("none");
-                
-                try { vectorPropertiesOwner.push_back(); } 
-                catch (...) { vectorPropertiesOwner.push_back("unknown"); }
-                
-                try { vectorPropertiesDateTime.push_back(); } 
-                catch (...) { vectorPropertiesDateTime.push_back("unknown"); }
-                
-                try { vectorPropertiesHash.push_back(); } 
-                catch (...) { vectorPropertiesHash.push_back("error"); }
-            */
             } else {
                 std::cout << "This is folder or file not found:" << fsStr << " ?" << std::endl;
             }
@@ -346,26 +363,6 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
             std::cerr << "Error getting size for: " << fsStr << " - " << e.what() << std::endl;
         }
     }
-}
-
-FileMetadata FileUtilityProviderLocal::getFileMetadata() {
-    // fileMetadataCollectRecursively();
-    return currentFileMetadata;
-}
-
-std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath) {
-
-    std::string sizeReturn = std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
-    
-    return sizeReturn;
-}
-
-void FileUtilityAlgorithmProvider::triggerAlgorithm(std::string directoryRoot) {
-
-    FileUtilityProviderLocal fupl;
-    
-    fupl.fileMetadataCollectRecursively(directoryRoot);
-
 }
 
 bool FileUtilityHashProvider::equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond) {
@@ -389,38 +386,6 @@ bool FileUtilityHashProvider::equalVectors(const std::vector<std::string> vector
     }
 
     return true;
-}
-
-// bool FileUtilityProvider::isFolderExist() const {
-//     return std::filesystem::exists(getPath());
-// }
-
-std::vector<std::string>& FileUtilityProviderLocal::getFileList() {
-    std::cout << "addr in method: " << &directoryFileList << " size: " << directoryFileList.size() << std::endl; // Debug info.
-    return directoryFileList;
-}
-
-/** @see std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath)
-    Calculates hashes for files, skipping directories, returning true or false.
-
-    @param filePath - path to the file.
-    @param calcHash - calls a function to calculate the hash.
-
-    @return true, if hash calculate successful, else false with error message.
-*/
-std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath) {
-
-        std::string calcHash = sha256.calcHash(filePath);
-
-        if (!calcHash.empty()) {
-            std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
-        }
-        else {
-            std::cerr << "Error calculate hash for file: " << filePath << std::endl;
-            return "";
-        }
-
-    return calcHash;
 }
 
 // Block of destructors

@@ -8,17 +8,20 @@ bool isTriggerCheckDirectory = false;
 #elif __linux__ //Linux platforms
 #endif
 
+// Object + Action + Modifier
+
 int main(){
     
     //fs::path dirPath = "C:/Users/vario/AppData/Local/Opera Software";
-    FileUtilityAlgorithmProvider fhap;
+    // FileUtilityAlgorithmProvider fhap;
     // WebUtility wu;
     FileUtilityProviderLocal fupl;
     
     while (true){
-        fhap.triggerAlgorithm("/home/varion_drakon/Documents/Temp/test/");
+        fupl.fileMetadataCollectRecursively("/home/varion_drakon/Documents/Temp/test/");
 
-    } std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
+    } 
+    // std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 
     /*
     while(true) { // General Operation Mode - GOM
