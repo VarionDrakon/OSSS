@@ -90,8 +90,6 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
 
 class FileUtilityAlgorithmProvider : public FileUtility {
     protected:
-        SHA256Algorithm sha256;
-        FileMetadata metadata;
 
     public:
         FileUtilityAlgorithmProvider() {};

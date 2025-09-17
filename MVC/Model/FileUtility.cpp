@@ -307,14 +307,13 @@ std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::pat
 */
 std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath) {
 
-        std::string calcHash = sha256.calcHash(filePath);
+        SHA256Algorithm calculateHashSHA256;
 
-        if (!calcHash.empty()) {
-            std::cout << "SHA256 hash for file: " << filePath << " : " << calcHash << std::endl;
-        }
-        else {
+        std::string calcHash = calculateHashSHA256.calcHash(filePath);
+
+        if (calcHash.empty()) {
             std::cerr << "Error calculate hash for file: " << filePath << std::endl;
-            return "";
+            return "Undefined";
         }
 
     return calcHash;

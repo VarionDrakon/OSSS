@@ -64,8 +64,8 @@ class SHA256Algorithm : public HashAlgorithm {
                 return hashResult;
             }
             catch (const std::exception& e) {
-                std::cerr << "Error calculating hash for " << filePath << ": " << e.what() << std::endl;
-                return "";
+                std::cerr << "Exception occurred while trying to calculate hash for file: " << filePath << ": " << e.what() << std::endl;
+                return "Undefined";
             }    
         }
 
