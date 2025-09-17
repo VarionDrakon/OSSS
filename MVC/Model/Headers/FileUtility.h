@@ -35,6 +35,18 @@ enum class filePropertiesTimeTypeEnum {
     TimeAccess    // Access
 };
 
+enum class filePropertiesSizeEnum {
+    Bytes,      // 1024^0 = 1 byte
+    Kibibytes,  // 1024^1 = 1024 byte
+    Mebibyte,   // 1024^2 = 1,048,576 byte
+    Gibibyte,   // 1024^3 = 1,073,741,824 byte
+    Tebibytes,  // 1024^4 = 1,099,511,627,776 byte
+    Pebibyte,   // 1024^5 = 1,125,899,906,842,624 byte
+    Exbibyte,   // 1024^6 = 1,152,921,504,606,846,976 byte
+    Zebibyte,   // 1024^7 = 1,180,591,620,717,411,303,424 byte
+    Yobibyte    // 1024^8 = 1,208,925,819,614,629,174,706,176 byte
+};
+
 struct FileMetadata {
     std::string filePath;
     std::string fileName;
@@ -53,7 +65,7 @@ inline std::ostream& operator<<(std::ostream& os, const FileMetadata& fm) {
         << "\nFile Owner: " << fm.fileOwner
         << "\nFile DateTime: " << fm.fileDateTime
         << "\nFile Hash: " << fm.fileHash 
-        << "\n\n\n" << std::endl;
+        << std::endl;
     return os;
 }
 
@@ -90,7 +102,7 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
 
         virtual void fileMetadataCollectRecursively(std::string directoryRoot) override final;
         virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
-        virtual std::string getFilePropertiesSize(const std::filesystem::path fileSystemObjectPath);
+        virtual std::string filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit);
         virtual std::string getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath);
 
         virtual FileMetadata fileMetadataGet();

@@ -286,11 +286,29 @@ FileMetadata FileUtilityProviderLocal::fileMetadataGet() {
     return currentFileMetadata;
 }
 
-std::string FileUtilityProviderLocal::getFilePropertiesSize(const std::filesystem::path fileSystemObjectPath) {
+std::string FileUtilityProviderLocal::filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit) {
 
-    std::string sizeReturn = std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
-    
-    return sizeReturn;
+    uintmax_t sizeBytes = std::filesystem::file_size(filePath);
+
+    static const std::unordered_map<filePropertiesSizeEnum, uintmax_t> measureUnits = {
+        { filePropertiesSizeEnum::Bytes, 1 },
+        { filePropertiesSizeEnum::Kibibytes, 1024 },
+        { filePropertiesSizeEnum::Mebibyte, 1024 * 1024 },
+        { filePropertiesSizeEnum::Gibibyte, 1024 * 1024 * 1024 },
+        { filePropertiesSizeEnum::Tebibytes, 1024ULL * 1024 * 1024 * 1024 },
+        { filePropertiesSizeEnum::Pebibyte, 1024ULL * 1024 * 1024 * 1024 * 1024 },
+        { filePropertiesSizeEnum::Exbibyte, 1024ULL * 1024 * 1024 * 1024 * 1024 * 1024 },
+        { filePropertiesSizeEnum::Zebibyte, 1024ULL * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 },
+        { filePropertiesSizeEnum::Yobibyte, 1024ULL * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 }
+    };
+
+    auto iterator = measureUnits.find(sizeUnit);
+
+    if (iterator != measureUnits.end()) {
+        return std::to_string(sizeBytes / iterator->second);
+    }
+   
+    return "Undefined";
 }
 
 /** @see std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath)
@@ -346,7 +364,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
 
                 currentFileMetadata.filePath = fsStr;
                 currentFileMetadata.fileName = fsObj.filename().u8string();
-                currentFileMetadata.fileSize = getFilePropertiesSize(fsObj);
+                currentFileMetadata.fileSize = filePropertiesSizeGet(fsObj, filePropertiesSizeEnum::Bytes);
                 currentFileMetadata.fileTypeData = "none";
                 currentFileMetadata.fileOwner = getFilePropertiesOwner(fsStr);
                 currentFileMetadata.fileDateTime = getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess);
