@@ -271,8 +271,6 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
         // Get username group.
         struct group* gr = getgrgid(gid);
         std::string groupName = gr ? gr->gr_name : std::to_string(gid);
-        // 
-        std::cout << "Owner: " << ownerName << ":" << groupName << std::endl;
 
         //
         return ownerName + ":" + groupName;
@@ -284,13 +282,11 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
 
 #endif
 
-
-FileMetadata FileUtilityProviderLocal::getFileMetadata() {
-    // fileMetadataCollectRecursively();
+FileMetadata FileUtilityProviderLocal::fileMetadataGet() {
     return currentFileMetadata;
 }
 
-std::string FileUtilityProviderLocal::getFilePropertiesSize(std::filesystem::path fileSystemObjectPath) {
+std::string FileUtilityProviderLocal::getFilePropertiesSize(const std::filesystem::path fileSystemObjectPath) {
 
     std::string sizeReturn = std::to_string(std::filesystem::file_size(fileSystemObjectPath) / unitSize);
     
@@ -345,11 +341,12 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
             if (!std::filesystem::is_directory(fsStr)) {
                 std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
 
-                std::cout <<  "Path size: " << getFilePropertiesSize(fsStr) << " Folder path: " << fsStr << " Last time: " << getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess) << std::endl;
+
+                std::cout << FileUtilityProviderLocal::fileMetadataGet() << std::endl;
 
                 currentFileMetadata.filePath = fsStr;
-                currentFileMetadata.fileName = fsStr;
-                currentFileMetadata.fileSize = getFilePropertiesSize(fsStr);
+                currentFileMetadata.fileName = fsObj.filename().u8string();
+                currentFileMetadata.fileSize = getFilePropertiesSize(fsObj);
                 currentFileMetadata.fileTypeData = "none";
                 currentFileMetadata.fileOwner = getFilePropertiesOwner(fsStr);
                 currentFileMetadata.fileDateTime = getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess);
@@ -394,21 +391,21 @@ void FileUtilityProviderLocal::clearFileMetadata() {
 }
 
 FileUtilityProviderLocal::~FileUtilityProviderLocal() {
-    std::cout << "FileUtilityProviderLocal destroyed." << std::endl;
+    // std::cout << "FileUtilityProviderLocal destroyed." << std::endl;
 }
 
 FileUtilityAlgorithmProvider::~FileUtilityAlgorithmProvider() {
-    std::cout << "FileUtilityAlgorithmProvider destroyed." << std::endl;
+    // std::cout << "FileUtilityAlgorithmProvider destroyed." << std::endl;
 }
 
 FileUtilityHashProvider::~FileUtilityHashProvider() {
-    std::cout << "FileUtilityHashProvider destroyed." << std::endl;
+    // std::cout << "FileUtilityHashProvider destroyed." << std::endl;
 }
 
 FileUtility::~FileUtility() {
-    std::cout << "FileUtility destroyed." << std::endl;
+    // std::cout << "FileUtility destroyed." << std::endl;
 }
 
 FileUtilityProvider::~FileUtilityProvider() {
-    std::cout << "FileUtilityProvider destroyed." << std::endl;
+    // std::cout << "FileUtilityProvider destroyed." << std::endl;
 }

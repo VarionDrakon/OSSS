@@ -45,6 +45,18 @@ struct FileMetadata {
     std::string fileHash;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const FileMetadata& fm) {
+    os << "File path: " << fm.filePath 
+        << "\nFile Name: " << fm.fileName
+        << "\nFile Size: " << fm.fileSize
+        << "\nFile TypeData: " << fm.fileTypeData
+        << "\nFile Owner: " << fm.fileOwner
+        << "\nFile DateTime: " << fm.fileDateTime
+        << "\nFile Hash: " << fm.fileHash 
+        << "\n\n\n" << std::endl;
+    return os;
+}
+
 class FileUtility {
     private:
 
@@ -78,10 +90,10 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
 
         virtual void fileMetadataCollectRecursively(std::string directoryRoot) override final;
         virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
-        virtual std::string getFilePropertiesSize(std::filesystem::path fileSystemObjectPath);
+        virtual std::string getFilePropertiesSize(const std::filesystem::path fileSystemObjectPath);
         virtual std::string getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath);
 
-        virtual FileMetadata getFileMetadata();
+        virtual FileMetadata fileMetadataGet();
         virtual void clearFileMetadata();
 
         virtual ~FileUtilityProviderLocal();
@@ -103,7 +115,6 @@ class FileUtilityHashProvider : public FileUtilityAlgorithmProvider {
 
         std::string fileCalculateHash(const std::string& filePath);
         bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond);
-        // virtual void fileMoving();
         
         virtual ~FileUtilityHashProvider();
 };

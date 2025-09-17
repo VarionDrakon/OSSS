@@ -60,7 +60,7 @@ class SHA256Algorithm : public HashAlgorithm {
                     )
                 );
 
-                std::cout << "SHA256 hash for file: " << filePath << " : " << hashResult << std::endl;
+                // std::cout << "SHA256 hash for file: " << filePath << " : " << hashResult << std::endl;
                 return hashResult;
             }
             catch (const std::exception& e) {
