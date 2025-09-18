@@ -126,7 +126,7 @@ class FileUtilityHashProvider : public FileUtilityAlgorithmProvider {
         FileUtilityHashProvider() {};
 
         std::string fileCalculateHash(const std::string& filePath);
-        bool equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond);
+        bool fileMetadataCompare();
         
         virtual ~FileUtilityHashProvider();
 };

@@ -379,25 +379,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
     }
 }
 
-bool FileUtilityHashProvider::equalVectors(const std::vector<std::string> vectorFirst, const std::vector<std::string> vectorSecond) {
-
-    if(!vectorFirst.empty() && !vectorSecond.empty()){
-        if(vectorFirst.size() != vectorSecond.size()){
-            std::cout << "Size not equals: " << vectorFirst.size() << " & " << vectorSecond.size() << std::endl;
-            return false; // Size vectors must be equal.
-        }
-
-        for(szt i = 0; i < vectorFirst.size(); ++i){
-            std::cout << "Current hashes being compared: " << vectorFirst[i] << " & " << vectorSecond[i] << std::endl;
-            if(vectorFirst[i] != vectorSecond[i]){
-                std::cout << "Vectors are not equal!" << std::endl;
-                return false; // Elements with the same index are not equal.
-            }
-        }
-    }
-    else{
-        std::cout << "vector(!?).empty()" << std::endl;
-    }
+bool FileUtilityHashProvider::fileMetadataCompare() {
 
     return true;
 }
