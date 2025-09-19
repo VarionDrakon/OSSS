@@ -23,7 +23,7 @@
 
 
 
-/** @see FileUtilityProviderLocal::getFilePropertiesTime()
+/** @see FileUtilityProviderLocal::filePropertiesTimeGet()
     This function creates and returns an object representing the size of the object in memory and the number of elements in it. The function takes two arguments, the path to the file and the desired return file time, and then forms a string from the constructor. Since some file systems have two or three file time options, some can be combined into one value. Also, inside each constructor, the time is converted to local time at the same address where the original time is stored.
 
     @param fileSystemObjectPropertiesFT - this structure is used for representations of time in hundred of nanoseconds, starting from 1 january 1601 years (UTC).
@@ -38,7 +38,7 @@
     @param offsetMinutesUTC - returns a minutes depending on the time zone offset
 
 */
-std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum) {
+std::string FileUtilityProviderLocal::filePropertiesTimeGet(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum) {
     
         FILETIME fileSystemObjectPropertiesFT;
         SYSTEMTIME fileSystemObjectPropertiesST;
@@ -120,7 +120,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
 /**
 
 */
-std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath){
+std::string FileUtilityProviderLocal::filePropertiesOwnerGet(std::filesystem::path fileSystemObjectPath){
     
     PSID pointerSidOwner = NULL;
     PSECURITY_DESCRIPTOR pointerSecurityDescriptor = NULL;
@@ -202,7 +202,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::pa
 #include <pwd.h>
 #include <grp.h>
 
-std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum) {
+std::string FileUtilityProviderLocal::filePropertiesTimeGet(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum = filePropertiesTimeTypeEnum::TimeAccess) {
  
     // Get last write file time.
     auto timeLastWrite = std::filesystem::last_write_time(fileSystemObjectPath);
@@ -255,7 +255,7 @@ std::string FileUtilityProviderLocal::getFilePropertiesTime(std::filesystem::pat
     return result.str();
 }
 
-std::string FileUtilityProviderLocal::getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath) {
+std::string FileUtilityProviderLocal::filePropertiesOwnerGet(std::filesystem::path fileSystemObjectPath) {
 
     struct stat fileStat;
 
@@ -286,7 +286,7 @@ FileMetadata FileUtilityProviderLocal::fileMetadataGet() {
     return currentFileMetadata;
 }
 
-std::string FileUtilityProviderLocal::filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit) {
+std::string FileUtilityProviderLocal::filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit = filePropertiesSizeEnum::Bytes) {
 
     uintmax_t sizeBytes = std::filesystem::file_size(filePath);
 
@@ -364,10 +364,10 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
 
                 currentFileMetadata.filePath = fsStr;
                 currentFileMetadata.fileName = fsObj.filename().u8string();
-                currentFileMetadata.fileSize = filePropertiesSizeGet(fsObj, filePropertiesSizeEnum::Bytes);
+                currentFileMetadata.fileSize = filePropertiesSizeGet(fsObj);
                 currentFileMetadata.fileTypeData = "none";
-                currentFileMetadata.fileOwner = getFilePropertiesOwner(fsStr);
-                currentFileMetadata.fileDateTime = getFilePropertiesTime(fsStr, filePropertiesTimeTypeEnum::TimeAccess);
+                currentFileMetadata.fileOwner = filePropertiesOwnerGet(fsStr);
+                currentFileMetadata.fileDateTime = filePropertiesTimeGet(fsStr);
                 currentFileMetadata.fileHash = fuhp.fileCalculateHash(fsStr);
                 
             } else {
@@ -380,13 +380,12 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
 }
 
 bool FileUtilityHashProvider::fileMetadataCompare() {
-
     return true;
 }
 
 // Block of destructors
 
-void FileUtilityProviderLocal::clearFileMetadata() {
+void FileUtilityProviderLocal::fileMetadataClear() {
     currentFileMetadata = FileMetadata{};
 }
 

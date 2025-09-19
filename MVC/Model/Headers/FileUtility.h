@@ -101,12 +101,12 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
         FileUtilityProviderLocal() {};
 
         virtual void fileMetadataCollectRecursively(std::string directoryRoot) override final;
-        virtual std::string getFilePropertiesTime(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
+        virtual std::string filePropertiesTimeGet(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
         virtual std::string filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit);
-        virtual std::string getFilePropertiesOwner(std::filesystem::path fileSystemObjectPath);
+        virtual std::string filePropertiesOwnerGet(std::filesystem::path fileSystemObjectPath);
 
         virtual FileMetadata fileMetadataGet();
-        virtual void clearFileMetadata();
+        virtual void fileMetadataClear();
 
         virtual ~FileUtilityProviderLocal();
 };
