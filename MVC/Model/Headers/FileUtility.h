@@ -152,7 +152,7 @@ class MultiOSDirectory : public Directory{
         virtual ~MultiOSDirectory() {}
 };*/
 // LRU
-
+/*
 class FileCache {
     private:
         std::unordered_map<std::string, FileMetadata> cache;
@@ -175,5 +175,5 @@ class FileCache {
 
         void cacheLoadFromFile();
 };
-
+*/
 #endif // FILEUTILITY_H
