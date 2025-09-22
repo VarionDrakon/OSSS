@@ -344,6 +344,7 @@ std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePa
 void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string directoryRoot) {
 
     FileUtilityHashProvider fuhp;
+    FileCache fc;
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
         const std::filesystem::path& fsObj = entry.path(); 
@@ -369,6 +370,8 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
                 currentFileMetadata.fileOwner = filePropertiesOwnerGet(fsStr);
                 currentFileMetadata.fileDateTime = filePropertiesTimeGet(fsStr);
                 currentFileMetadata.fileHash = fuhp.fileCalculateHash(fsStr);
+
+                fc.cacheUpdate(currentFileMetadata);
                 
             } else {
                 std::cout << "This is folder or file not found:" << fsStr << " ?" << std::endl;
@@ -377,6 +380,8 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
             std::cerr << "Error getting size for: " << fsStr << " - " << e.what() << std::endl;
         }
     }
+
+    fc.cacheSaveToFile("metadata_snapshot.bin");
 }
 
 bool FileUtilityHashProvider::fileMetadataCompare() {

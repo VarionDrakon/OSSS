@@ -155,25 +155,94 @@ class MultiOSDirectory : public Directory{
 
 class FileCache {
     private:
-        std::unordered_map<std::string, FileMetadata> cache;
+        std::unordered_map<std::string, FileMetadata> cacheStorage;
     
     public:
 
         void cacheUpdate(const FileMetadata& metadata) {
-            cache[metadata.filePath] = metadata;
+            cacheStorage[metadata.filePath] = std::move(metadata);
         }
 
         bool cacheContains(const std::string& path) const {
-            return cache.find(path) != cache.end();
+            return cacheStorage.find(path) != cacheStorage.end();
         }
 
-        FileMetadata cacheGet(const std::string& path) const {
-            return cache.at(path);
+        const FileMetadata* cacheGet(const std::string& path) const {
+            auto iteration = cacheStorage.find(path);
+            if (iteration == cacheStorage.end()) {
+                return nullptr;
+            }
+            return &iteration->second;
         }
 
-        void cacheSaveToFile();
+        const std::unordered_map<std::string, FileMetadata>& cacheGetAll () const {
+            return cacheStorage;
+        }
 
-        void cacheLoadFromFile();
+        bool cacheSaveToFile(const std::string& fileName) {
+            std::ofstream tempFile(fileName, std::ios::binary);
+
+            if (!tempFile) return false;
+
+            size_t countBytes = cacheStorage.size();
+            tempFile.write(reinterpret_cast<const char*>(&countBytes), sizeof(countBytes));
+            
+            for (const auto& pair : cacheStorage) {
+                const auto& meta = pair.second;
+                writeString(tempFile, meta.filePath);
+                writeString(tempFile, meta.fileName);
+                writeString(tempFile, meta.fileSize);
+                writeString(tempFile, meta.fileTypeData);
+                writeString(tempFile, meta.fileOwner);
+                writeString(tempFile, meta.fileDateTime);
+                writeString(tempFile, meta.fileHash);
+            }
+            return true;
+        }
+
+        bool cacheLoadFromFile(const std::string& fileName) {
+            std::ifstream tempFile(fileName, std::ios::binary);
+            if (!tempFile) return false;
+            
+            cacheStorage.clear();
+            
+            size_t countBytes;
+            tempFile.read(reinterpret_cast<char*>(&countBytes), sizeof(countBytes));
+            
+            for (size_t i = 0; i < countBytes; ++i) {
+                FileMetadata meta;
+                meta.filePath = readString(tempFile);
+                meta.fileName = readString(tempFile);
+                meta.fileSize = readString(tempFile);
+                meta.fileTypeData = readString(tempFile);
+                meta.fileOwner = readString(tempFile);
+                meta.fileDateTime = readString(tempFile);
+                meta.fileHash = readString(tempFile);
+                
+                cacheStorage[meta.filePath] = meta;
+            }
+            return true;
+        }
+
+        void cacheClear() {
+            cacheStorage.clear();
+        }
+        
+    private:
+
+        void writeString(std::ofstream& file, const std::string& str) {
+            size_t size = str.size();
+            file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+            file.write(str.c_str(), size);
+        }
+        
+        std::string readString(std::ifstream& file) {
+            size_t size;
+            file.read(reinterpret_cast<char*>(&size), sizeof(size));
+            std::string str(size, ' ');
+            file.read(&str[0], size);
+            return str;
+        }
 };
 
 #endif // FILEUTILITY_H
