@@ -344,7 +344,7 @@ std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePa
 void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string directoryRoot) {
 
     FileUtilityHashProvider fuhp;
-    FileCache fc;
+    FileMetadataStorage fc;
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
         const std::filesystem::path& fsObj = entry.path(); 
@@ -379,9 +379,24 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
         } catch (const std::exception& e) {
             std::cerr << "Error getting size for: " << fsStr << " - " << e.what() << std::endl;
         }
+
+        fc.cacheSaveToFile("metadata_snapshot.bin");
+        std::cout << "Size cacheSaveToFile FileMetadata: " << fc.cacheGetAll().size() << std::endl;
+
+        fc.cacheClear();
+        std::cout << "Size cacheClear FileMetadata: " << fc.cacheGetAll().size() << std::endl;
+
+        fc.cacheLoadFromFile("metadata_snapshot.bin");
+        std::cout << "Size cacheLoadFromFile FileMetadata: " << fc.cacheGetAll().size() << std::endl;
+
+        if (fc.cacheContains(fsObj)) {
+            std::cout << "Found! Hash: " << fc.cacheGet(fsObj)->fileHash << std::endl;
+        }
+        else {
+            std::cout << "Not found" << std::endl;
+        }
     }
 
-    fc.cacheSaveToFile("metadata_snapshot.bin");
 }
 
 bool FileUtilityHashProvider::fileMetadataCompare() {

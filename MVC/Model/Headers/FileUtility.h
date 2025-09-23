@@ -153,7 +153,7 @@ class MultiOSDirectory : public Directory{
 };*/
 // LRU
 
-class FileCache {
+class FileMetadataStorage {
     private:
         std::unordered_map<std::string, FileMetadata> cacheStorage;
     
@@ -175,7 +175,7 @@ class FileCache {
             return &iteration->second;
         }
 
-        const std::unordered_map<std::string, FileMetadata>& cacheGetAll () const {
+        const std::unordered_map<std::string, FileMetadata>& cacheGetAll () {
             return cacheStorage;
         }
 

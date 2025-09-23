@@ -17,10 +17,10 @@ int main(){
     // WebUtility wu;
     FileUtilityProviderLocal fupl;
     
-    while (true){
-        fupl.fileMetadataCollectRecursively("/home/varion_drakon/Documents/Temp/test/");
-
-    } 
+    // while (true){
+    //     fupl.fileMetadataCollectRecursively("/home/varion_drakon/Documents/Temp/test/");
+    // }
+    fupl.fileMetadataCollectRecursively("/home/varion_drakon/Documents/Temp/test/");
     // std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 
     /*
