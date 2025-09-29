@@ -88,7 +88,8 @@
     "typeinfo": "cpp",
     "valarray": "cpp",
     "variant": "cpp",
-    "cerrno": "cpp"
+    "cerrno": "cpp",
+    "hash_map": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

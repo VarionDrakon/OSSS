@@ -155,39 +155,39 @@ class MultiOSDirectory : public Directory{
 
 class FileMetadataStorage {
     private:
-        std::unordered_map<std::string, FileMetadata> cacheStorage;
+        std::unordered_map<std::string, FileMetadata> metadataStorage;
     
     public:
 
-        void cacheUpdate(const FileMetadata& metadata) {
-            cacheStorage[metadata.filePath] = std::move(metadata);
+        void metadataUpdate(const FileMetadata& metadata) {
+            metadataStorage[metadata.filePath] = std::move(metadata);
         }
 
-        bool cacheContains(const std::string& path) const {
-            return cacheStorage.find(path) != cacheStorage.end();
+        bool metadataContains(const std::string& path) const {
+            return metadataStorage.find(path) != metadataStorage.end();
         }
 
-        const FileMetadata* cacheGet(const std::string& path) const {
-            auto iteration = cacheStorage.find(path);
-            if (iteration == cacheStorage.end()) {
+        const FileMetadata* metadataGet(const std::string& path) const {
+            auto iteration = metadataStorage.find(path);
+            if (iteration == metadataStorage.end()) {
                 return nullptr;
             }
             return &iteration->second;
         }
 
-        const std::unordered_map<std::string, FileMetadata>& cacheGetAll () {
-            return cacheStorage;
+        const std::unordered_map<std::string, FileMetadata>& metadataGetAll () {
+            return metadataStorage;
         }
 
-        bool cacheSaveToFile(const std::string& fileName) {
+        bool metadataSaveToFile(const std::string& fileName) {
             std::ofstream tempFile(fileName, std::ios::binary);
 
             if (!tempFile) return false;
 
-            size_t countBytes = cacheStorage.size();
+            size_t countBytes = metadataStorage.size();
             tempFile.write(reinterpret_cast<const char*>(&countBytes), sizeof(countBytes));
             
-            for (const auto& pair : cacheStorage) {
+            for (const auto& pair : metadataStorage) {
                 const auto& meta = pair.second;
                 writeString(tempFile, meta.filePath);
                 writeString(tempFile, meta.fileName);
@@ -200,11 +200,11 @@ class FileMetadataStorage {
             return true;
         }
 
-        bool cacheLoadFromFile(const std::string& fileName) {
+        bool metadataLoadFromFile(const std::string& fileName) {
             std::ifstream tempFile(fileName, std::ios::binary);
             if (!tempFile) return false;
             
-            cacheStorage.clear();
+            metadataStorage.clear();
             
             size_t countBytes;
             tempFile.read(reinterpret_cast<char*>(&countBytes), sizeof(countBytes));
@@ -219,13 +219,13 @@ class FileMetadataStorage {
                 meta.fileDateTime = readString(tempFile);
                 meta.fileHash = readString(tempFile);
                 
-                cacheStorage[meta.filePath] = meta;
+                metadataStorage[meta.filePath] = meta;
             }
             return true;
         }
 
-        void cacheClear() {
-            cacheStorage.clear();
+        void metadataClear() {
+            metadataStorage.clear();
         }
         
     private:
