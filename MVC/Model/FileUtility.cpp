@@ -379,24 +379,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
         } catch (const std::exception& e) {
             std::cerr << "Error getting size for: " << fsStr << " - " << e.what() << std::endl;
         }
-
-        fc.metadataSaveToFile("metadata_snapshot.bin");
-        std::cout << "Size metadataSaveToFile FileMetadata: " << fc.metadataGetAll().size() << std::endl;
-
-        fc.metadataClear();
-        std::cout << "Size metadataClear FileMetadata: " << fc.metadataGetAll().size() << std::endl;
-
-        fc.metadataLoadFromFile("metadata_snapshot.bin");
-        std::cout << "Size metadataLoadFromFile FileMetadata: " << fc.metadataGetAll().size() << std::endl;
-
-        if (fc.metadataContains(fsObj)) {
-            std::cout << "Found! Hash: " << fc.metadataGet(fsObj)->fileHash << std::endl;
-        }
-        else {
-            std::cout << "Not found" << std::endl;
-        }
     }
-
 }
 
 bool FileUtilityHashProvider::fileMetadataCompare() {
