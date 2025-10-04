@@ -151,92 +151,92 @@ class MultiOSDirectory : public Directory{
     public:
         virtual ~MultiOSDirectory() {}
 };*/
-// LRU
 
-class FileMetadataStorage {
+// Snapshot-cache
+class FileMetadataSnapshot {
     private:
-        std::unordered_map<std::string, FileMetadata> metadataStorage;
+        std::unordered_map<std::string, FileMetadata> metadataSnapshot;
     
     public:
 
-        void metadataUpdate(const FileMetadata& metadata) {
-            metadataStorage[metadata.filePath] = std::move(metadata);
+        void metadataSnapshotUpdate(const FileMetadata& metadata) {
+            metadataSnapshot[metadata.filePath] = std::move(metadata);
         }
 
-        bool metadataContains(const std::string& path) const {
-            return metadataStorage.find(path) != metadataStorage.end();
+        bool metadataSnapshotContains(const std::string& path) const {
+            return metadataSnapshot.find(path) != metadataSnapshot.end();
         }
 
-        const FileMetadata* metadataGet(const std::string& path) const {
-            auto iteration = metadataStorage.find(path);
-            if (iteration == metadataStorage.end()) {
+        const FileMetadata* metadataSnapshotGet(const std::string& path) const {
+            auto iteration = metadataSnapshot.find(path);
+            if (iteration == metadataSnapshot.end()) {
                 return nullptr;
             }
             return &iteration->second;
         }
 
-        const std::unordered_map<std::string, FileMetadata>& metadataGetAll () {
-            return metadataStorage;
+        const std::unordered_map<std::string, FileMetadata>& metadataSnapshotGetAll () {
+            return metadataSnapshot;
         }
 
-        bool metadataSaveToFile(const std::string& fileName) {
+        bool metadataSnapshotSaveToFile(const std::string& fileName) {
             std::ofstream tempFile(fileName, std::ios::binary);
 
             if (!tempFile) return false;
 
-            size_t countBytes = metadataStorage.size();
+            size_t countBytes = metadataSnapshot.size();
             tempFile.write(reinterpret_cast<const char*>(&countBytes), sizeof(countBytes));
             
-            for (const auto& pair : metadataStorage) {
+            for (const auto& pair : metadataSnapshot) {
                 const auto& meta = pair.second;
-                writeString(tempFile, meta.filePath);
-                writeString(tempFile, meta.fileName);
-                writeString(tempFile, meta.fileSize);
-                writeString(tempFile, meta.fileTypeData);
-                writeString(tempFile, meta.fileOwner);
-                writeString(tempFile, meta.fileDateTime);
-                writeString(tempFile, meta.fileHash);
+                metadataSnapshotWriteFile(tempFile, meta.filePath);
+                metadataSnapshotWriteFile(tempFile, meta.fileName);
+                metadataSnapshotWriteFile(tempFile, meta.fileSize);
+                metadataSnapshotWriteFile(tempFile, meta.fileTypeData);
+                metadataSnapshotWriteFile(tempFile, meta.fileOwner);
+                metadataSnapshotWriteFile(tempFile, meta.fileDateTime);
+                metadataSnapshotWriteFile(tempFile, meta.fileHash);
             }
             return true;
         }
 
-        bool metadataLoadFromFile(const std::string& fileName) {
+        bool metadataSnapshotLoadFromFile(const std::string& fileName) {
             std::ifstream tempFile(fileName, std::ios::binary);
             if (!tempFile) return false;
             
-            metadataStorage.clear();
+            metadataSnapshot.clear();
             
             size_t countBytes;
             tempFile.read(reinterpret_cast<char*>(&countBytes), sizeof(countBytes));
             
             for (size_t i = 0; i < countBytes; ++i) {
                 FileMetadata meta;
-                meta.filePath = readString(tempFile);
-                meta.fileName = readString(tempFile);
-                meta.fileSize = readString(tempFile);
-                meta.fileTypeData = readString(tempFile);
-                meta.fileOwner = readString(tempFile);
-                meta.fileDateTime = readString(tempFile);
-                meta.fileHash = readString(tempFile);
+                meta.filePath = metadataSnapshotReadFile(tempFile);
+                meta.fileName = metadataSnapshotReadFile(tempFile);
+                meta.fileSize = metadataSnapshotReadFile(tempFile);
+                meta.fileTypeData = metadataSnapshotReadFile(tempFile);
+                meta.fileOwner = metadataSnapshotReadFile(tempFile);
+                meta.fileDateTime = metadataSnapshotReadFile(tempFile);
+                meta.fileHash = metadataSnapshotReadFile(tempFile);
                 
-                metadataStorage[meta.filePath] = meta;
+                metadataSnapshot[meta.filePath] = meta;
             }
             return true;
         }
 
-        void metadataClear() {
-            metadataStorage.clear();
+        void metadataSnapshotClear() {
+            metadataSnapshot.clear();
         }
         
     private:
 
-        void writeString(std::ofstream& file, const std::string& str) {
+        void metadataSnapshotWriteFile(std::ofstream& file, const std::string& str) {
             size_t size = str.size();
             file.write(reinterpret_cast<const char*>(&size), sizeof(size));
             file.write(str.c_str(), size);
         }
         
-        std::string readString(std::ifstream& file) {
+        std::string metadataSnapshotReadFile(std::ifstream& file) {
             size_t size;
             file.read(reinterpret_cast<char*>(&size), sizeof(size));
             std::string str(size, ' ');

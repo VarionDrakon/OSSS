@@ -344,7 +344,7 @@ std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePa
 void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string directoryRoot) {
 
     FileUtilityHashProvider fuhp;
-    FileMetadataStorage fc;
+    FileMetadataSnapshot fms;
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
         const std::filesystem::path& fsObj = entry.path(); 
@@ -369,17 +369,22 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
                 currentFileMetadata.fileTypeData = "none";
                 currentFileMetadata.fileOwner = filePropertiesOwnerGet(fsStr);
                 currentFileMetadata.fileDateTime = filePropertiesTimeGet(fsStr);
-                currentFileMetadata.fileHash = fuhp.fileCalculateHash(fsStr);
+                // currentFileMetadata.fileHash = fuhp.fileCalculateHash(fsStr);
+                currentFileMetadata.fileHash = "none";
 
-                fc.metadataUpdate(currentFileMetadata);
+                fms.metadataSnapshotUpdate(currentFileMetadata);
                 
             } else {
                 std::cout << "This is folder or file not found:" << fsStr << " ?" << std::endl;
             }
+
         } catch (const std::exception& e) {
-            std::cerr << "Error getting size for: " << fsStr << " - " << e.what() << std::endl;
+            std::cerr << "Error getting information for: " << fsStr << " - " << e.what() << std::endl;
         }
     }
+
+    fms.metadataSnapshotSaveToFile("metadata_snapshot.bin");
+    std::cout << "Snapshot the metadata has been created!" << std::endl;
 }
 
 bool FileUtilityHashProvider::fileMetadataCompare() {

@@ -20,23 +20,23 @@ int main(){
     // while (true){
     //     fupl.fileMetadataCollectRecursively("/home/varion_drakon/Documents/Temp/test/");
     // }
-    fupl.fileMetadataCollectRecursively("/usr");
+    fupl.fileMetadataCollectRecursively("/mnt/sda/SteamLibrary/");
     // std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 
     
-    while(true) { // General Operation Mode - GOM
+    // while(true) { // General Operation Mode - GOM
 
-        // if(isEnabledWebInterface){
+    //     // if(isEnabledWebInterface){
 
-        //     struct mg_mgr mgr;  // Mongoose event manager. Holds all connections
-        //     mg_mgr_init(&mgr);  // Initialise event manager
-        //     mg_http_listen(&mgr, "http://localhost:8000", wu.httpHandler, nullptr);  // Setup listener
+    //     //     struct mg_mgr mgr;  // Mongoose event manager. Holds all connections
+    //     //     mg_mgr_init(&mgr);  // Initialise event manager
+    //     //     mg_http_listen(&mgr, "http://localhost:8000", wu.httpHandler, nullptr);  // Setup listener
 
-        //     for (;;) {
-        //         mg_mgr_poll(&mgr, 1000);  // Infinite event loop
-        //     }
-        // }
-    }
+    //     //     for (;;) {
+    //     //         mg_mgr_poll(&mgr, 1000);  // Infinite event loop
+    //     //     }
+    //     // }
+    // }
 
     return 0;
 }
