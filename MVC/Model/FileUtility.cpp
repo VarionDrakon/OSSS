@@ -282,10 +282,6 @@ std::string FileUtilityProviderLocal::filePropertiesOwnerGet(std::filesystem::pa
 
 #endif
 
-FileMetadata FileUtilityProviderLocal::fileMetadataGet() {
-    return currentFileMetadata;
-}
-
 std::string FileUtilityProviderLocal::filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit = filePropertiesSizeEnum::Bytes) {
 
     uintmax_t sizeBytes = std::filesystem::file_size(filePath);
@@ -349,9 +345,10 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
     for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
         const std::filesystem::path& fsObj = entry.path(); 
         std::string fsStr = fsObj.u8string();
-
         try {
             
+            fms.metadataSnapshotLoadFromFile("metadata_snapshot.bin");
+
             if (!std::filesystem::exists(fsStr)){
                 std::cout << "File not found: " << fsStr << std::endl;
                 continue;
@@ -360,8 +357,11 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
             if (!std::filesystem::is_directory(fsStr)) {
                 std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
 
-
-                std::cout << FileUtilityProviderLocal::fileMetadataGet() << std::endl;
+                if (fms.metadataSnapshotContains(fsStr)) {
+                    std::cout << "The file found: " << fsStr << std::endl;
+                } else {
+                    std::cout << "The file not found: " << fsStr << std::endl;
+                }
 
                 currentFileMetadata.filePath = fsStr;
                 currentFileMetadata.fileName = fsObj.filename().u8string();

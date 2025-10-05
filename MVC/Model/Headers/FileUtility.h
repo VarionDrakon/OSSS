@@ -57,17 +57,17 @@ struct FileMetadata {
     std::string fileHash;
 };
 
-inline std::ostream& operator<<(std::ostream& os, const FileMetadata& fm) {
-    os << "File path: " << fm.filePath 
-        << "\nFile Name: " << fm.fileName
-        << "\nFile Size: " << fm.fileSize
-        << "\nFile TypeData: " << fm.fileTypeData
-        << "\nFile Owner: " << fm.fileOwner
-        << "\nFile DateTime: " << fm.fileDateTime
-        << "\nFile Hash: " << fm.fileHash 
-        << std::endl;
-    return os;
-}
+// inline std::ostream& operator<<(std::ostream& os, const FileMetadata& fm) {
+//     os << "File path: " << fm.filePath 
+//         << "\nFile Name: " << fm.fileName
+//         << "\nFile Size: " << fm.fileSize
+//         << "\nFile TypeData: " << fm.fileTypeData
+//         << "\nFile Owner: " << fm.fileOwner
+//         << "\nFile DateTime: " << fm.fileDateTime
+//         << "\nFile Hash: " << fm.fileHash 
+//         << std::endl;
+//     return os;
+// }
 
 class FileUtility {
     private:
@@ -105,7 +105,6 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
         virtual std::string filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit);
         virtual std::string filePropertiesOwnerGet(std::filesystem::path fileSystemObjectPath);
 
-        virtual FileMetadata fileMetadataGet();
         virtual void fileMetadataClear();
 
         virtual ~FileUtilityProviderLocal();
