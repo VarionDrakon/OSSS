@@ -414,7 +414,7 @@ bool FileMetadataSnapshot::metadataSnapshotSaveToFile() {
     std::tm time = *std::localtime(&time_t);
     
     std::stringstream stringStream;
-    stringStream << "snapshop_"
+    stringStream << "snapshot_"
             << std::put_time(&time, "%Y-%m-%d_%H-%M-%S")
             << ".dat";
 
