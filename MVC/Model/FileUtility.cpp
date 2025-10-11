@@ -375,7 +375,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
         }
     }
 
-    fms.metadataSnapshotSaveToFile("metadata_snapshot.bin");
+    fms.metadataSnapshotSaveToFile();
     std::cout << "Snapshot the metadata has been created!" << std::endl;
 }
 
@@ -408,7 +408,18 @@ const std::unordered_map<std::string, FileMetadata>& FileMetadataSnapshot::metad
     return metadataSnapshot;
 }
 
-bool FileMetadataSnapshot::metadataSnapshotSaveToFile(const std::string& fileName) {
+bool FileMetadataSnapshot::metadataSnapshotSaveToFile() {
+    auto now = std::chrono::system_clock::now();
+    auto time_t = std::chrono::system_clock::to_time_t(now);
+    std::tm time = *std::localtime(&time_t);
+    
+    std::stringstream stringStream;
+    stringStream << "snapshop_"
+            << std::put_time(&time, "%Y-%m-%d_%H-%M-%S")
+            << ".dat";
+
+    std::string fileName = stringStream.str();
+
     std::ofstream tempFile(fileName, std::ios::binary);
 
     if (!tempFile) return false;

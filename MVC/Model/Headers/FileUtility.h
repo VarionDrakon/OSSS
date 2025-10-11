@@ -168,18 +168,18 @@ class FileMetadataSnapshot {
 
         const std::unordered_map<std::string, FileMetadata>& metadataSnapshotGetAll();
 
-        bool metadataSnapshotSaveToFile(const std::string& fileName);
+        bool metadataSnapshotSaveToFile();
 
         bool metadataSnapshotLoadFromFile(const std::string& fileName);
 
         void metadataSnapshotClear();
 };
 
-struct FileMetadataStatus {
-    std::vector<FileMeta> addedFiles;
-    std::vector<FileMeta> modifiedFiles;
-    std::vector<std::string> deletedFiles;
-};
+// struct FileMetadataStatus {
+//     std::vector<FileMeta> addedFiles;
+//     std::vector<FileMeta> modifiedFiles;
+//     std::vector<std::string> deletedFiles;
+// };
 
 class FileMetadataUtility {
     private:
