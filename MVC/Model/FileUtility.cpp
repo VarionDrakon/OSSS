@@ -341,6 +341,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
 
     FileUtilityHashProvider fuhp;
     FileMetadataSnapshot fms;
+    FileMetadataUtility fmu;
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
         const std::filesystem::path& fsObj = entry.path(); 
@@ -377,6 +378,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
 
     fms.metadataSnapshotSaveToFile();
     std::cout << "Snapshot the metadata has been created!" << std::endl;
+    fmu.fileMetadataUtilityCompare();
 }
 
 bool FileUtilityHashProvider::fileMetadataCompare() {
@@ -440,6 +442,27 @@ bool FileMetadataSnapshot::metadataSnapshotSaveToFile() {
     return true;
 }
 
+bool FileMetadataSnapshot::metadataSnapshotLoadLatestFile() {
+    std::string latest;
+
+    try {
+        for (const auto &entry : std::filesystem::directory_iterator(".")) {
+            if (entry.path().extension() == ".dat" && entry.path().string().find("snapshot_") != std::string::npos) {
+                if (latest.empty() || entry.path().string() > latest) {
+                    latest = entry.path().string();
+                }
+            }
+        }
+        std::cout << "Load path: " << latest << std::endl;
+        metadataSnapshotLoadFromFile(latest);
+        return true;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error load latest snapshot: " << e.what() << std::endl;
+        return false;
+    }
+}
+
 bool FileMetadataSnapshot::metadataSnapshotLoadFromFile(const std::string& fileName) {
     std::ifstream tempFile(fileName, std::ios::binary);
     if (!tempFile) return false;
@@ -458,7 +481,7 @@ bool FileMetadataSnapshot::metadataSnapshotLoadFromFile(const std::string& fileN
         meta.fileOwner = metadataSnapshotReadFile(tempFile);
         meta.fileDateTime = metadataSnapshotReadFile(tempFile);
         meta.fileHash = metadataSnapshotReadFile(tempFile);
-        
+
         metadataSnapshot[meta.filePath] = meta;
     }
     return true;
@@ -484,13 +507,14 @@ std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream& file) 
 
 void FileMetadataUtility::fileMetadataUtilityCompare() {
     FileMetadataSnapshot fms;
-    fms.metadataSnapshotLoadFromFile("metadata_snapshot.bin");
 
-    // if (fms.metadataSnapshotContains(path)) {
-    //     std::cout << "The file found: " << path << std::endl;
-    // } else {
-    //     std::cout << "The file not found: " << path << std::endl;
-    // }
+    if (fms.metadataSnapshotLoadLatestFile()) {
+        std::cout << "Latest snapshot load - success!" << std::endl;
+    }
+    else {
+        std::cout << "Latest snapshot load - error!" << std::endl;
+    }
+    
 
 }
 

@@ -45,3 +45,6 @@ bin
 
 # Folder for cmake.
 build
+
+# Temp and binary files.
+*.dat

@@ -170,6 +170,8 @@ class FileMetadataSnapshot {
 
         bool metadataSnapshotSaveToFile();
 
+        bool metadataSnapshotLoadLatestFile();
+
         bool metadataSnapshotLoadFromFile(const std::string& fileName);
 
         void metadataSnapshotClear();
