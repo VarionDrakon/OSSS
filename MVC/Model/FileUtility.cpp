@@ -346,8 +346,6 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
         const std::filesystem::path& fsObj = entry.path(); 
         std::string fsStr = fsObj.u8string();
         try {
-            
-            fms.metadataSnapshotLoadFromFile("metadata_snapshot.bin");
 
             if (!std::filesystem::exists(fsStr)){
                 std::cout << "File not found: " << fsStr << std::endl;
@@ -356,12 +354,6 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
 
             if (!std::filesystem::is_directory(fsStr)) {
                 std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
-
-                if (fms.metadataSnapshotContains(fsStr)) {
-                    std::cout << "The file found: " << fsStr << std::endl;
-                } else {
-                    std::cout << "The file not found: " << fsStr << std::endl;
-                }
 
                 currentFileMetadata.filePath = fsStr;
                 currentFileMetadata.fileName = fsObj.filename().u8string();
@@ -477,6 +469,18 @@ std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream& file) 
     std::string str(size, ' ');
     file.read(&str[0], size);
     return str;
+}
+
+void FileMetadataUtility::fileMetadataUtilityCompare() {
+    FileMetadataSnapshot fms;
+    fms.metadataSnapshotLoadFromFile("metadata_snapshot.bin");
+
+    // if (fms.metadataSnapshotContains(path)) {
+    //     std::cout << "The file found: " << path << std::endl;
+    // } else {
+    //     std::cout << "The file not found: " << path << std::endl;
+    // }
+
 }
 
 // Block of destructors

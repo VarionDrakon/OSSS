@@ -175,12 +175,27 @@ class FileMetadataSnapshot {
         void metadataSnapshotClear();
 };
 
+struct FileMetadataStatus {
+    std::vector<FileMeta> addedFiles;
+    std::vector<FileMeta> modifiedFiles;
+    std::vector<std::string> deletedFiles;
+};
+
 class FileMetadataUtility {
     private:
         std::unordered_map<std::string, FileMetadata> metadataSnapshotDifferences;
 
     public:
         void fileMetadataUtilityCompare();
+
+};
+
+class FileUtilityJSON {
+    private:
+
+    public:
+        void JSONSerialization();
+        void JSONDeserialization();
 
 };
 
