@@ -375,10 +375,10 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
             std::cerr << "Error getting information for: " << fsStr << " - " << e.what() << std::endl;
         }
     }
-
+fmu.fileMetadataUtilityCompare();
     fms.metadataSnapshotSaveToFile();
     std::cout << "Snapshot the metadata has been created!" << std::endl;
-    fmu.fileMetadataUtilityCompare();
+    
 }
 
 bool FileUtilityHashProvider::fileMetadataCompare() {
@@ -508,13 +508,12 @@ std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream& file) 
 void FileMetadataUtility::fileMetadataUtilityCompare() {
     FileMetadataSnapshot fms;
 
-    if (fms.metadataSnapshotLoadLatestFile()) {
-        std::cout << "Latest snapshot load - success!" << std::endl;
+    if (!fms.metadataSnapshotLoadLatestFile()) {
+        std::cout << "No previous snapshots were found. The next snapshot will be the first." << std::endl;
     }
     else {
-        std::cout << "Latest snapshot load - error!" << std::endl;
+        std::cout << "Previous snapshot found. This snapshot will be considered the latest." << std::endl;
     }
-    
 
 }
 
