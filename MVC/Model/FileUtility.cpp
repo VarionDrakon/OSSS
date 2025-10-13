@@ -315,7 +315,7 @@ std::string FileUtilityProviderLocal::filePropertiesSizeGet(const std::filesyste
 
     @return true, if hash calculate successful, else false with error message.
 */
-std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath) {
+std::string FileUtilityHashProvider::fileCalculateHash(const std::string &filePath) {
 
         SHA256Algorithm calculateHashSHA256;
 
@@ -375,10 +375,11 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
             std::cerr << "Error getting information for: " << fsStr << " - " << e.what() << std::endl;
         }
     }
-fmu.fileMetadataUtilityCompare();
-    fms.metadataSnapshotSaveToFile();
-    std::cout << "Snapshot the metadata has been created!" << std::endl;
     
+    fmu.fileMetadataUtilityCompare(fms, fms.metadataSnapshotGetAll());
+
+    // fms.metadataSnapshotSaveToFile();
+    // std::cout << "Snapshot the metadata has been created!" << std::endl;    
 }
 
 bool FileUtilityHashProvider::fileMetadataCompare() {
@@ -390,15 +391,15 @@ void FileUtilityProviderLocal::fileMetadataClear() {
 }
 
 
-void FileMetadataSnapshot::metadataSnapshotUpdate(const FileMetadata& metadata) {
+void FileMetadataSnapshot::metadataSnapshotUpdate(const FileMetadata &metadata) {
     metadataSnapshot[metadata.filePath] = std::move(metadata);
 }
 
-bool FileMetadataSnapshot::metadataSnapshotContains(const std::string& path) const {
+bool FileMetadataSnapshot::metadataSnapshotContains(const std::string &path) const {
     return metadataSnapshot.find(path) != metadataSnapshot.end();
 }
 
-const FileMetadata* FileMetadataSnapshot::metadataSnapshotGet(const std::string& path) const {
+const FileMetadata* FileMetadataSnapshot::metadataSnapshotGet(const std::string &path) const {
     auto iteration = metadataSnapshot.find(path);
     if (iteration == metadataSnapshot.end()) {
         return nullptr;
@@ -429,8 +430,8 @@ bool FileMetadataSnapshot::metadataSnapshotSaveToFile() {
     size_t countBytes = metadataSnapshot.size();
     tempFile.write(reinterpret_cast<const char*>(&countBytes), sizeof(countBytes));
     
-    for (const auto& pair : metadataSnapshot) {
-        const auto& meta = pair.second;
+    for (const auto& metadata : metadataSnapshot) {
+        const auto& meta = metadata.second;
         metadataSnapshotWriteFile(tempFile, meta.filePath);
         metadataSnapshotWriteFile(tempFile, meta.fileName);
         metadataSnapshotWriteFile(tempFile, meta.fileSize);
@@ -453,17 +454,17 @@ bool FileMetadataSnapshot::metadataSnapshotLoadLatestFile() {
                 }
             }
         }
-        std::cout << "Load path: " << latest << std::endl;
+
         metadataSnapshotLoadFromFile(latest);
         return true;
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e) {
         std::cerr << "Error load latest snapshot: " << e.what() << std::endl;
         return false;
     }
 }
 
-bool FileMetadataSnapshot::metadataSnapshotLoadFromFile(const std::string& fileName) {
+bool FileMetadataSnapshot::metadataSnapshotLoadFromFile(const std::string &fileName) {
     std::ifstream tempFile(fileName, std::ios::binary);
     if (!tempFile) return false;
     
@@ -491,13 +492,13 @@ void FileMetadataSnapshot::metadataSnapshotClear() {
     metadataSnapshot.clear();
 }
 
-void FileMetadataSnapshot::metadataSnapshotWriteFile(std::ofstream& file, const std::string& str) {
+void FileMetadataSnapshot::metadataSnapshotWriteFile(std::ofstream &file, const std::string &str) {
     size_t size = str.size();
     file.write(reinterpret_cast<const char*>(&size), sizeof(size));
     file.write(str.c_str(), size);
 }
 
-std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream& file) {
+std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream &file) {
     size_t size;
     file.read(reinterpret_cast<char*>(&size), sizeof(size));
     std::string str(size, ' ');
@@ -505,16 +506,29 @@ std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream& file) 
     return str;
 }
 
-void FileMetadataUtility::fileMetadataUtilityCompare() {
+void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot &currentSnapshot, const std::unordered_map<std::string, FileMetadata> &collectMetadata) {
+
     FileMetadataSnapshot fms;
 
     if (!fms.metadataSnapshotLoadLatestFile()) {
         std::cout << "No previous snapshots were found. The next snapshot will be the first." << std::endl;
-    }
-    else {
-        std::cout << "Previous snapshot found. This snapshot will be considered the latest." << std::endl;
+        return;
     }
 
+    for (const auto &[path, meta] : collectMetadata) {
+        if (!fms.metadataSnapshotContains(path)) {
+            std::cout << "NEW: " << meta.filePath << std::endl;
+        }
+        if (fms.metadataSnapshotGet(path) && fms.metadataSnapshotGet(path)->fileSize != meta.fileSize) {
+            std::cout << "MOD: " << meta.filePath << std::endl;
+        }
+    }
+
+    for (const auto &[path, meta] : fms.metadataSnapshotGetAll()) {
+        if (collectMetadata.find(path) == collectMetadata.end()) {
+            std::cout << "DEL: " << meta.filePath << std::endl;
+        }
+    }
 }
 
 // Block of destructors

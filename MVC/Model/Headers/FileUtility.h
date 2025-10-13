@@ -95,9 +95,11 @@ class FileUtilityProvider : public FileUtility {
 
 class FileUtilityProviderLocal : public FileUtilityProvider {
     private:
-        FileMetadata currentFileMetadata;
+       
 
     public:
+        FileMetadata currentFileMetadata;
+
         FileUtilityProviderLocal() {};
 
         virtual void fileMetadataCollectRecursively(std::string directoryRoot) override final;
@@ -153,26 +155,28 @@ class MultiOSDirectory : public Directory{
 // Snapshot-cache
 class FileMetadataSnapshot {
     private:
-        std::unordered_map<std::string, FileMetadata> metadataSnapshot;
-
-        void metadataSnapshotWriteFile(std::ofstream& file, const std::string& str);
         
-        std::string metadataSnapshotReadFile(std::ifstream& file);
+
+        void metadataSnapshotWriteFile(std::ofstream &file, const std::string &str);
+        
+        std::string metadataSnapshotReadFile(std::ifstream &file);
 
     public:
-        void metadataSnapshotUpdate(const FileMetadata& metadata);
+        std::unordered_map<std::string, FileMetadata> metadataSnapshot;
 
-        bool metadataSnapshotContains(const std::string& path) const;
+        void metadataSnapshotUpdate(const FileMetadata &metadata);
 
-        const FileMetadata* metadataSnapshotGet(const std::string& path) const;
+        bool metadataSnapshotContains(const std::string &path) const;
 
-        const std::unordered_map<std::string, FileMetadata>& metadataSnapshotGetAll();
+        const FileMetadata* metadataSnapshotGet(const std::string &path) const;
+
+        const std::unordered_map<std::string, FileMetadata> &metadataSnapshotGetAll();
 
         bool metadataSnapshotSaveToFile();
 
         bool metadataSnapshotLoadLatestFile();
 
-        bool metadataSnapshotLoadFromFile(const std::string& fileName);
+        bool metadataSnapshotLoadFromFile(const std::string &fileName);
 
         void metadataSnapshotClear();
 };
@@ -185,10 +189,10 @@ class FileMetadataSnapshot {
 
 class FileMetadataUtility {
     private:
-        std::unordered_map<std::string, FileMetadata> metadataSnapshotDifferences;
+        // std::unordered_map<std::string, FileMetadata> metadataSnapshotDifferences;
 
     public:
-        void fileMetadataUtilityCompare();
+        void fileMetadataUtilityCompare(const FileMetadataSnapshot &currentSnapshot, const std::unordered_map<std::string, FileMetadata> &collectedMetadata);
 
 };
 
