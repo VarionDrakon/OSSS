@@ -507,7 +507,6 @@ std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream &file) 
 }
 
 void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot &currentSnapshot, const std::unordered_map<std::string, FileMetadata> &collectMetadata) {
-
     FileMetadataSnapshot fms;
 
     if (!fms.metadataSnapshotLoadLatestFile()) {
@@ -515,18 +514,28 @@ void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot 
         return;
     }
 
-    for (const auto &[path, meta] : collectMetadata) {
-        if (!fms.metadataSnapshotContains(path)) {
-            std::cout << "NEW: " << meta.filePath << std::endl;
+    for (const auto &[path, metaCur] : collectMetadata) {
+        const FileMetadata* metaPast = fms.metadataSnapshotGet(path);
+
+        if (!metaPast) {
+            std::cout << "NEW: " << metaCur.filePath << std::endl;
+            continue;
         }
-        if (fms.metadataSnapshotGet(path) && fms.metadataSnapshotGet(path)->fileSize != meta.fileSize) {
-            std::cout << "MOD: " << meta.filePath << std::endl;
+
+        if (metaPast->fileSize != metaCur.fileSize ||
+            metaPast->fileHash != metaCur.fileHash ||
+            metaPast->fileOwner != metaCur.fileOwner ||
+            metaPast->fileDateTime != metaCur.fileDateTime ||
+            metaPast->filePath != metaCur.filePath) {
+            std::cout << "MOD: " << metaCur.filePath << std::endl;
+            continue;
         }
     }
 
-    for (const auto &[path, meta] : fms.metadataSnapshotGetAll()) {
+    for (const auto &[path, metaCur] : fms.metadataSnapshotGetAll()) {
         if (collectMetadata.find(path) == collectMetadata.end()) {
-            std::cout << "DEL: " << meta.filePath << std::endl;
+            std::cout << "DEL: " << metaCur.filePath << std::endl;
+            continue;
         }
     }
 }
