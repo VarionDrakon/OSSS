@@ -368,7 +368,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
                 fms.metadataSnapshotUpdate(currentFileMetadata);
                 
             } else {
-                std::cout << "This is folder or file not found:" << fsStr << " ?" << std::endl;
+                std::cout << "This is folder: " << fsStr << " ?" << std::endl;
             }
 
         } catch (const std::exception& e) {
@@ -378,8 +378,8 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
     
     fmu.fileMetadataUtilityCompare(fms, fms.metadataSnapshotGetAll());
 
-    // fms.metadataSnapshotSaveToFile();
-    // std::cout << "Snapshot the metadata has been created!" << std::endl;    
+    fms.metadataSnapshotSaveToFile();
+    std::cout << "Snapshot the metadata has been created!" << std::endl;    
 }
 
 bool FileUtilityHashProvider::fileMetadataCompare() {

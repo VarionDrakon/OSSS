@@ -20,7 +20,7 @@ int main(){
     // while (true){
     //     fupl.fileMetadataCollectRecursively("/home/varion_drakon/Documents/Temp/test/");
     // }
-    fupl.fileMetadataCollectRecursively("/mnt/sda/utils/");
+    fupl.fileMetadataCollectRecursively("/home/varion_drakon/.cache/chromium/");
     // std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 
     
