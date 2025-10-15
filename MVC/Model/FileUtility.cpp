@@ -497,7 +497,7 @@ void FileMetadataSnapshot::metadataSnapshotWriteFile(std::ofstream &file, const 
     file.write(reinterpret_cast<const char*>(&size), sizeof(size));
     file.write(str.c_str(), size);
 }
-я
+
 std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream &file) {
     size_t size;
     file.read(reinterpret_cast<char*>(&size), sizeof(size));
@@ -540,6 +540,53 @@ void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot 
     }
 }
 
+
+void FileImage::imageCollect() {
+    std::ofstream imageFile("backFile.dat", std::ios::binary);
+
+    const char imageSignature[] = "Test data";
+    imageFile.write(imageSignature, sizeof(imageSignature));
+
+    std::vector<std::string> files;
+
+    for (const auto &entry : std::filesystem::recursive_directory_iterator("/mnt/sda/utils/")) {
+        if (entry.is_regular_file()) {
+            files.push_back(entry.path().string());
+        }
+    }
+
+    size_t filesSize = files.size();
+    imageFile.write(reinterpret_cast<const char*>(&filesSize), sizeof(filesSize));
+
+    for (const auto &file : files) {
+        size_t fileSize = file.size();
+
+        std::ifstream fileSource(file, std::ios::binary);
+
+        imageFile.write(reinterpret_cast<const char*>(&fileSize), sizeof(fileSize));
+        imageFile.write(file.c_str(), fileSize);
+
+        fileSource.seekg(0, std::ios::end);
+        uintmax_t fileSourceSize = fileSource.tellg();
+        fileSource.seekg(0, std::ios::beg);
+
+        imageFile.write(reinterpret_cast<const char*>(&fileSourceSize), sizeof(fileSourceSize));
+
+        char buffer[4096];
+        uintmax_t fileReadTotal = 0;
+
+        while (fileReadTotal < fileSourceSize) {
+            fileSource.read(buffer, sizeof(buffer));
+            size_t bytesRead = fileSource.gcount();
+            imageFile.write(buffer, sizeof(buffer));
+            fileReadTotal += bytesRead;
+        }
+        
+        std::cout << "Backed up: " << file << std::endl;
+    }
+
+    std::cout << "Backup reated! Files: " << filesSize << std::endl;
+}
 // Block of destructors
 
 FileUtilityProviderLocal::~FileUtilityProviderLocal() {

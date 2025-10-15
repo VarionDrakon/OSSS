@@ -16,11 +16,13 @@ int main(){
     // FileUtilityAlgorithmProvider fhap;
     // WebUtility wu;
     FileUtilityProviderLocal fupl;
+    FileImage fi;
     
     // while (true){
     //     fupl.fileMetadataCollectRecursively("/home/varion_drakon/Documents/Temp/test/");
     // }
-    fupl.fileMetadataCollectRecursively("/home/varion_drakon/.cache/chromium/");
+    // fupl.fileMetadataCollectRecursively("/home/varion_drakon/.cache/chromium/");
+    fi.imageCollect();
     // std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 
     
