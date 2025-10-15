@@ -497,7 +497,7 @@ void FileMetadataSnapshot::metadataSnapshotWriteFile(std::ofstream &file, const 
     file.write(reinterpret_cast<const char*>(&size), sizeof(size));
     file.write(str.c_str(), size);
 }
-
+я
 std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream &file) {
     size_t size;
     file.read(reinterpret_cast<char*>(&size), sizeof(size));

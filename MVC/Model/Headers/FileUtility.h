@@ -196,13 +196,22 @@ class FileMetadataUtility {
 
 };
 
-class FileUtilityJSON {
+class FileImage {
     private:
 
     public:
-        void JSONSerialization();
-        void JSONDeserialization();
+        void imageCollect();
+        void imageDisperse();
 
 };
+
+// class FileUtilityJSON {
+//     private:
+
+//     public:
+//         void JSONSerialization();
+//         void JSONDeserialization();
+
+// };
 
 #endif // FILEUTILITY_H
