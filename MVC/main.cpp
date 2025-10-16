@@ -22,7 +22,10 @@ int main(){
     //     fupl.fileMetadataCollectRecursively("/home/varion_drakon/Documents/Temp/test/");
     // }
     // fupl.fileMetadataCollectRecursively("/home/varion_drakon/.cache/chromium/");
+
     fi.imageCollect();
+    fi.imageDisperse();
+
     // std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 
     
