@@ -540,7 +540,6 @@ void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot 
     }
 }
 
-
 void FileImage::imageCollect() {
     std::ofstream imageFile("backFile.dat", std::ios::binary);
 
@@ -557,28 +556,32 @@ void FileImage::imageCollect() {
 
     size_t filesSize = filesCount.size();
     imageFile.write(reinterpret_cast<const char*>(&filesSize), sizeof(filesSize));
+    std::cout << "size_t filesSize: " << filesSize << std::endl;
 
     for (const auto &file : filesCount) {
+        std::cout << "\nconst auto &file: " << file << std::endl;
+
         size_t pathSize = file.size();
         imageFile.write(reinterpret_cast<const char*>(&pathSize), sizeof(pathSize));
         imageFile.write(file.c_str(), pathSize);
+        std::cout << "size_t pathSize: " << pathSize << std::endl;
 
         std::ifstream fileSource(file, std::ios::binary);
+        std::cout << "fileSource.tellg(): " << fileSource.tellg() << std::endl;
 
         fileSource.seekg(0, std::ios::end);
         uintmax_t fileSourceSize = fileSource.tellg();
         fileSource.seekg(0, std::ios::beg);
+        std::cout << "uintmax_t fileSourceSize: " << fileSourceSize << std::endl;
 
         imageFile.write(reinterpret_cast<const char*>(&fileSourceSize), sizeof(fileSourceSize));
-
+        
         char buffer[4096];
         while (fileSource.read(buffer, sizeof(buffer)) || fileSource.gcount()) {
             imageFile.write(buffer, fileSource.gcount());
         }
-        
-        std::cout << "Backed up: " << file << std::endl;
+        std::cout << "\nBacked up: " << file << std::endl;
     }
-
     std::cout << "Backup created! Files: " << filesSize << std::endl;
 }
 
@@ -587,22 +590,29 @@ void FileImage::imageDisperse() {
 
     char signature[10];
     imageFile.read(signature, sizeof(signature));
+    std::cout << "\nchar signature[10]: " << signature << std::endl;
 
     size_t filesSize;
     imageFile.read(reinterpret_cast<char*>(&filesSize), sizeof(filesSize));
+    std::cout << "size_t filesSize: " << filesSize << std::endl;
 
     for (size_t s = 0; s < filesSize; s++) {
         size_t pathSize;
         imageFile.read(reinterpret_cast<char*>(&pathSize), sizeof(pathSize));
+        std::cout << "\nsize_t pathSize: " << pathSize << std::endl;
 
         std::string filePath(pathSize, ' ');
         imageFile.read(&filePath[0], pathSize);
+        std::cout << "std::string filePath(pathSize, ' '): " << filePath << std::endl;
 
         uintmax_t fileSize;
         imageFile.read(reinterpret_cast<char*>(&fileSize), sizeof(fileSize));
+        std::cout << "uintmax_t fileSize: " << fileSize << std::endl;
 
         std::filesystem::path imageFilePathOriginal(filePath);
+        std::cout << "std::filesystem::path imageFilePathOriginal(filePath): " << imageFilePathOriginal.filename().string() << std::endl;
         std::string imagePathRestore = "/mnt/sda/test-restore/" + imageFilePathOriginal.filename().string();
+        std::cout << "std::string imagePathRestore: " << imagePathRestore << std::endl;
 
         std::ofstream fileSourceOutput(imagePathRestore, std::ios::binary);
 
@@ -615,10 +625,8 @@ void FileImage::imageDisperse() {
             fileSourceOutput.write(buffer, imageFile.gcount());
             remainder -= imageFile.gcount();
         }
-
         std::cout << "Restored: " << imagePathRestore << " (" << fileSize << " bytes)" << std::endl;
     }
-
     std::cout << "Restore completed! Files: " << filesSize << std::endl;
 }
 // Block of destructors
