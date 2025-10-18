@@ -591,7 +591,7 @@ void FileImage::imageCollect() {
 void FileImage::imageDisperse() {
     std::ifstream imageFile("backFile.dat", std::ios::binary);
 
-    std::string pathAbsoluteRecover = "/mnt/sda/test-restore/";
+    std::string pathDisperseFiles = "/mnt/sda/test-restore/";
 
     char signature[10];
     imageFile.read(signature, sizeof(signature));
@@ -616,18 +616,18 @@ void FileImage::imageDisperse() {
 
         std::filesystem::path imageFilePathOriginal(filePath);
 
-        // imageFilePathOriginal.parent_path();
+        std::filesystem::path pathDisperseFile = pathDisperseFiles / imageFilePathOriginal.parent_path();
 
-        // if (!std::filesystem::exists(pathParentRecover)) {
-        //     std::filesystem::create_directory(pathParentRecover);
-        //     std::cout << "std::filesystem::create_directory(pathRecover) == true" << std::endl;
-        // } else {
-        //     std::cout << "std::filesystem::create_directory(pathRecover) == false" << std::endl;
-        // }
+        if (!std::filesystem::exists(pathDisperseFile)) {
+            std::filesystem::create_directory(pathDisperseFile);
+            std::cout << "std::filesystem::create_directory(pathDisperseFile) == true" << std::endl;
+        } else {
+            std::cout << "std::filesystem::create_directory(pathDisperseFile) == false" << std::endl;
+        }
 
-        std::string imageFilePathRestore = pathAbsoluteRecover + imageFilePathOriginal.filename().string();
+        std::filesystem::path imageFilePathDisperseRestore = pathDisperseFile / imageFilePathOriginal.filename();
 
-        std::ofstream fileSourceOutput(imageFilePathRestore, std::ios::binary);
+        std::ofstream fileSourceOutput(imageFilePathDisperseRestore, std::ios::binary);
 
         char buffer[4096];
         uintmax_t fileReadTotal = 0;
@@ -638,7 +638,7 @@ void FileImage::imageDisperse() {
             fileSourceOutput.write(buffer, imageFile.gcount());
             remainder -= imageFile.gcount();
         }
-        std::cout << "Restored: " << imageFilePathRestore << " ( " << fileSize << " bytes)" << std::endl;
+        std::cout << "Restored: " << imageFilePathDisperseRestore.string() << " ( " << fileSize << " bytes)" << std::endl;
     }
     std::cout << "Restore completed! Files: " << filesSize << std::endl;
 }
