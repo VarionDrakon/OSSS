@@ -613,19 +613,20 @@ void FileImage::imageDisperse() {
 
         std::filesystem::path imageFilePathOriginal(filePath);
 
-        std::string pathRelativeRecover = pathAbsoluteRecover + imageFilePathOriginal.parent_path().filename().string();
+        std::string pathParentRecover = pathAbsoluteRecover + imageFilePathOriginal.parent_path().filename().string();
 
-        std::cout << "std::string pathRecover = pathRecover + imageFilePathOriginal.parent_path().filename().string(): " << pathRelativeRecover << std::endl;
+        std::cout << "std::string pathRecover = pathRecover + imageFilePathOriginal.parent_path().filename().string(): " << pathParentRecover << std::endl;
 
-        if (!std::filesystem::exists(pathRelativeRecover)) {
-            std::filesystem::create_directory(pathRelativeRecover);
+        if (!std::filesystem::exists(pathParentRecover)) {
+            std::filesystem::create_directory(pathParentRecover);
             std::cout << "std::filesystem::create_directory(pathRecover) == true" << std::endl;
         } else {
             std::cout << "std::filesystem::create_directory(pathRecover) == false" << std::endl;
         }
 
         std::cout << "std::filesystem::path imageFilePathOriginal(filePath): " << imageFilePathOriginal.filename().string() << std::endl;
-        std::string imagePathRestore = imageFilePathOriginal.filename().string();
+        std::string imagePathRestore = pathParentRecover;
+        imagePathRestore += "/" + imageFilePathOriginal.filename().string();
         std::cout << "std::string imagePathRestore: " << imagePathRestore << std::endl;
 
         std::ofstream fileSourceOutput(imagePathRestore, std::ios::binary);
