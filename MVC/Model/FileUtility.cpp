@@ -588,6 +588,8 @@ void FileImage::imageCollect() {
 void FileImage::imageDisperse() {
     std::ifstream imageFile("backFile.dat", std::ios::binary);
 
+    std::string pathAbsoluteRecover = "/mnt/sda/test-restore/";
+
     char signature[10];
     imageFile.read(signature, sizeof(signature));
     std::cout << "\nchar signature[10]: " << signature << std::endl;
@@ -610,8 +612,20 @@ void FileImage::imageDisperse() {
         std::cout << "uintmax_t fileSize: " << fileSize << std::endl;
 
         std::filesystem::path imageFilePathOriginal(filePath);
+
+        std::string pathRelativeRecover = pathAbsoluteRecover + imageFilePathOriginal.parent_path().filename().string();
+
+        std::cout << "std::string pathRecover = pathRecover + imageFilePathOriginal.parent_path().filename().string(): " << pathRelativeRecover << std::endl;
+
+        if (!std::filesystem::exists(pathRelativeRecover)) {
+            std::filesystem::create_directory(pathRelativeRecover);
+            std::cout << "std::filesystem::create_directory(pathRecover) == true" << std::endl;
+        } else {
+            std::cout << "std::filesystem::create_directory(pathRecover) == false" << std::endl;
+        }
+
         std::cout << "std::filesystem::path imageFilePathOriginal(filePath): " << imageFilePathOriginal.filename().string() << std::endl;
-        std::string imagePathRestore = "/mnt/sda/test-restore/" + imageFilePathOriginal.filename().string();
+        std::string imagePathRestore = imageFilePathOriginal.filename().string();
         std::cout << "std::string imagePathRestore: " << imagePathRestore << std::endl;
 
         std::ofstream fileSourceOutput(imagePathRestore, std::ios::binary);
