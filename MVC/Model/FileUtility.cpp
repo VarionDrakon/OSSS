@@ -543,7 +543,7 @@ void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot 
 void FileImage::imageCollect() {
     std::ofstream imageFile("backFile.dat", std::ios::binary);
 
-    std::string pathCollectFiles = "/mnt/sda/test/";
+    std::string pathCollectFiles = "/mnt/sda/utils/";
 
     const char imageSignature[] = "Test data";
     imageFile.write(imageSignature, sizeof(imageSignature));
