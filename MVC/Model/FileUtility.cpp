@@ -543,31 +543,34 @@ void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot 
 void FileImage::imageCollect() {
     std::ofstream imageFile("backFile.dat", std::ios::binary);
 
+    std::string pathCollectFiles = "/mnt/sda/test/";
+
     const char imageSignature[] = "Test data";
     imageFile.write(imageSignature, sizeof(imageSignature));
 
-    std::vector<std::string> filesCount;
+    std::vector<std::string> filesPathRelativeList;
 
-    for (const auto &entry : std::filesystem::recursive_directory_iterator("/mnt/sda/test/")) {
+    for (const auto &entry : std::filesystem::recursive_directory_iterator(pathCollectFiles)) {
         if (entry.is_regular_file()) {
-            filesCount.push_back(entry.path().string());
+            std::string fileRelativePath = entry.path().lexically_relative(pathCollectFiles).string();
+            filesPathRelativeList.push_back(fileRelativePath);
         }
     }
 
-    size_t filesSize = filesCount.size();
+    size_t filesSize = filesPathRelativeList.size();
     imageFile.write(reinterpret_cast<const char*>(&filesSize), sizeof(filesSize));
     std::cout << "size_t filesSize: " << filesSize << std::endl;
 
-    for (const auto &file : filesCount) {
-        std::cout << "\nconst auto &file: " << file << std::endl;
+    for (const auto &file : filesPathRelativeList) {
+        std::string filePathAbsolute = pathCollectFiles + file;
+        std::cout << "\nconst auto &file: " << filePathAbsolute << std::endl;
 
-        size_t pathSize = file.size();
+        size_t pathSize = filePathAbsolute.size();
         imageFile.write(reinterpret_cast<const char*>(&pathSize), sizeof(pathSize));
         imageFile.write(file.c_str(), pathSize);
         std::cout << "size_t pathSize: " << pathSize << std::endl;
 
-        std::ifstream fileSource(file, std::ios::binary);
-        std::cout << "fileSource.tellg(): " << fileSource.tellg() << std::endl;
+        std::ifstream fileSource(filePathAbsolute, std::ios::binary);
 
         fileSource.seekg(0, std::ios::end);
         uintmax_t fileSourceSize = fileSource.tellg();
@@ -580,7 +583,7 @@ void FileImage::imageCollect() {
         while (fileSource.read(buffer, sizeof(buffer)) || fileSource.gcount()) {
             imageFile.write(buffer, fileSource.gcount());
         }
-        std::cout << "\nBacked up: " << file << std::endl;
+        std::cout << "\nBacked up: " << filePathAbsolute << std::endl;
     }
     std::cout << "Backup created! Files: " << filesSize << std::endl;
 }
@@ -613,23 +616,18 @@ void FileImage::imageDisperse() {
 
         std::filesystem::path imageFilePathOriginal(filePath);
 
-        std::string pathParentRecover = pathAbsoluteRecover + imageFilePathOriginal.parent_path().filename().string();
+        // imageFilePathOriginal.parent_path();
 
-        std::cout << "std::string pathRecover = pathRecover + imageFilePathOriginal.parent_path().filename().string(): " << pathParentRecover << std::endl;
+        // if (!std::filesystem::exists(pathParentRecover)) {
+        //     std::filesystem::create_directory(pathParentRecover);
+        //     std::cout << "std::filesystem::create_directory(pathRecover) == true" << std::endl;
+        // } else {
+        //     std::cout << "std::filesystem::create_directory(pathRecover) == false" << std::endl;
+        // }
 
-        if (!std::filesystem::exists(pathParentRecover)) {
-            std::filesystem::create_directory(pathParentRecover);
-            std::cout << "std::filesystem::create_directory(pathRecover) == true" << std::endl;
-        } else {
-            std::cout << "std::filesystem::create_directory(pathRecover) == false" << std::endl;
-        }
+        std::string imageFilePathRestore = pathAbsoluteRecover + imageFilePathOriginal.filename().string();
 
-        std::cout << "std::filesystem::path imageFilePathOriginal(filePath): " << imageFilePathOriginal.filename().string() << std::endl;
-        std::string imagePathRestore = pathParentRecover;
-        imagePathRestore += "/" + imageFilePathOriginal.filename().string();
-        std::cout << "std::string imagePathRestore: " << imagePathRestore << std::endl;
-
-        std::ofstream fileSourceOutput(imagePathRestore, std::ios::binary);
+        std::ofstream fileSourceOutput(imageFilePathRestore, std::ios::binary);
 
         char buffer[4096];
         uintmax_t fileReadTotal = 0;
@@ -640,7 +638,7 @@ void FileImage::imageDisperse() {
             fileSourceOutput.write(buffer, imageFile.gcount());
             remainder -= imageFile.gcount();
         }
-        std::cout << "Restored: " << imagePathRestore << " (" << fileSize << " bytes)" << std::endl;
+        std::cout << "Restored: " << imageFilePathRestore << " ( " << fileSize << " bytes)" << std::endl;
     }
     std::cout << "Restore completed! Files: " << filesSize << std::endl;
 }
