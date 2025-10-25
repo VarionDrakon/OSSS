@@ -573,9 +573,9 @@ void FileImage::imageCollect() {
         std::ifstream fileSource(filePathAbsolute, std::ios::binary);
 
         fileSource.seekg(0, std::ios::end);
-        uintmax_t fileSourceSize = fileSource.tellg();
+        uint64_t fileSourceSize = fileSource.tellg();
         fileSource.seekg(0, std::ios::beg);
-        std::cout << "uintmax_t fileSourceSize: " << fileSourceSize << std::endl;
+        std::cout << "uint64_t fileSourceSize: " << fileSourceSize << std::endl;
 
         imageFile.write(reinterpret_cast<const char*>(&fileSourceSize), sizeof(fileSourceSize));
         
@@ -610,16 +610,16 @@ void FileImage::imageDisperse() {
         imageFile.read(&filePath[0], pathSize);
         std::cout << "std::string filePath(pathSize, ' '): " << filePath << std::endl;
 
-        uintmax_t fileSize;
+        uint64_t fileSize;
         imageFile.read(reinterpret_cast<char*>(&fileSize), sizeof(fileSize));
-        std::cout << "uintmax_t fileSize: " << fileSize << std::endl;
+        std::cout << "uint64_t fileSize: " << fileSize << std::endl;
 
         std::filesystem::path imageFilePathOriginal(filePath);
 
         std::filesystem::path pathDisperseFile = pathDisperseFiles / imageFilePathOriginal.parent_path();
 
         if (!std::filesystem::exists(pathDisperseFile)) {
-            std::filesystem::create_directory(pathDisperseFile);
+            std::filesystem::create_directories(pathDisperseFile);
             std::cout << "std::filesystem::create_directory(pathDisperseFile) == true" << std::endl;
         } else {
             std::cout << "std::filesystem::create_directory(pathDisperseFile) == false" << std::endl;
@@ -630,8 +630,8 @@ void FileImage::imageDisperse() {
         std::ofstream fileSourceOutput(imageFilePathDisperseRestore, std::ios::binary);
 
         char buffer[4096];
-        uintmax_t fileReadTotal = 0;
-        uintmax_t remainder = fileSize;
+        uint64_t fileReadTotal = 0;
+        uint64_t remainder = fileSize;
         while (remainder > 0) {
             size_t read = std::min(sizeof(buffer), static_cast<size_t>(remainder));
             imageFile.read(buffer, read);
