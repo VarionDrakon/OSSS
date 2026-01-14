@@ -200,7 +200,7 @@ class FileImage {
     private:
 
     public:
-        void imageCollect();
+        void imageCollect(const std::string& pathSource, const std::string& fileOutput);
         void imageDisperse();
 
 };

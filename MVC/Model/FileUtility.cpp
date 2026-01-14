@@ -540,52 +540,91 @@ void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot 
     }
 }
 
-void FileImage::imageCollect() {
-    std::ofstream imageFile("backFile.dat", std::ios::binary);
+void FileImage::imageCollect(const std::string& pathSource, const std::string& fileOutput) {
+    SHA256Algorithm sha256;
 
-    std::string pathCollectFiles = "/mnt/sda/utils/";
+    std::ofstream imageFile(fileOutput, std::ios::binary);
 
-    const char imageSignature[] = "Test data";
-    imageFile.write(imageSignature, sizeof(imageSignature));
+    struct signature
+    {
+        char magic[7] = "ZALUPA";
+        int16_t version = 1;
+        uint64_t indexOffset = 0;
+        int16_t reserved[48] = {0};
+    };
+
+    signature sig = {};
+
+    imageFile.write(reinterpret_cast<const char*>(&sig), sizeof(sig));
 
     std::vector<std::string> filesPathRelativeList;
 
-    for (const auto &entry : std::filesystem::recursive_directory_iterator(pathCollectFiles)) {
+    for (const auto &entry : std::filesystem::recursive_directory_iterator(pathSource)) {
         if (entry.is_regular_file()) {
-            std::string fileRelativePath = entry.path().lexically_relative(pathCollectFiles).string();
+            std::string fileRelativePath = entry.path().lexically_relative(pathSource).string();
             filesPathRelativeList.push_back(fileRelativePath);
         }
     }
 
-    size_t filesSize = filesPathRelativeList.size();
-    imageFile.write(reinterpret_cast<const char*>(&filesSize), sizeof(filesSize));
-    std::cout << "size_t filesSize: " << filesSize << std::endl;
+    // size_t filesSize = filesPathRelativeList.size();
+    // imageFile.write(reinterpret_cast<const char*>(&filesSize), sizeof(filesSize));
+    // std::cout << "size_t filesSize: " << filesSize << std::endl;
 
+    // for (const auto &file : filesPathRelativeList) {
+    //     std::string filePathAbsolute = pathSource + file;
+    //     std::cout << "\nconst auto &file: " << filePathAbsolute << std::endl;
+
+    //     size_t pathSize = filePathAbsolute.size();
+    //     imageFile.write(reinterpret_cast<const char*>(&pathSize), sizeof(pathSize));
+    //     imageFile.write(file.c_str(), pathSize);
+    //     std::cout << "size_t pathSize: " << pathSize << std::endl;
+
+    //     std::ifstream fileSource(filePathAbsolute, std::ios::binary);
+
+    //     fileSource.seekg(0, std::ios::end);
+    //     uint64_t fileSourceSize = fileSource.tellg();
+    //     fileSource.seekg(0, std::ios::beg);
+    //     std::cout << "uint64_t fileSourceSize: " << fileSourceSize << std::endl;
+
+    //     imageFile.write(reinterpret_cast<const char*>(&fileSourceSize), sizeof(fileSourceSize));
+        
+    //     char buffer[4096];
+    //     while (fileSource.read(buffer, sizeof(buffer)) || fileSource.gcount()) {
+    //         imageFile.write(buffer, fileSource.gcount());
+    //     }
+    //     std::cout << "\nBacked up: " << filePathAbsolute << std::endl;
+    // }
+
+    struct dataFile
+    {
+        uint64_t size = 0;
+        char hash[32] = {0};
+    };
+    
     for (const auto &file : filesPathRelativeList) {
-        std::string filePathAbsolute = pathCollectFiles + file;
+        dataFile data = {};
+        
+        std::string filePathAbsolute = pathSource + file;
         std::cout << "\nconst auto &file: " << filePathAbsolute << std::endl;
 
-        size_t pathSize = filePathAbsolute.size();
-        imageFile.write(reinterpret_cast<const char*>(&pathSize), sizeof(pathSize));
-        imageFile.write(file.c_str(), pathSize);
-        std::cout << "size_t pathSize: " << pathSize << std::endl;
+        sha256.calcHash(filePathAbsolute).copy(data.hash, sizeof(data.hash));
 
         std::ifstream fileSource(filePathAbsolute, std::ios::binary);
 
         fileSource.seekg(0, std::ios::end);
-        uint64_t fileSourceSize = fileSource.tellg();
+        data.size = fileSource.tellg();
         fileSource.seekg(0, std::ios::beg);
-        std::cout << "uint64_t fileSourceSize: " << fileSourceSize << std::endl;
 
-        imageFile.write(reinterpret_cast<const char*>(&fileSourceSize), sizeof(fileSourceSize));
-        
+        imageFile.write(reinterpret_cast<const char*>(&data), sizeof(data));
+
         char buffer[4096];
         while (fileSource.read(buffer, sizeof(buffer)) || fileSource.gcount()) {
             imageFile.write(buffer, fileSource.gcount());
         }
         std::cout << "\nBacked up: " << filePathAbsolute << std::endl;
     }
-    std::cout << "Backup created! Files: " << filesSize << std::endl;
+
+    std::cout << "Backup created!" << std::endl;
 }
 
 void FileImage::imageDisperse() {
@@ -608,7 +647,7 @@ void FileImage::imageDisperse() {
 
         std::string filePath(pathSize, ' ');
         imageFile.read(&filePath[0], pathSize);
-        std::cout << "std::string filePath(pathSize, ' '): " << filePath << std::endl;
+        std::cout << "std::string filePath(pathSize, ' '): " << filePath.c_str() << std::endl;
 
         uint64_t fileSize;
         imageFile.read(reinterpret_cast<char*>(&fileSize), sizeof(fileSize));
@@ -641,6 +680,7 @@ void FileImage::imageDisperse() {
         std::cout << "Restored: " << imageFilePathDisperseRestore.string() << " ( " << fileSize << " bytes)" << std::endl;
     }
     std::cout << "Restore completed! Files: " << filesSize << std::endl;
+
 }
 // Block of destructors
 

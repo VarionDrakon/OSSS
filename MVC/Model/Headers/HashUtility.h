@@ -50,7 +50,7 @@ class SHA256Algorithm : public HashAlgorithm {
                 sha256.Restart();
 
                 CryptoPP::FileSource(
-                    filePath.c_str(), 
+                    filePath.c_str(),
                     true, 
                     new CryptoPP::HashFilter(
                         sha256,                                   // https://cryptopp.com/wiki/HashFilter (Types of algorithms).

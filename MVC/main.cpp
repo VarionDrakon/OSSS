@@ -23,8 +23,8 @@ int main(){
     // }
     // fupl.fileMetadataCollectRecursively("/home/varion_drakon/.cache/chromium/");
 
-    fi.imageCollect();
-    fi.imageDisperse();
+    fi.imageCollect("/mnt/sda/utils/", "backFile.dat");
+    // fi.imageDisperse();
 
     // std::cout << "addr: " << &fupl.getFileList() << " size: " << fupl.getFileList().size() << std::endl;
 
