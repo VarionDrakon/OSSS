@@ -545,13 +545,15 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
 
     std::ofstream imageFile(fileOutput, std::ios::binary);
 
-    struct signature
+    #pragma pack(push, 1)
+    struct signature // 64 bytes.
     {
-        char magic[7] = "ZALUPA";
-        int16_t version = 1;
-        uint64_t indexOffset = 0;
-        int16_t reserved[48] = {0};
+        char magic[6] = "DBCKF";     // 6
+        uint16_t version = 1;        // 2
+        uint64_t indexOffset = 0;    // 8
+        uint16_t reserved[24] = {0}; // 48
     };
+    #pragma pack(pop)
 
     signature sig = {};
 
@@ -566,63 +568,99 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
         }
     }
 
-    // size_t filesSize = filesPathRelativeList.size();
-    // imageFile.write(reinterpret_cast<const char*>(&filesSize), sizeof(filesSize));
-    // std::cout << "size_t filesSize: " << filesSize << std::endl;
-
-    // for (const auto &file : filesPathRelativeList) {
-    //     std::string filePathAbsolute = pathSource + file;
-    //     std::cout << "\nconst auto &file: " << filePathAbsolute << std::endl;
-
-    //     size_t pathSize = filePathAbsolute.size();
-    //     imageFile.write(reinterpret_cast<const char*>(&pathSize), sizeof(pathSize));
-    //     imageFile.write(file.c_str(), pathSize);
-    //     std::cout << "size_t pathSize: " << pathSize << std::endl;
-
-    //     std::ifstream fileSource(filePathAbsolute, std::ios::binary);
-
-    //     fileSource.seekg(0, std::ios::end);
-    //     uint64_t fileSourceSize = fileSource.tellg();
-    //     fileSource.seekg(0, std::ios::beg);
-    //     std::cout << "uint64_t fileSourceSize: " << fileSourceSize << std::endl;
-
-    //     imageFile.write(reinterpret_cast<const char*>(&fileSourceSize), sizeof(fileSourceSize));
-        
-    //     char buffer[4096];
-    //     while (fileSource.read(buffer, sizeof(buffer)) || fileSource.gcount()) {
-    //         imageFile.write(buffer, fileSource.gcount());
-    //     }
-    //     std::cout << "\nBacked up: " << filePathAbsolute << std::endl;
-    // }
-
+    #pragma pack(push, 1)
+    // Short metainformation that is stored in each data block and is used only when working with a specific file.
     struct dataFile
     {
         uint64_t size = 0;
         char hash[32] = {0};
     };
+    #pragma pack(pop)
+
+    // A structure for creating an index table that will allow you to quickly read information from an image without reading the entire image.
+    struct indexFiles
+    {
+        // The number of bytes offset into the image where the file block starts.
+        uint64_t dataOffset = 0;
+        // The number of bytes the current data block occupies.
+        uint64_t dataSizeContained = 0;
+        // The number of bytes that stores the file size.
+        uint64_t dataSizeRaw = 0;
+        // The number of bytes storing the file path size.
+        uint64_t dataPathLenght = 0;
+        // A string value that stores the absolute path to the file from which it was saved.
+        std::string dataPath;
+    };
+
+    std::vector<indexFiles> entriesIndex;
     
     for (const auto &file : filesPathRelativeList) {
         dataFile data = {};
         
-        std::string filePathAbsolute = pathSource + file;
-        std::cout << "\nconst auto &file: " << filePathAbsolute << std::endl;
+        // Getting the absolute path to file.
+        auto filePathAbsolute = std::filesystem::path(pathSource) / file;
+        std::cout << "filePathAbsolute: " << filePathAbsolute << std::endl;
 
+        // Calculating hash sum.
         sha256.calcHash(filePathAbsolute).copy(data.hash, sizeof(data.hash));
 
         std::ifstream fileSource(filePathAbsolute, std::ios::binary);
 
+        // Calculating file size.
         fileSource.seekg(0, std::ios::end);
-        data.size = fileSource.tellg();
+        data.size = static_cast<uint64_t>(fileSource.tellg());
         fileSource.seekg(0, std::ios::beg);
 
+        // Get the current position in the image to remember start of the block currently written file.
+        uint64_t archiveStartPos = imageFile.tellp();
+
+        // Write basic information about the file to the image.
         imageFile.write(reinterpret_cast<const char*>(&data), sizeof(data));
 
+        // Buffer of the specified number of bytes is created, then the contents of the file are copied into the buffer and written to the image.
         char buffer[4096];
         while (fileSource.read(buffer, sizeof(buffer)) || fileSource.gcount()) {
             imageFile.write(buffer, fileSource.gcount());
         }
-        std::cout << "\nBacked up: " << filePathAbsolute << std::endl;
+
+        std::cout << "Backed up: " << filePathAbsolute << std::endl;
+
+        indexFiles index;
+        index.dataOffset = archiveStartPos;
+        index.dataSizeContained = sizeof(data) + data.size;
+        index.dataSizeRaw = data.size;
+        index.dataPathLenght = filePathAbsolute.string().length();
+        index.dataPath = filePathAbsolute.string();
+
+        entriesIndex.push_back(index);
     }
+
+    // The number of bytes offset into the image where the table index starts.
+    uint64_t indexTablePosition = imageFile.tellp();
+
+    // Number of elements in the index table array.
+    uint64_t entriesCount = entriesIndex.size();
+
+    imageFile.write((char*)&entriesCount, 8);
+
+    for (const auto &entry : entriesIndex) {
+        imageFile.write((char*)&entry.dataOffset, 8);
+        std::cout << entry.dataOffset << std::endl;
+        imageFile.write((char*)&entry.dataSizeContained, 8);
+        std::cout << entry.dataSizeContained << std::endl;
+        imageFile.write((char*)&entry.dataSizeRaw, 8);
+        std::cout << entry.dataSizeRaw << std::endl;
+        imageFile.write((char*)&entry.dataPathLenght, 8);
+        std::cout << entry.dataPathLenght << std::endl;
+
+        imageFile.write(entry.dataPath.data(), entry.dataPathLenght);
+        std::cout << entry.dataPath.data() << std::endl << std::endl;
+    }
+
+    imageFile.seekp(0);
+    sig.indexOffset = indexTablePosition;
+    imageFile.write(reinterpret_cast<const char*>(&sig), sizeof(sig));
+    std::cout << "indexPosition: " << indexTablePosition << std::endl << std::endl;
 
     std::cout << "Backup created!" << std::endl;
 }
