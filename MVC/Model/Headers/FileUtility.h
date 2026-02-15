@@ -8,6 +8,7 @@
 #include <list>
 #include <unordered_map>
 #include "HashUtility.h"
+#include "../../Core/Headers/FileCore.h"
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
@@ -47,28 +48,6 @@ enum class filePropertiesSizeEnum {
     Yobibyte    // 1024^8 = 1,208,925,819,614,629,174,706,176 byte
 };
 
-struct FileMetadata {
-    std::string filePath;
-    std::string fileName;
-    std::string fileSize;
-    std::string fileTypeData; // * https://www.iana.org/assignments/media-types/media-types.xhtml, write format - "text/plain" 
-    std::string fileOwner;
-    std::string fileDateTime; // * https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time
-    std::string fileHash;
-};
-
-// inline std::ostream& operator<<(std::ostream& os, const FileMetadata& fm) {
-//     os << "File path: " << fm.filePath 
-//         << "\nFile Name: " << fm.fileName
-//         << "\nFile Size: " << fm.fileSize
-//         << "\nFile TypeData: " << fm.fileTypeData
-//         << "\nFile Owner: " << fm.fileOwner
-//         << "\nFile DateTime: " << fm.fileDateTime
-//         << "\nFile Hash: " << fm.fileHash 
-//         << std::endl;
-//     return os;
-// }
-
 class FileUtility {
     private:
 
@@ -95,10 +74,9 @@ class FileUtilityProvider : public FileUtility {
 
 class FileUtilityProviderLocal : public FileUtilityProvider {
     private:
-       
+        std::vector<FileMetadata> currentFileMetadata;
 
     public:
-        FileMetadata currentFileMetadata;
 
         FileUtilityProviderLocal() {};
 
@@ -106,6 +84,7 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
         virtual std::string filePropertiesTimeGet(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
         virtual std::string filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit);
         virtual std::string filePropertiesOwnerGet(std::filesystem::path fileSystemObjectPath);
+        virtual std::vector<FileMetadata> &fileMetadataGet();
 
         virtual void fileMetadataClear();
 
@@ -201,7 +180,7 @@ class FileImage {
 
     public:
         void imageCollect(const std::string& pathSource, const std::string& fileOutput);
-        void imageDisperse();
+        void imageDisperse(const std::string& pathSource, const std::string& fileOutput);
 
 };
 

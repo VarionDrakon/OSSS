@@ -342,6 +342,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
     FileUtilityHashProvider fuhp;
     FileMetadataSnapshot fms;
     FileMetadataUtility fmu;
+    FileMetadata fm;
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
         const std::filesystem::path& fsObj = entry.path(); 
@@ -356,16 +357,17 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
             if (!std::filesystem::is_directory(fsStr)) {
                 std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
 
-                currentFileMetadata.filePath = fsStr;
-                currentFileMetadata.fileName = fsObj.filename().u8string();
-                currentFileMetadata.fileSize = filePropertiesSizeGet(fsObj);
-                currentFileMetadata.fileTypeData = "none";
-                currentFileMetadata.fileOwner = filePropertiesOwnerGet(fsStr);
-                currentFileMetadata.fileDateTime = filePropertiesTimeGet(fsStr);
+                fm.filePath = fsStr;
+                fm.fileName = fsObj.filename().u8string();
+                fm.fileSize = filePropertiesSizeGet(fsObj);
+                fm.fileTypeData = "none";
+                fm.fileOwner = filePropertiesOwnerGet(fsStr);
+                fm.fileDateTime = filePropertiesTimeGet(fsStr);
                 // currentFileMetadata.fileHash = fuhp.fileCalculateHash(fsStr);
-                currentFileMetadata.fileHash = "none";
+                fm.fileHash = "none";
 
-                fms.metadataSnapshotUpdate(currentFileMetadata);
+                fms.metadataSnapshotUpdate(fm);
+                currentFileMetadata.push_back(fm);
                 
             } else {
                 std::cout << "This is folder: " << fsStr << " ?" << std::endl;
@@ -382,14 +384,17 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
     std::cout << "Snapshot the metadata has been created!" << std::endl;    
 }
 
+std::vector<FileMetadata> &FileUtilityProviderLocal::fileMetadataGet() {
+    return currentFileMetadata;
+}
+
 bool FileUtilityHashProvider::fileMetadataCompare() {
     return true;
 }
 
 void FileUtilityProviderLocal::fileMetadataClear() {
-    currentFileMetadata = FileMetadata{};
+    currentFileMetadata.clear();
 }
-
 
 void FileMetadataSnapshot::metadataSnapshotUpdate(const FileMetadata &metadata) {
     metadataSnapshot[metadata.filePath] = std::move(metadata);
@@ -665,10 +670,10 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
     std::cout << "Backup created!" << std::endl;
 }
 
-void FileImage::imageDisperse() {
-    std::ifstream imageFile("backFile.dat", std::ios::binary);
+void FileImage::imageDisperse(const std::string& pathSource, const std::string& fileOutput) {
+    std::ifstream imageFile(fileOutput, std::ios::binary);
 
-    std::string pathDisperseFiles = "/mnt/sda/test-restore/";
+    std::string pathDisperseFiles = pathSource;
 
     char signature[10];
     imageFile.read(signature, sizeof(signature));

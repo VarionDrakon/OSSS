@@ -48,3 +48,4 @@ build
 
 # Temp and binary files.
 *.dat
+*.aid
