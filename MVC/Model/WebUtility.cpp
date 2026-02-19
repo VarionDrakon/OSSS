@@ -38,22 +38,31 @@ void WebUtility::returnApiListFiles(void (*connection)(char, void*), char* ptr){
 }
 
 void WebUtility::ev_handler(struct mg_connection *c, int ev, void *ev_data) {
-  if (ev == MG_EV_HTTP_MSG) {
-    struct mg_http_message *hm = (struct mg_http_message *) ev_data;
-    
-    if (mg_match(hm->uri, mg_str("/api/ipv4"), NULL)) {
-        char buf[32];
-        mg_snprintf(buf, sizeof(buf), "%M", mg_print_ip4, "abcd");
-        mg_http_reply(c, 200, "", "{%m:%s}\n", MG_ESC("status"), buf);
+    if (ev == MG_EV_HTTP_MSG) {
+        struct mg_http_message *hm = (struct mg_http_message *) ev_data;
+
+        if (mg_match(hm->uri, mg_str("/api/get"), NULL)) {
+            size_t offset = 0;
+            const size_t offset_size = 1024;
+
+            while (offset < hm->body.len) {
+                size_t offset_endpoint = offset_size;
+                if ((offset + offset_endpoint) > hm->body.len) {
+                    offset_endpoint = hm->body.len - offset;
+                }
+                printf("%.*s\n", (int)offset_endpoint, hm->body.buf + offset);
+                offset += offset_endpoint;
+            }
+            mg_http_reply(c, 200, "", "OK!");
+        }
+        else if (mg_match(hm->uri, mg_str("/api/data"), NULL)) {
+            mg_http_reply(c, 200, "", "%M", returnApiListFiles);
+        }
+        else {
+            struct mg_http_serve_opts opts = {.root_dir = ".", .fs = &mg_fs_posix};
+            mg_http_serve_dir(c, hm, &opts);
+        }
     }
-    else if (mg_match(hm->uri, mg_str("/api/data"), NULL)) {
-        mg_http_reply(c, 200, "", "%M", returnApiListFiles);
-    }
-    else {
-      struct mg_http_serve_opts opts = {.root_dir = ".", .fs = &mg_fs_posix};
-      mg_http_serve_dir(c, hm, &opts);
-    }
-  }
 }
 
 void WebUtility::HTTPServer() {
