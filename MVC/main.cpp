@@ -16,7 +16,7 @@ int main(){
     // FileImage fi;
     WebUtility wu;
 
-    fupl.fileMetadataCollectRecursively("/mnt/sda");
+    fupl.fileMetadataCollectRecursively("/home/v_drakonov/Downloads/");
     // fi.imageCollect("/mnt/sda/utils/", "backFile.dat");
     // fi.imageDisperse("/mnt/sda/test-restore/", "backFile.dat");
     wu.fileMetadataSet(fupl.fileMetadataGet());

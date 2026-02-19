@@ -13,7 +13,7 @@ void WebUtility::returnApiListFiles(void (*connection)(char, void*), char* ptr){
     try {
         const char* keys[] = { "File path", "File name", "File size", "File type", "Owner", "Date creation", "Hash" };
 
-        char *constructor = "{\"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\"}";
+        char *constructor = "{\"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\"}";
 
         mg_xprintf(connection, ptr, "{\"%s\":[", keys[0]);
         for (int f = 0; f < fileMetadata.size(); f++) {
