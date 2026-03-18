@@ -67,7 +67,10 @@ void WebUtility::ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 
 void WebUtility::listChanges(struct mg_connection *c, int ev, void *ev_data) {
     if (ev == MG_EV_CONNECT) {
-        mg_printf(c, "GET /api/data HTTP/1.0\r\nHost: localhost\r\n\r\n");
+        mg_printf(c, "GET /api/data HTTP/1.1 \r\n" 
+                      "Host: localhost:8000  \r\n"
+                      "Connection: close     \r\n"
+                                            "\r\n"); // https://datatracker.ietf.org/doc/html/rfc9112
     }
     else if (ev == MG_EV_HTTP_MSG) {
         struct mg_http_message *hm = (struct mg_http_message *) ev_data;
@@ -78,8 +81,6 @@ void WebUtility::listChanges(struct mg_connection *c, int ev, void *ev_data) {
             std::cout << "(empty body)" << std::endl;
         }
     }
-
-    // c->is_closing = 1;
 }
 
 void WebUtility::HTTPServer() {
