@@ -65,6 +65,23 @@ void WebUtility::ev_handler(struct mg_connection *c, int ev, void *ev_data) {
     }
 }
 
+void WebUtility::listChanges(struct mg_connection *c, int ev, void *ev_data) {
+    if (ev == MG_EV_CONNECT) {
+        mg_printf(c, "GET /api/data HTTP/1.0\r\nHost: localhost\r\n\r\n");
+    }
+    else if (ev == MG_EV_HTTP_MSG) {
+        struct mg_http_message *hm = (struct mg_http_message *) ev_data;
+
+        if (hm->body.len > 0) {
+            std::cout << std::string(hm->body.buf, hm->body.len) << std::endl;
+        } else {
+            std::cout << "(empty body)" << std::endl;
+        }
+    }
+
+    // c->is_closing = 1;
+}
+
 void WebUtility::HTTPServer() {
     struct mg_mgr mgr;
     mg_mgr_init(&mgr);
@@ -73,7 +90,9 @@ void WebUtility::HTTPServer() {
 
     for (;;) {
         mg_mgr_poll(&mgr, 1000);
+        // DEBUG:
+        mg_http_connect(&mgr, "http://localhost:8000/api/data", listChanges, NULL);
     }
-    
+
     mg_mgr_free(&mgr);
 }

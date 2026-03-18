@@ -25,6 +25,7 @@ class WebUtility {
         static void httpHandler(struct mg_connection *connection, int event, void *event_data);
         static void HTTPServer();
         static void ev_handler(struct mg_connection *c, int ev, void *ev_data);
+        static void listChanges(struct mg_connection *c, int ev, void *ev_data);
         static void returnApiListFiles(void (*connection)(char, void*), char* ptr);
         // static size_t returnAttr(void (*out)(char, void *), void *ptr, va_list *ap);
 
