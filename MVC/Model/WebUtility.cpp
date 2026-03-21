@@ -9,7 +9,7 @@ void WebUtility::fileMetadataSet(const std::vector<FileMetadata> &fm) {
     fileMetadata = fm;
 }
 
-void WebUtility::returnApiListFiles(void (*connection)(char, void*), char* ptr){
+void WebUtility::serializeFileListMetadata(void (*connection)(char, void*), char* ptr){
     try {
         const char* keys[] = { "File path", "File name", "File size", "File type", "Owner", "Date creation", "Hash" };
 
@@ -56,7 +56,7 @@ void WebUtility::ev_handler(struct mg_connection *c, int ev, void *ev_data) {
             mg_http_reply(c, 200, "", "OK!");
         }
         else if (mg_match(hm->uri, mg_str("/api/data"), NULL)) {
-            mg_http_reply(c, 200, "", "%M", returnApiListFiles);
+            mg_http_reply(c, 200, "", "%M", serializeFileListMetadata);
         }
         else {
             struct mg_http_serve_opts opts = {.root_dir = ".", .fs = &mg_fs_posix};
@@ -65,10 +65,10 @@ void WebUtility::ev_handler(struct mg_connection *c, int ev, void *ev_data) {
     }
 }
 
-void WebUtility::listChanges(struct mg_connection *c, int ev, void *ev_data) {
+void WebUtility::deserializationFileListMetadata(struct mg_connection *c, int ev, void *ev_data) {
     if (ev == MG_EV_CONNECT) {
         mg_printf(c, "GET /api/data HTTP/1.1 \r\n" 
-                      "Host: localhost:8000  \r\n"
+                      "Host: localhost       \r\n"
                       "Connection: close     \r\n"
                                             "\r\n"); // https://datatracker.ietf.org/doc/html/rfc9112
     }
@@ -83,16 +83,41 @@ void WebUtility::listChanges(struct mg_connection *c, int ev, void *ev_data) {
     }
 }
 
-void WebUtility::HTTPServer() {
+void WebUtility::runLocalHTTPServer() {
+
+    const int portLimitPoolLower = 1834;
+    const int portLimitPoolUpper = 1846;
+    int portLimitPoolCurrent = portLimitPoolLower;
+    std::string listenUrl = "http://0.0.0.0:";   
+
     struct mg_mgr mgr;
     mg_mgr_init(&mgr);
+    struct mg_connection *c = nullptr;
 
-    mg_http_listen(&mgr, "http://localhost:8000", ev_handler, NULL);
+    for(portLimitPoolCurrent; portLimitPoolCurrent <= portLimitPoolUpper; portLimitPoolCurrent++) {
+
+        std::cout << "[]> Trying use port: " << portLimitPoolCurrent << std::endl;
+
+        std::string listenUrlTemp = listenUrl + std::to_string(portLimitPoolCurrent);
+        c = mg_http_listen(&mgr, listenUrlTemp.c_str(), ev_handler, NULL);
+
+        if (c != nullptr) {
+            listenUrl += std::to_string(portLimitPoolCurrent);
+            break;
+        }
+    }
+
+    if (c == nullptr) {
+        std::cout << "[]> Failed bind port. Exit from program..." << std::endl;
+        exit(1);
+    }
+
+    std::cout << "[]> Succesfull bind port. Current listener url: " << listenUrl << std::endl;
 
     for (;;) {
         mg_mgr_poll(&mgr, 1000);
         // DEBUG:
-        mg_http_connect(&mgr, "http://localhost:8000/api/data", listChanges, NULL);
+        // mg_http_connect(&mgr, "http://localhost:8000/api/data", deserializationFileListMetadata, NULL);
     }
 
     mg_mgr_free(&mgr);

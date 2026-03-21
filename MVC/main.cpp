@@ -21,7 +21,7 @@ int main(){
     // fi.imageDisperse("/mnt/sda/test-restore/", "backFile.dat");
     wu.fileMetadataSet(fupl.fileMetadataGet());
 
-    wu.HTTPServer();
+    wu.runLocalHTTPServer();
 
     return 0;
 }
