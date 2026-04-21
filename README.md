@@ -14,7 +14,7 @@ Compiler clang-17:
 - https://github.com/llvm/llvm-project/releases/tag/llvmorg-17.0.6
 
 Linux:
-(x86_64) clang+llvm-17.0.6-x86_64-linux
+- (x86_64) clang+llvm-17.0.6-x86_64-linux
 
 Windows:
 -
