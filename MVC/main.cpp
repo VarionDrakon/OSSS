@@ -16,7 +16,7 @@ int main(){
     // FileImage fi;
     WebUtility wu;
 
-    fupl.fileMetadataCollectRecursively("/home/v_drakonov/Downloads/");
+    fupl.fileMetadataCollectRecursively("/home/v.drakonov/Downloads/ventoy-1.1.07/");
     // fi.imageCollect("/mnt/sda/utils/", "backFile.dat");
     // fi.imageDisperse("/mnt/sda/test-restore/", "backFile.dat");
     wu.fileMetadataSet(fupl.fileMetadataGet());
