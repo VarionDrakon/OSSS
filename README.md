@@ -17,7 +17,7 @@ Linux:
 - (x86_64) clang+llvm-17.0.6-x86_64-linux
 
 Windows:
--
+- ???
 
 MacOS:
--
+- ???
