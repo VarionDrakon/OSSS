@@ -379,7 +379,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
         }
     }
     
-    fi.imageCollect(directoryRoot, "backupTestFile");
+    fi.imageCollect(directoryRoot, "backupTestFile.dat");
 
     fmu.fileMetadataUtilityCompare(fms, fms.metadataSnapshotGetAll());
 
