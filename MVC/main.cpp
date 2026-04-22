@@ -10,13 +10,17 @@ bool isTriggerCheckDirectory = false;
 
 // Object + Action + Modifier
 
-int main(){
+int main() {
 
     FileUtilityProviderLocal fupl;
     // FileImage fi;
     WebUtility wu;
 
-    fupl.fileMetadataCollectRecursively("/home/v.drakonov/Downloads/ventoy-1.1.07/");
+    std::string userPath;
+    std::cout << "Enter path to folder for create backup file: ";
+    std::getline(std::cin, userPath);
+
+    fupl.fileMetadataCollectRecursively(userPath);
     // fi.imageCollect("/mnt/sda/utils/", "backFile.dat");
     // fi.imageDisperse("/mnt/sda/test-restore/", "backFile.dat");
     wu.fileMetadataSet(fupl.fileMetadataGet());

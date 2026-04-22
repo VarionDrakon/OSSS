@@ -343,6 +343,7 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
     FileMetadataSnapshot fms;
     FileMetadataUtility fmu;
     FileMetadata fm;
+    FileImage fi;
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
         const std::filesystem::path& fsObj = entry.path(); 
@@ -378,6 +379,8 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
         }
     }
     
+    fi.imageCollect(directoryRoot, "backupTestFile");
+
     fmu.fileMetadataUtilityCompare(fms, fms.metadataSnapshotGetAll());
 
     fms.metadataSnapshotSaveToFile();
@@ -622,10 +625,11 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
         // Write basic information about the file to the image.
         imageFile.write(reinterpret_cast<const char*>(&data), sizeof(data));
 
-        // Buffer of the specified number of bytes is created, then the contents of the file are copied into the buffer and written to the image.
-        char buffer[4096];
-        while (fileSource.read(buffer, sizeof(buffer)) || fileSource.gcount()) {
-            imageFile.write(buffer, fileSource.gcount());
+        const std::size_t bufferSize = 4 * 1024;
+        std::vector<char> bufferData(bufferSize);
+        while (fileSource.read(bufferData.data(), bufferSize) || fileSource.gcount() > 0) {
+            std::streamsize streamSize = fileSource.gcount();
+            imageFile.write(bufferData.data(), streamSize);
         }
 
         std::cout << "Backed up: " << filePathAbsolute << std::endl;
