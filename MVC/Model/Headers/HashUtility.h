@@ -25,6 +25,7 @@ class HashProviderObject {
     public:
         virtual ~HashProviderObject() = default; // Virtual destructor.
         virtual std::string calcHash(const std::string& filePath) = 0;
+        virtual std::string hashCalculateBlock(const char *data) = 0;
 };
 
 class HashAlgorithm : public HashProviderObject {
@@ -65,6 +66,22 @@ class SHA256Algorithm : public HashAlgorithm {
             }
             catch (const std::exception& e) {
                 std::cerr << "Exception occurred while trying to calculate hash for file: " << filePath << ": " << e.what() << std::endl;
+                return "Undefined";
+            }    
+        }
+
+        std::string hashCalculateBlock(const char *data) override final {           
+            try {
+                std::string hashResult;
+                CryptoPP::SHA256 sha256;
+                sha256.Restart();
+
+                CryptoPP::StringSource ss( data, true, new CryptoPP::HashFilter( sha256, new CryptoPP::HexEncoder( new CryptoPP::StringSink( hashResult ))));
+
+                return hashResult;
+            }
+            catch (const std::exception& e) {
+                std::cerr << "Exception occurred while trying calculate: " << e.what() << std::endl;
                 return "Undefined";
             }    
         }

@@ -551,6 +551,15 @@ void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot 
 void FileImage::imageCollect(const std::string& pathSource, const std::string& fileOutput) {
     SHA256Algorithm sha256;
 
+    std::vector<std::string> filesPathRelativeList;
+
+    for (const auto &entry : std::filesystem::recursive_directory_iterator(pathSource)) {
+        if (entry.is_regular_file()) {
+            std::string fileRelativePath = entry.path().lexically_relative(pathSource).string();
+            filesPathRelativeList.push_back(fileRelativePath);
+        }
+    }
+
     std::ofstream imageFile(fileOutput, std::ios::binary);
 
     #pragma pack(push, 1)
@@ -567,14 +576,6 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
 
     imageFile.write(reinterpret_cast<const char*>(&sig), sizeof(sig));
 
-    std::vector<std::string> filesPathRelativeList;
-
-    for (const auto &entry : std::filesystem::recursive_directory_iterator(pathSource)) {
-        if (entry.is_regular_file()) {
-            std::string fileRelativePath = entry.path().lexically_relative(pathSource).string();
-            filesPathRelativeList.push_back(fileRelativePath);
-        }
-    }
 
     #pragma pack(push, 1)
     // Short metainformation that is stored in each data block and is used only when working with a specific file.
@@ -607,17 +608,14 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
         
         // Getting the absolute path to file.
         auto filePathAbsolute = std::filesystem::path(pathSource) / file;
-        std::cout << "filePathAbsolute: " << filePathAbsolute << std::endl;
-
-        // Calculating hash sum.
-        sha256.calcHash(filePathAbsolute).copy(data.hash, sizeof(data.hash));
+        // std::cout << "filePathAbsolute: " << filePathAbsolute << std::endl;
 
         std::ifstream fileSource(filePathAbsolute, std::ios::binary);
 
         // Calculating file size.
-        fileSource.seekg(0, std::ios::end);
-        data.size = static_cast<uint64_t>(fileSource.tellg());
-        fileSource.seekg(0, std::ios::beg);
+        // fileSource.seekg(0, std::ios::end);
+        // data.size = static_cast<uint64_t>(fileSource.tellg());
+        // fileSource.seekg(0, std::ios::beg);
 
         // Get the current position in the image to remember start of the block currently written file.
         uint64_t archiveStartPos = imageFile.tellp();
@@ -625,11 +623,28 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
         // Write basic information about the file to the image.
         imageFile.write(reinterpret_cast<const char*>(&data), sizeof(data));
 
-        const std::size_t bufferSize = 4 * 1024;
-        std::vector<char> bufferData(bufferSize);
-        while (fileSource.read(bufferData.data(), bufferSize) || fileSource.gcount() > 0) {
-            std::streamsize streamSize = fileSource.gcount();
-            imageFile.write(bufferData.data(), streamSize);
+        // Calculating hash sum.
+        std::ofstream fileLog("fileLog", std::ios::binary | std::ios::app);
+        const std::size_t bufferDataSize = 256;
+        std::vector<char> bufferData(bufferDataSize);
+        while (fileSource.read(bufferData.data(), bufferDataSize) || fileSource.gcount() > 0) {
+
+            std::string hash = sha256.hashCalculateBlock(bufferData.data());
+
+            std::streamsize sz = fileSource.gcount();
+            uint64_t sz64 = static_cast<uint64_t>(sz);
+            const std::size_t bufferDataResultSize = hash.size() + sizeof(sz64) + sz;
+            std::vector<char> bufferDataResult(bufferDataResultSize);
+
+            std::string log = "[]> HASH: " + hash + " HASH SIZE: " + std::to_string(hash.size()) + " SZ: " + std::to_string(sz) + " SZ64: " + std::to_string(sz64) + "\n";
+
+            fileLog.write(log.data(), log.length());
+
+            std::memcpy(bufferDataResult.data(), hash.data(), hash.size());
+            std::memcpy(bufferDataResult.data() + hash.size(), &sz64, sizeof(sz64));
+            std::memcpy(bufferDataResult.data() + hash.size() + sizeof(sz64), bufferData.data(), sz);
+
+            imageFile.write(bufferDataResult.data(), bufferDataResultSize);
         }
 
         std::cout << "Backed up: " << filePathAbsolute << std::endl;
