@@ -424,30 +424,30 @@ bool FileMetadataSnapshot::metadataSnapshotSaveToFile() {
     auto time_t = std::chrono::system_clock::to_time_t(now);
     std::tm time = *std::localtime(&time_t);
     
-    std::stringstream stringStream;
-    stringStream << "snapshot_"
-            << std::put_time(&time, "%Y-%m-%d_%H-%M-%S")
-            << ".dat";
+    // std::stringstream stringStream;
+    // stringStream << "snapshot_"
+    //         << std::put_time(&time, "%Y-%m-%d_%H-%M-%S")
+    //         << ".dat";
 
-    std::string fileName = stringStream.str();
+    // std::string fileName = stringStream.str();
 
-    std::ofstream tempFile(fileName, std::ios::binary);
+    // std::ofstream tempFile(fileName, std::ios::binary);
 
-    if (!tempFile) return false;
+    // if (!tempFile) return false;
 
-    size_t countBytes = metadataSnapshot.size();
-    tempFile.write(reinterpret_cast<const char*>(&countBytes), sizeof(countBytes));
+    // size_t countBytes = metadataSnapshot.size();
+    // tempFile.write(reinterpret_cast<const char*>(&countBytes), sizeof(countBytes));
     
-    for (const auto& metadata : metadataSnapshot) {
-        const auto& meta = metadata.second;
-        metadataSnapshotWriteFile(tempFile, meta.filePath);
-        metadataSnapshotWriteFile(tempFile, meta.fileName);
-        metadataSnapshotWriteFile(tempFile, meta.fileSize);
-        metadataSnapshotWriteFile(tempFile, meta.fileTypeData);
-        metadataSnapshotWriteFile(tempFile, meta.fileOwner);
-        metadataSnapshotWriteFile(tempFile, meta.fileDateTime);
-        metadataSnapshotWriteFile(tempFile, meta.fileHash);
-    }
+    // for (const auto& metadata : metadataSnapshot) {
+    //     const auto& meta = metadata.second;
+    //     metadataSnapshotWriteFile(tempFile, meta.filePath);
+    //     metadataSnapshotWriteFile(tempFile, meta.fileName);
+    //     metadataSnapshotWriteFile(tempFile, meta.fileSize);
+    //     metadataSnapshotWriteFile(tempFile, meta.fileTypeData);
+    //     metadataSnapshotWriteFile(tempFile, meta.fileOwner);
+    //     metadataSnapshotWriteFile(tempFile, meta.fileDateTime);
+    //     metadataSnapshotWriteFile(tempFile, meta.fileHash);
+    // }
     return true;
 }
 
@@ -548,10 +548,35 @@ void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot 
     }
 }
 
-void FileImage::imageCollect(const std::string& pathSource, const std::string& fileOutput) {
+void FileImage::encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &fileImage) {
     SHA256Algorithm sha256;
+    const std::size_t bufferDataSize = 4 * 1024;
+    std::vector<char> bufferData(bufferDataSize);
 
+    std::ofstream fileLog("fileLog.dat", std::ios::binary | std::ios::app);
+
+    while (fileSource.read(bufferData.data(), bufferDataSize) || fileSource.gcount() > 0) {
+
+        std::string hash = sha256.hashCalculateBlock(bufferData.data());
+        std::streamsize sz = fileSource.gcount();
+        uint64_t sz64 = static_cast<uint64_t>(sz);
+        
+        std::vector<char> buffer(hash.size() + sizeof(sz64) + sz);
+
+        std::memcpy(buffer.data(), hash.data(), hash.size());
+        std::memcpy(buffer.data() + hash.size(), &sz64, sizeof(sz64));
+        std::memcpy(buffer.data() + hash.size() + sizeof(sz64), bufferData.data(), sz);
+
+        std::string log = "[]> HASH: " + hash + " HASH SIZE: " + std::to_string(hash.size()) + " SZ: " + std::to_string(sz) + " SZ64: " + std::to_string(sz64) + "\n";
+        fileLog.write(log.data(), log.length());
+
+        fileImage.write(buffer.data(), buffer.size());
+    }
+}
+
+void FileImage::imageCollect(const std::string& pathSource, const std::string& fileOutput) {
     std::vector<std::string> filesPathRelativeList;
+    FileImage fi;
 
     for (const auto &entry : std::filesystem::recursive_directory_iterator(pathSource)) {
         if (entry.is_regular_file()) {
@@ -604,7 +629,7 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
     std::vector<indexFiles> entriesIndex;
     
     for (const auto &file : filesPathRelativeList) {
-        dataFile data = {};
+        // dataFile data = {};
         
         // Getting the absolute path to file.
         auto filePathAbsolute = std::filesystem::path(pathSource) / file;
@@ -621,42 +646,21 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
         uint64_t archiveStartPos = imageFile.tellp();
 
         // Write basic information about the file to the image.
-        imageFile.write(reinterpret_cast<const char*>(&data), sizeof(data));
+        // imageFile.write(reinterpret_cast<const char*>(&data), sizeof(data));
 
         // Calculating hash sum.
-        std::ofstream fileLog("fileLog", std::ios::binary | std::ios::app);
-        const std::size_t bufferDataSize = 256;
-        std::vector<char> bufferData(bufferDataSize);
-        while (fileSource.read(bufferData.data(), bufferDataSize) || fileSource.gcount() > 0) {
-
-            std::string hash = sha256.hashCalculateBlock(bufferData.data());
-
-            std::streamsize sz = fileSource.gcount();
-            uint64_t sz64 = static_cast<uint64_t>(sz);
-            const std::size_t bufferDataResultSize = hash.size() + sizeof(sz64) + sz;
-            std::vector<char> bufferDataResult(bufferDataResultSize);
-
-            std::string log = "[]> HASH: " + hash + " HASH SIZE: " + std::to_string(hash.size()) + " SZ: " + std::to_string(sz) + " SZ64: " + std::to_string(sz64) + "\n";
-
-            fileLog.write(log.data(), log.length());
-
-            std::memcpy(bufferDataResult.data(), hash.data(), hash.size());
-            std::memcpy(bufferDataResult.data() + hash.size(), &sz64, sizeof(sz64));
-            std::memcpy(bufferDataResult.data() + hash.size() + sizeof(sz64), bufferData.data(), sz);
-
-            imageFile.write(bufferDataResult.data(), bufferDataResultSize);
-        }
+        fi.encodeBlocksWithHash(fileSource, imageFile);
 
         std::cout << "Backed up: " << filePathAbsolute << std::endl;
 
-        indexFiles index;
-        index.dataOffset = archiveStartPos;
-        index.dataSizeContained = sizeof(data) + data.size;
-        index.dataSizeRaw = data.size;
-        index.dataPathLenght = filePathAbsolute.string().length();
-        index.dataPath = filePathAbsolute.string();
+        // indexFiles index;
+        // index.dataOffset = archiveStartPos;
+        // index.dataSizeContained = sizeof(data) + data.size;
+        // index.dataSizeRaw = data.size;
+        // index.dataPathLenght = filePathAbsolute.string().length();
+        // index.dataPath = filePathAbsolute.string();
 
-        entriesIndex.push_back(index);
+        // entriesIndex.push_back(index);
     }
 
     // The number of bytes offset into the image where the table index starts.

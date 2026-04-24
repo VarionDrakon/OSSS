@@ -181,6 +181,7 @@ class FileImage {
     public:
         void imageCollect(const std::string& pathSource, const std::string& fileOutput);
         void imageDisperse(const std::string& pathSource, const std::string& fileOutput);
+        void encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &fileImage);
 
 };
 
