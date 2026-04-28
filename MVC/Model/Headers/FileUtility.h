@@ -178,11 +178,23 @@ class FileMetadataUtility {
 class FileImage {
     private:
 
+    #pragma pack(push, 1)
+    struct imageIndexMetadata
+    {
+        char hash[32];                     // Hash string.
+        uint64_t chunkSizeUncompressed;    // Chink size before compression.
+        uint64_t chunkSizeCompressed;      // Chink size after compression.
+        uint8_t chunkCompressionAlgorithm; // 0 - plain bytes.
+        uint8_t chunkFlags;                // 0 - flags reserved.
+        uint8_t reserved[462];
+    };
+    #pragma pack(pop)
+    imageIndexMetadata imageIndexMetadataDefault();
+
     public:
         void imageCollect(const std::string& pathSource, const std::string& fileOutput);
         void imageDisperse(const std::string& pathSource, const std::string& fileOutput);
-        void encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &fileImage);
-
+        void encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &fileImage, std::vector<imageIndexMetadata> &viim);
 };
 
 // class FileUtilityJSON {

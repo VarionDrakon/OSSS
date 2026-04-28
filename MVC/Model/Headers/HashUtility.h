@@ -76,7 +76,9 @@ class SHA256Algorithm : public HashAlgorithm {
                 CryptoPP::SHA256 sha256;
                 sha256.Restart();
 
-                CryptoPP::StringSource ss( data, true, new CryptoPP::HashFilter( sha256, new CryptoPP::HexEncoder( new CryptoPP::StringSink( hashResult ))));
+                CryptoPP::StringSource(data, true, new CryptoPP::HashFilter(sha256, new CryptoPP::HexEncoder(new CryptoPP::StringSink(hashResult))));
+
+                hashResult.resize(sha256.DigestSize());
 
                 return hashResult;
             }

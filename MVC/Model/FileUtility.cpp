@@ -548,7 +548,20 @@ void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot 
     }
 }
 
-void FileImage::encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &fileImage) {
+FileImage::imageIndexMetadata FileImage::imageIndexMetadataDefault() {
+    imageIndexMetadata iim = {};
+    
+    iim.hash[32] = {0};
+    iim.chunkSizeUncompressed = 0;
+    iim.chunkSizeCompressed = 0;
+    iim.chunkCompressionAlgorithm = 0;
+    iim.chunkFlags = 0;
+    iim.reserved[462] = {0};
+
+    return iim;
+}
+
+void FileImage::encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &fileImage, std::vector<imageIndexMetadata> &viim) {
     SHA256Algorithm sha256;
     const std::size_t bufferDataSize = 4 * 1024;
     std::vector<char> bufferData(bufferDataSize);
@@ -556,6 +569,7 @@ void FileImage::encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &f
     std::ofstream fileLog("fileLog.dat", std::ios::binary | std::ios::app);
 
     while (fileSource.read(bufferData.data(), bufferDataSize) || fileSource.gcount() > 0) {
+        imageIndexMetadata iim = imageIndexMetadataDefault();
 
         std::string hash = sha256.hashCalculateBlock(bufferData.data());
         std::streamsize sz = fileSource.gcount();
@@ -564,11 +578,15 @@ void FileImage::encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &f
         std::vector<char> buffer(hash.size() + sizeof(sz64) + sz);
 
         std::memcpy(buffer.data(), hash.data(), hash.size());
+        std::memcpy(iim.hash, hash.data(), hash.size());
         std::memcpy(buffer.data() + hash.size(), &sz64, sizeof(sz64));
+        iim.chunkSizeUncompressed = sz64;
         std::memcpy(buffer.data() + hash.size() + sizeof(sz64), bufferData.data(), sz);
 
-        std::string log = "[]> HASH: " + hash + " HASH SIZE: " + std::to_string(hash.size()) + " SZ: " + std::to_string(sz) + " SZ64: " + std::to_string(sz64) + "\n";
+        std::string log = "[]> HASH: " + hash + " HASH SIZE: " + std::to_string(hash.size()) + " SZ: " + std::to_string(sz) + " SZ64: " + std::to_string(sz64) + " Offset " + std::to_string(fileImage.tellp()) + "\n";
         fileLog.write(log.data(), log.length());
+
+        viim.push_back(iim);
 
         fileImage.write(buffer.data(), buffer.size());
     }
@@ -587,108 +605,66 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
 
     std::ofstream imageFile(fileOutput, std::ios::binary);
 
+    // Common information about file.
     #pragma pack(push, 1)
-    struct signature // 64 bytes.
+    struct imageHeader 
     {
         char magic[6] = "DBCKF";     // 6
-        uint16_t version = 1;        // 2
-        uint64_t indexOffset = 0;    // 8
-        uint16_t reserved[24] = {0}; // 48
+        uint16_t version = 1;        // 6
+        uint16_t reserved[500] = {0}; // 500
     };
     #pragma pack(pop)
-
-    signature sig = {};
-
-    imageFile.write(reinterpret_cast<const char*>(&sig), sizeof(sig));
-
-
-    #pragma pack(push, 1)
-    // Short metainformation that is stored in each data block and is used only when working with a specific file.
-    struct dataFile
-    {
-        uint64_t size = 0;
-        char hash[32] = {0};
-    };
-    #pragma pack(pop)
-
-    // A structure for creating an index table that will allow you to quickly read information from an image without reading the entire image.
-    struct indexFiles
-    {
-        // The number of bytes offset into the image where the file block starts.
-        uint64_t dataOffset = 0;
-        // The number of bytes the current data block occupies.
-        uint64_t dataSizeContained = 0;
-        // The number of bytes that stores the file size.
-        uint64_t dataSizeRaw = 0;
-        // The number of bytes storing the file path size.
-        uint64_t dataPathLenght = 0;
-        // A string value that stores the absolute path to the file from which it was saved.
-        std::string dataPath;
-    };
-
-    std::vector<indexFiles> entriesIndex;
+    imageHeader header = {};
     
+    // Configuration backup file.
+    #pragma pack(push, 1)
+    struct imageConfiguration
+    {
+        uint16_t reserved[512] = {0};
+    };
+    #pragma pack(pop)
+    imageConfiguration config = {};
+
+    // Table file metadata.
+    #pragma pack(push, 1)
+    struct imageFileMetadata
+    {
+        uint16_t reserved[512] = {0};
+    };
+    #pragma pack(pop)
+    imageFileMetadata ifm = {};
+
+   std::vector<imageIndexMetadata> viim;
+
+    // Table file metadata.
+    #pragma pack(push, 1)
+    struct imageFooter
+    {
+        uint16_t reserved[512] = {0};
+    };
+    #pragma pack(pop)
+    imageFooter footer = {};
+    
+    imageFile.write(reinterpret_cast<const char*>(&header), sizeof(header));
+    imageFile.write(reinterpret_cast<const char*>(&config), sizeof(config));
+    // Collecting data by chinks.
     for (const auto &file : filesPathRelativeList) {
-        // dataFile data = {};
-        
         // Getting the absolute path to file.
         auto filePathAbsolute = std::filesystem::path(pathSource) / file;
-        // std::cout << "filePathAbsolute: " << filePathAbsolute << std::endl;
 
         std::ifstream fileSource(filePathAbsolute, std::ios::binary);
 
-        // Calculating file size.
-        // fileSource.seekg(0, std::ios::end);
-        // data.size = static_cast<uint64_t>(fileSource.tellg());
-        // fileSource.seekg(0, std::ios::beg);
-
-        // Get the current position in the image to remember start of the block currently written file.
-        uint64_t archiveStartPos = imageFile.tellp();
-
-        // Write basic information about the file to the image.
-        // imageFile.write(reinterpret_cast<const char*>(&data), sizeof(data));
-
-        // Calculating hash sum.
-        fi.encodeBlocksWithHash(fileSource, imageFile);
+        // Write blocks to image file.
+        fi.encodeBlocksWithHash(fileSource, imageFile, viim);
 
         std::cout << "Backed up: " << filePathAbsolute << std::endl;
-
-        // indexFiles index;
-        // index.dataOffset = archiveStartPos;
-        // index.dataSizeContained = sizeof(data) + data.size;
-        // index.dataSizeRaw = data.size;
-        // index.dataPathLenght = filePathAbsolute.string().length();
-        // index.dataPath = filePathAbsolute.string();
-
-        // entriesIndex.push_back(index);
     }
 
-    // The number of bytes offset into the image where the table index starts.
-    uint64_t indexTablePosition = imageFile.tellp();
+    imageFile.write(reinterpret_cast<const char*>(&ifm), sizeof(ifm));
 
-    // Number of elements in the index table array.
-    uint64_t entriesCount = entriesIndex.size();
+    imageFile.write(reinterpret_cast<const char*>(viim.data()), viim.size() * sizeof(imageIndexMetadata));
 
-    imageFile.write((char*)&entriesCount, 8);
-
-    for (const auto &entry : entriesIndex) {
-        imageFile.write((char*)&entry.dataOffset, 8);
-        std::cout << entry.dataOffset << std::endl;
-        imageFile.write((char*)&entry.dataSizeContained, 8);
-        std::cout << entry.dataSizeContained << std::endl;
-        imageFile.write((char*)&entry.dataSizeRaw, 8);
-        std::cout << entry.dataSizeRaw << std::endl;
-        imageFile.write((char*)&entry.dataPathLenght, 8);
-        std::cout << entry.dataPathLenght << std::endl;
-
-        imageFile.write(entry.dataPath.data(), entry.dataPathLenght);
-        std::cout << entry.dataPath.data() << std::endl << std::endl;
-    }
-
-    imageFile.seekp(0);
-    sig.indexOffset = indexTablePosition;
-    imageFile.write(reinterpret_cast<const char*>(&sig), sizeof(sig));
-    std::cout << "indexPosition: " << indexTablePosition << std::endl << std::endl;
+    imageFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
 
     std::cout << "Backup created!" << std::endl;
 }
