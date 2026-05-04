@@ -80,11 +80,13 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
 
         FileUtilityProviderLocal() {};
 
-        virtual void fileMetadataCollectRecursively(std::string directoryRoot) override final;
-        virtual std::string filePropertiesTimeGet(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
-        virtual std::string filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit);
-        virtual std::string filePropertiesOwnerGet(std::filesystem::path fileSystemObjectPath);
-        virtual std::vector<FileMetadata> &fileMetadataGet();
+        void fileMetadataCollectRecursively(std::string directoryRoot) override final;
+        std::string filePropertiesPathGet(const std::filesystem::path fileSystemObjectPath);
+        std::string filePropertiesNameGet(const std::filesystem::path fileSystemObjectPath);
+        std::string filePropertiesTimeGet(const std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
+        std::string filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit);
+        std::string filePropertiesOwnerGet(const std::filesystem::path fileSystemObjectPath);
+        std::vector<FileMetadata> &fileMetadataGet();
 
         virtual void fileMetadataClear();
 

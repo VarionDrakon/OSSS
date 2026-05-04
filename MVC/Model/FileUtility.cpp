@@ -202,10 +202,23 @@ std::string FileUtilityProviderLocal::filePropertiesOwnerGet(std::filesystem::pa
 #include <pwd.h>
 #include <grp.h>
 
-std::string FileUtilityProviderLocal::filePropertiesTimeGet(std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum = filePropertiesTimeTypeEnum::TimeAccess) {
- 
+std::string FileUtilityProviderLocal::filePropertiesPathGet(const std::filesystem::path fileSystemObjectPath) {
+    std::string fsStrObj = fileSystemObjectPath.u8string();
+    return fsStrObj;
+}
+
+std::string FileUtilityProviderLocal::filePropertiesNameGet(const std::filesystem::path fileSystemObjectPath) {
+    std::string fsStrObj = fileSystemObjectPath.filename().u8string();
+    return fsStrObj;
+}
+
+std::string FileUtilityProviderLocal::filePropertiesTimeGet(const std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum = filePropertiesTimeTypeEnum::TimeAccess) {
+    
+    std::string fsStrObj = fileSystemObjectPath.u8string();
+    std::replace(fsStrObj.begin(), fsStrObj.end(), '\\', '/');
+
     // Get last write file time.
-    auto timeLastWrite = std::filesystem::last_write_time(fileSystemObjectPath);
+    auto timeLastWrite = std::filesystem::last_write_time(fsStrObj);
     
     // Convert file_time to system_clock::time_point.
     auto systemTime = std::chrono::system_clock::now() + (timeLastWrite - std::filesystem::file_time_type::clock::now());
@@ -255,28 +268,32 @@ std::string FileUtilityProviderLocal::filePropertiesTimeGet(std::filesystem::pat
     return result.str();
 }
 
-std::string FileUtilityProviderLocal::filePropertiesOwnerGet(std::filesystem::path fileSystemObjectPath) {
+std::string FileUtilityProviderLocal::filePropertiesOwnerGet(const std::filesystem::path fileSystemObjectPath) {
+
+    std::string fsStrObj = fileSystemObjectPath.u8string();
+    std::replace(fsStrObj.begin(), fsStrObj.end(), '\\', '/');
 
     struct stat fileStat;
 
-    if (stat(fileSystemObjectPath.c_str(), &fileStat) == 0) {
-
-        uid_t uid = fileStat.st_uid;
-        gid_t gid = fileStat.st_gid;
+    if (stat(fsStrObj.c_str(), &fileStat) == 0) {
 
         // Get username.
+        uid_t uid = fileStat.st_uid;
         struct passwd* pw = getpwuid(uid);
         std::string ownerName = pw ? pw->pw_name : std::to_string(uid);
         
         // Get username group.
+        gid_t gid = fileStat.st_gid;
         struct group* gr = getgrgid(gid);
         std::string groupName = gr ? gr->gr_name : std::to_string(gid);
 
-        //
-        return ownerName + ":" + groupName;
+        std::string strObj = ownerName + ":" + groupName;
+
+        return strObj;
     }
     else {
         throw std::system_error(errno, std::system_category(), "Error stat for file.");
+        return nullptr;
     }
 }
 
@@ -347,24 +364,20 @@ void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string direct
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
         const std::filesystem::path& fsObj = entry.path(); 
-        std::string fsStr = fsObj.u8string();
         try {
 
-            if (!std::filesystem::exists(fsStr)){
-                std::cout << "File not found: " << fsStr << std::endl;
+            if (!std::filesystem::exists(fsObj)){
+                std::cout << "File not found: " << fsObj.u8string() << std::endl;
                 continue;
             }
 
-            if (!std::filesystem::is_directory(fsStr)) {
-                std::replace(fsStr.begin(), fsStr.end(), '\\', '/');
-
-                fm.filePath = fsStr;
-                fm.fileName = fsObj.filename().u8string();
+            if (!std::filesystem::is_directory(fsObj)) {
+                fm.filePath = filePropertiesPathGet(fsObj);
+                fm.fileName = filePropertiesNameGet(fsObj);
                 fm.fileSize = filePropertiesSizeGet(fsObj);
                 fm.fileTypeData = "none";
-                fm.fileOwner = filePropertiesOwnerGet(fsStr);
-                fm.fileDateTime = filePropertiesTimeGet(fsStr);
-                // currentFileMetadata.fileHash = fuhp.fileCalculateHash(fsStr);
+                fm.fileOwner = filePropertiesOwnerGet(fsObj);
+                fm.fileDateTime = filePropertiesTimeGet(fsObj);
                 fm.fileHash = "none";
 
                 fms.metadataSnapshotUpdate(fm);
