@@ -8,7 +8,6 @@
 #include <list>
 #include <unordered_map>
 #include "HashUtility.h"
-#include "../../Core/Headers/FileCore.h"
 
 #if defined(WIN32) || defined (_WIN32) || defined(__WIN32__) || defined(__NT__) //NT platforms
 
@@ -67,28 +66,35 @@ class FileUtilityProvider : public FileUtility {
     public:
         FileUtilityProvider() {};
 
-        virtual void fileMetadataCollectRecursively(std::string directoryRoot) = 0;
+        // virtual void fileMetadataCollectRecursively(std::string directoryRoot) = 0;
 
         virtual ~FileUtilityProvider();
 };
 
 class FileUtilityProviderLocal : public FileUtilityProvider {
     private:
-        std::vector<FileMetadata> currentFileMetadata;
 
     public:
+        struct fileMetadata {
+            std::string filePath;
+            std::string fileName;
+            std::string fileSize;
+            std::string fileTypeData; // * https://www.iana.org/assignments/media-types/media-types.xhtml, write format - "text/plain" 
+            std::string fileOwner;
+            std::string fileDateTime; // * https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time
+            std::string fileHash;
+        };
+        fileMetadata fileMetadataDefault();
 
         FileUtilityProviderLocal() {};
 
-        void fileMetadataCollectRecursively(std::string directoryRoot) override final;
+        void fileMetadataCollect(std::vector<std::string> &fileList, std::ofstream &fileImage);
         std::string filePropertiesPathGet(const std::filesystem::path fileSystemObjectPath);
         std::string filePropertiesNameGet(const std::filesystem::path fileSystemObjectPath);
         std::string filePropertiesTimeGet(const std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
         std::string filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit);
         std::string filePropertiesOwnerGet(const std::filesystem::path fileSystemObjectPath);
-        std::vector<FileMetadata> &fileMetadataGet();
-
-        virtual void fileMetadataClear();
+        std::string filePropertiesCalcHash(const std::filesystem::path fileSystemObjectPath);
 
         virtual ~FileUtilityProviderLocal();
 };
@@ -106,7 +112,7 @@ class FileUtilityHashProvider : public FileUtilityAlgorithmProvider {
     public:
         FileUtilityHashProvider() {};
 
-        std::string fileCalculateHash(const std::string& filePath);
+        // std::string fileCalculateHash(const std::string& filePath);
         bool fileMetadataCompare();
         
         virtual ~FileUtilityHashProvider();
@@ -136,30 +142,28 @@ class MultiOSDirectory : public Directory{
 // Snapshot-cache
 class FileMetadataSnapshot {
     private:
-        
 
-        void metadataSnapshotWriteFile(std::ofstream &file, const std::string &str);
+        // void metadataSnapshotWriteFile(std::ofstream &file, const std::string &str);
         
-        std::string metadataSnapshotReadFile(std::ifstream &file);
+        // std::string metadataSnapshotReadFile(std::ifstream &file);
 
     public:
-        std::unordered_map<std::string, FileMetadata> metadataSnapshot;
 
-        void metadataSnapshotUpdate(const FileMetadata &metadata);
+    // void metadataSnapshotUpdate(const FileMetadata &metadata);
 
-        bool metadataSnapshotContains(const std::string &path) const;
+//         bool metadataSnapshotContains(const std::string &path) const;
 
-        const FileMetadata* metadataSnapshotGet(const std::string &path) const;
+//         const FileMetadata* metadataSnapshotGet(const std::string &path) const;
 
-        const std::unordered_map<std::string, FileMetadata> &metadataSnapshotGetAll();
+//         const std::unordered_map<std::string, FileMetadata> &metadataSnapshotGetAll();
 
-        bool metadataSnapshotSaveToFile();
+//         bool metadataSnapshotSaveToFile();
 
-        bool metadataSnapshotLoadLatestFile();
+//         bool metadataSnapshotLoadLatestFile();
 
-        bool metadataSnapshotLoadFromFile(const std::string &fileName);
+//         bool metadataSnapshotLoadFromFile(const std::string &fileName);
 
-        void metadataSnapshotClear();
+//         void metadataSnapshotClear();
 };
 
 // struct FileMetadataStatus {
@@ -173,7 +177,7 @@ class FileMetadataUtility {
         // std::unordered_map<std::string, FileMetadata> metadataSnapshotDifferences;
 
     public:
-        void fileMetadataUtilityCompare(const FileMetadataSnapshot &currentSnapshot, const std::unordered_map<std::string, FileMetadata> &collectedMetadata);
+        // void fileMetadataUtilityCompare(const FileMetadataSnapshot &currentSnapshot, const std::unordered_map<std::string, FileMetadata> &collectedMetadata);
 
 };
 
@@ -194,9 +198,13 @@ class FileImage {
     imageIndexMetadata imageIndexMetadataDefault();
 
     public:
+        std::vector<std::string> fileCollectRecursively(const std::string& pathSource);
+        void encodeBlocksWithHash(std::vector<std::string> &fileList, std::ofstream &fileImage, std::vector<imageIndexMetadata> &viim);
+        void stringSerialize(std::ofstream &fileImage, const std::string &str);
+
         void imageCollect(const std::string& pathSource, const std::string& fileOutput);
         void imageDisperse(const std::string& pathSource, const std::string& fileOutput);
-        void encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &fileImage, std::vector<imageIndexMetadata> &viim);
+        // void stringDeserialize(std::ofstream &fileImage, const std::string &str);
 };
 
 // class FileUtilityJSON {

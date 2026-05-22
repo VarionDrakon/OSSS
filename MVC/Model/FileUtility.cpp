@@ -324,241 +324,255 @@ std::string FileUtilityProviderLocal::filePropertiesSizeGet(const std::filesyste
     return "Undefined";
 }
 
-/** @see std::string FileUtilityHashProvider::fileCalculateHash(const std::string& filePath)
-    Calculates hashes for files, skipping directories, returning true or false.
+std::string FileUtilityProviderLocal::filePropertiesCalcHash(const std::filesystem::path fileSystemObjectPath) {
+    SHA256Algorithm sha256;
+    std::string fsStrObj = fileSystemObjectPath.u8string();
+    std::replace(fsStrObj.begin(), fsStrObj.end(), '\\', '/');
 
-    @param filePath - path to the file.
-    @param calcHash - calls a function to calculate the hash.
+    std::string calcHash = sha256.hashCalculateFile(fsStrObj);
 
-    @return true, if hash calculate successful, else false with error message.
-*/
-std::string FileUtilityHashProvider::fileCalculateHash(const std::string &filePath) {
-
-        SHA256Algorithm calculateHashSHA256;
-
-        std::string calcHash = calculateHashSHA256.calcHash(filePath);
-
-        if (calcHash.empty()) {
-            std::cerr << "Error calculate hash for file: " << filePath << std::endl;
-            return "Undefined";
-        }
+    if (calcHash.empty()) {
+        std::cerr << "[]> Error calculate hash for file: " << fsStrObj << std::endl;
+        return "Undefined";
+    }
 
     return calcHash;
 }
 
-/** @see FileUtilityProviderLocal::fileMetadataCollectRecursively()
-    Sets the execution context within which the algorithm will be executed, namely the path to the directory that will be the root of the job. 
+#pragma region unnecessary
 
-    @param entry.path() - check directory existence.
-    @param fsStr - Returns the internal pathname in native pathname format, converted to specific string type.
+// std::vector<FileMetadata> &FileUtilityProviderLocal::fileMetadataGet() {
+//     return currentFileMetadata;
+// }
 
-    @return directoryFileList - vector storing file path.
-*/
-void FileUtilityProviderLocal::fileMetadataCollectRecursively(std::string directoryRoot) {
+// bool FileUtilityHashProvider::fileMetadataCompare() {
+//     return true;
+// }
 
-    FileUtilityHashProvider fuhp;
-    FileMetadataSnapshot fms;
-    FileMetadataUtility fmu;
-    FileMetadata fm;
+// void FileUtilityProviderLocal::fileMetadataClear() {
+//     currentFileMetadata.clear();
+// }
+
+// void FileMetadataSnapshot::metadataSnapshotUpdate(const FileMetadata &metadata) {
+//     metadataSnapshot[metadata.filePath] = std::move(metadata);
+// }
+
+// bool FileMetadataSnapshot::metadataSnapshotContains(const std::string &path) const {
+//     return metadataSnapshot.find(path) != metadataSnapshot.end();
+// }
+
+// const FileMetadata* FileMetadataSnapshot::metadataSnapshotGet(const std::string &path) const {
+//     auto iteration = metadataSnapshot.find(path);
+//     if (iteration == metadataSnapshot.end()) {
+//         return nullptr;
+//     }
+//     return &iteration->second;
+// }
+
+// const std::unordered_map<std::string, FileMetadata>& FileMetadataSnapshot::metadataSnapshotGetAll() {
+//     return metadataSnapshot;
+// }
+
+// bool FileMetadataSnapshot::metadataSnapshotSaveToFile() {
+//     auto now = std::chrono::system_clock::now();
+//     auto time_t = std::chrono::system_clock::to_time_t(now);
+//     std::tm time = *std::localtime(&time_t);
+    
+//     // std::stringstream stringStream;
+//     // stringStream << "snapshot_"
+//     //         << std::put_time(&time, "%Y-%m-%d_%H-%M-%S")
+//     //         << ".dat";
+
+//     // std::string fileName = stringStream.str();
+
+//     // std::ofstream tempFile(fileName, std::ios::binary);
+
+//     // if (!tempFile) return false;
+
+//     // size_t countBytes = metadataSnapshot.size();
+//     // tempFile.write(reinterpret_cast<const char*>(&countBytes), sizeof(countBytes));
+    
+//     // for (const auto& metadata : metadataSnapshot) {
+//     //     const auto& meta = metadata.second;
+//     //     metadataSnapshotWriteFile(tempFile, meta.filePath);
+//     //     metadataSnapshotWriteFile(tempFile, meta.fileName);
+//     //     metadataSnapshotWriteFile(tempFile, meta.fileSize);
+//     //     metadataSnapshotWriteFile(tempFile, meta.fileTypeData);
+//     //     metadataSnapshotWriteFile(tempFile, meta.fileOwner);
+//     //     metadataSnapshotWriteFile(tempFile, meta.fileDateTime);
+//     //     metadataSnapshotWriteFile(tempFile, meta.fileHash);
+//     // }
+//     return true;
+// }
+
+// bool FileMetadataSnapshot::metadataSnapshotLoadLatestFile() {
+//     std::string latest;
+
+//     try {
+//         for (const auto &entry : std::filesystem::directory_iterator(".")) {
+//             if (entry.path().extension() == ".dat" && entry.path().string().find("snapshot_") != std::string::npos) {
+//                 if (latest.empty() || entry.path().string() > latest) {
+//                     latest = entry.path().string();
+//                 }
+//             }
+//         }
+
+//         metadataSnapshotLoadFromFile(latest);
+//         return true;
+//     }
+//     catch (const std::exception &e) {
+//         std::cerr << "Error load latest snapshot: " << e.what() << std::endl;
+//         return false;
+//     }
+// }
+
+// bool FileMetadataSnapshot::metadataSnapshotLoadFromFile(const std::string &fileName) {
+//     std::ifstream tempFile(fileName, std::ios::binary);
+//     if (!tempFile) return false;
+    
+//     metadataSnapshot.clear();
+    
+//     size_t countBytes;
+//     tempFile.read(reinterpret_cast<char*>(&countBytes), sizeof(countBytes));
+    
+//     for (size_t i = 0; i < countBytes; ++i) {
+//         FileMetadata meta;
+//         meta.filePath = metadataSnapshotReadFile(tempFile);
+//         meta.fileName = metadataSnapshotReadFile(tempFile);
+//         meta.fileSize = metadataSnapshotReadFile(tempFile);
+//         meta.fileTypeData = metadataSnapshotReadFile(tempFile);
+//         meta.fileOwner = metadataSnapshotReadFile(tempFile);
+//         meta.fileDateTime = metadataSnapshotReadFile(tempFile);
+//         meta.fileHash = metadataSnapshotReadFile(tempFile);
+
+//         metadataSnapshot[meta.filePath] = meta;
+//     }
+//     return true;
+// }
+
+// void FileMetadataSnapshot::metadataSnapshotClear() {
+//     metadataSnapshot.clear();
+// }
+
+// void FileMetadataSnapshot::metadataSnapshotWriteFile(std::ofstream &file, const std::string &str) {
+//     size_t size = str.size();
+//     file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+//     file.write(str.c_str(), size);
+// }
+
+// std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream &file) {
+//     size_t size;
+//     file.read(reinterpret_cast<char*>(&size), sizeof(size));
+//     std::string str(size, ' ');
+//     file.read(&str[0], size);
+//     return str;
+// }
+
+// void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot &currentSnapshot, const std::unordered_map<std::string, FileMetadata> &collectMetadata) {
+//     FileMetadataSnapshot fms;
+
+//     if (!fms.metadataSnapshotLoadLatestFile()) {
+//         std::cout << "No previous snapshots were found. The next snapshot will be the first." << std::endl;
+//         return;
+//     }
+
+//     for (const auto &[path, metaCur] : collectMetadata) {
+//         const FileMetadata* metaPast = fms.metadataSnapshotGet(path);
+
+//         if (!metaPast) {
+//             std::cout << "NEW: " << metaCur.filePath << std::endl;
+//             continue;
+//         }
+
+//         if (metaPast->fileSize != metaCur.fileSize ||
+//             metaPast->fileHash != metaCur.fileHash ||
+//             metaPast->fileOwner != metaCur.fileOwner ||
+//             metaPast->fileDateTime != metaCur.fileDateTime ||
+//             metaPast->filePath != metaCur.filePath) {
+//             std::cout << "MOD: " << metaCur.filePath << std::endl;
+//             continue;
+//         }
+//     }
+
+//     for (const auto &[path, metaCur] : fms.metadataSnapshotGetAll()) {
+//         if (collectMetadata.find(path) == collectMetadata.end()) {
+//             std::cout << "DEL: " << metaCur.filePath << std::endl;
+//             continue;
+//         }
+//     }
+// }
+
+#pragma endregion
+
+FileUtilityProviderLocal::fileMetadata FileUtilityProviderLocal::fileMetadataDefault() {
+    fileMetadata fm = {};
+
+    fm.filePath = {0};
+    fm.fileName = {0};
+    fm.fileSize = {0};
+    fm.fileTypeData = {0};
+    fm.fileOwner = {0};
+    fm.fileDateTime = {0};
+    fm.fileHash = {0};
+
+    return fm;
+}
+
+void FileUtilityProviderLocal::fileMetadataCollect(std::vector<std::string> &fileList, std::ofstream &fileImage) {
+    SHA256Algorithm sha256;
     FileImage fi;
 
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryRoot)) {
-        const std::filesystem::path& fsObj = entry.path(); 
+    fileMetadata fm = fileMetadataDefault();
+    std::ofstream fileLog("fileLog.dat", std::ios::binary | std::ios::app);
+
+    for (const auto &file : fileList) {
         try {
-
-            if (!std::filesystem::exists(fsObj)){
-                std::cout << "File not found: " << fsObj.u8string() << std::endl;
-                continue;
+            if (!std::filesystem::exists(file)){
+                std::cout << "[]> File not found: " << file << std::endl;
+                return;
             }
-
-            if (!std::filesystem::is_directory(fsObj)) {
-                fm.filePath = filePropertiesPathGet(fsObj);
-                fm.fileName = filePropertiesNameGet(fsObj);
-                fm.fileSize = filePropertiesSizeGet(fsObj);
+            if (!std::filesystem::is_directory(file)) {
+                fm.filePath = filePropertiesPathGet(file);
+                fm.fileName = filePropertiesNameGet(file);
+                fm.fileSize = filePropertiesSizeGet(file);
                 fm.fileTypeData = "none";
-                fm.fileOwner = filePropertiesOwnerGet(fsObj);
-                fm.fileDateTime = filePropertiesTimeGet(fsObj);
-                fm.fileHash = "none";
+                fm.fileOwner = filePropertiesOwnerGet(file);
+                fm.fileDateTime = filePropertiesTimeGet(file);
+                fm.fileHash = filePropertiesCalcHash(file);
 
-                fms.metadataSnapshotUpdate(fm);
-                currentFileMetadata.push_back(fm);
-                
+                std::string log = "[]> fm.filePath: " + fm.filePath
+                + " fm.fileName: " + fm.fileName
+                + " fm.fileSize: " + fm.fileSize
+                + " fm.fileTypeData: " + fm.fileTypeData
+                + " fm.fileOwner " + fm.fileOwner
+                + " fm.fileDateTime " + fm.fileDateTime
+                + " fm.fileHash " + fm.fileHash + "\n \n";
+                fileLog.write(log.data(), log.length());
+
+                fi.stringSerialize(fileImage, fm.filePath);
+                fi.stringSerialize(fileImage, fm.fileName);
+                fi.stringSerialize(fileImage, fm.fileSize);
+                fi.stringSerialize(fileImage, fm.fileTypeData);
+                fi.stringSerialize(fileImage, fm.fileOwner);
+                fi.stringSerialize(fileImage, fm.fileDateTime);
+                fi.stringSerialize(fileImage, fm.fileHash);
+
             } else {
-                std::cout << "This is folder: " << fsStr << " ?" << std::endl;
+                std::cout << "This is folder: " << file << " ?" << std::endl;
             }
-
-        } catch (const std::exception& e) {
-            std::cerr << "Error getting information for: " << fsStr << " - " << e.what() << std::endl;
+        } 
+        catch (const std::exception& e) {
+            std::cerr << "Error during processing a file: " << file << " - " << e.what() << std::endl;
         }
-    }
-    
-    fi.imageCollect(directoryRoot, "backupTestFile.dat");
-
-    fmu.fileMetadataUtilityCompare(fms, fms.metadataSnapshotGetAll());
-
-    fms.metadataSnapshotSaveToFile();
-    std::cout << "Snapshot the metadata has been created!" << std::endl;    
-}
-
-std::vector<FileMetadata> &FileUtilityProviderLocal::fileMetadataGet() {
-    return currentFileMetadata;
-}
-
-bool FileUtilityHashProvider::fileMetadataCompare() {
-    return true;
-}
-
-void FileUtilityProviderLocal::fileMetadataClear() {
-    currentFileMetadata.clear();
-}
-
-void FileMetadataSnapshot::metadataSnapshotUpdate(const FileMetadata &metadata) {
-    metadataSnapshot[metadata.filePath] = std::move(metadata);
-}
-
-bool FileMetadataSnapshot::metadataSnapshotContains(const std::string &path) const {
-    return metadataSnapshot.find(path) != metadataSnapshot.end();
-}
-
-const FileMetadata* FileMetadataSnapshot::metadataSnapshotGet(const std::string &path) const {
-    auto iteration = metadataSnapshot.find(path);
-    if (iteration == metadataSnapshot.end()) {
-        return nullptr;
-    }
-    return &iteration->second;
-}
-
-const std::unordered_map<std::string, FileMetadata>& FileMetadataSnapshot::metadataSnapshotGetAll() {
-    return metadataSnapshot;
-}
-
-bool FileMetadataSnapshot::metadataSnapshotSaveToFile() {
-    auto now = std::chrono::system_clock::now();
-    auto time_t = std::chrono::system_clock::to_time_t(now);
-    std::tm time = *std::localtime(&time_t);
-    
-    // std::stringstream stringStream;
-    // stringStream << "snapshot_"
-    //         << std::put_time(&time, "%Y-%m-%d_%H-%M-%S")
-    //         << ".dat";
-
-    // std::string fileName = stringStream.str();
-
-    // std::ofstream tempFile(fileName, std::ios::binary);
-
-    // if (!tempFile) return false;
-
-    // size_t countBytes = metadataSnapshot.size();
-    // tempFile.write(reinterpret_cast<const char*>(&countBytes), sizeof(countBytes));
-    
-    // for (const auto& metadata : metadataSnapshot) {
-    //     const auto& meta = metadata.second;
-    //     metadataSnapshotWriteFile(tempFile, meta.filePath);
-    //     metadataSnapshotWriteFile(tempFile, meta.fileName);
-    //     metadataSnapshotWriteFile(tempFile, meta.fileSize);
-    //     metadataSnapshotWriteFile(tempFile, meta.fileTypeData);
-    //     metadataSnapshotWriteFile(tempFile, meta.fileOwner);
-    //     metadataSnapshotWriteFile(tempFile, meta.fileDateTime);
-    //     metadataSnapshotWriteFile(tempFile, meta.fileHash);
-    // }
-    return true;
-}
-
-bool FileMetadataSnapshot::metadataSnapshotLoadLatestFile() {
-    std::string latest;
-
-    try {
-        for (const auto &entry : std::filesystem::directory_iterator(".")) {
-            if (entry.path().extension() == ".dat" && entry.path().string().find("snapshot_") != std::string::npos) {
-                if (latest.empty() || entry.path().string() > latest) {
-                    latest = entry.path().string();
-                }
-            }
-        }
-
-        metadataSnapshotLoadFromFile(latest);
-        return true;
-    }
-    catch (const std::exception &e) {
-        std::cerr << "Error load latest snapshot: " << e.what() << std::endl;
-        return false;
+        std::cout << "[]> Collect metadata about files - Completed!" << std::endl;
     }
 }
 
-bool FileMetadataSnapshot::metadataSnapshotLoadFromFile(const std::string &fileName) {
-    std::ifstream tempFile(fileName, std::ios::binary);
-    if (!tempFile) return false;
-    
-    metadataSnapshot.clear();
-    
-    size_t countBytes;
-    tempFile.read(reinterpret_cast<char*>(&countBytes), sizeof(countBytes));
-    
-    for (size_t i = 0; i < countBytes; ++i) {
-        FileMetadata meta;
-        meta.filePath = metadataSnapshotReadFile(tempFile);
-        meta.fileName = metadataSnapshotReadFile(tempFile);
-        meta.fileSize = metadataSnapshotReadFile(tempFile);
-        meta.fileTypeData = metadataSnapshotReadFile(tempFile);
-        meta.fileOwner = metadataSnapshotReadFile(tempFile);
-        meta.fileDateTime = metadataSnapshotReadFile(tempFile);
-        meta.fileHash = metadataSnapshotReadFile(tempFile);
+void FileImage::stringSerialize(std::ofstream &fileImage, const std::string &str) {
+    uint64_t strSize = str.size();
 
-        metadataSnapshot[meta.filePath] = meta;
-    }
-    return true;
-}
-
-void FileMetadataSnapshot::metadataSnapshotClear() {
-    metadataSnapshot.clear();
-}
-
-void FileMetadataSnapshot::metadataSnapshotWriteFile(std::ofstream &file, const std::string &str) {
-    size_t size = str.size();
-    file.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    file.write(str.c_str(), size);
-}
-
-std::string FileMetadataSnapshot::metadataSnapshotReadFile(std::ifstream &file) {
-    size_t size;
-    file.read(reinterpret_cast<char*>(&size), sizeof(size));
-    std::string str(size, ' ');
-    file.read(&str[0], size);
-    return str;
-}
-
-void FileMetadataUtility::fileMetadataUtilityCompare(const FileMetadataSnapshot &currentSnapshot, const std::unordered_map<std::string, FileMetadata> &collectMetadata) {
-    FileMetadataSnapshot fms;
-
-    if (!fms.metadataSnapshotLoadLatestFile()) {
-        std::cout << "No previous snapshots were found. The next snapshot will be the first." << std::endl;
-        return;
-    }
-
-    for (const auto &[path, metaCur] : collectMetadata) {
-        const FileMetadata* metaPast = fms.metadataSnapshotGet(path);
-
-        if (!metaPast) {
-            std::cout << "NEW: " << metaCur.filePath << std::endl;
-            continue;
-        }
-
-        if (metaPast->fileSize != metaCur.fileSize ||
-            metaPast->fileHash != metaCur.fileHash ||
-            metaPast->fileOwner != metaCur.fileOwner ||
-            metaPast->fileDateTime != metaCur.fileDateTime ||
-            metaPast->filePath != metaCur.filePath) {
-            std::cout << "MOD: " << metaCur.filePath << std::endl;
-            continue;
-        }
-    }
-
-    for (const auto &[path, metaCur] : fms.metadataSnapshotGetAll()) {
-        if (collectMetadata.find(path) == collectMetadata.end()) {
-            std::cout << "DEL: " << metaCur.filePath << std::endl;
-            continue;
-        }
-    }
+    fileImage.write(reinterpret_cast<const char*>(&strSize), sizeof(strSize));
+    fileImage.write(str.data(), strSize);
 }
 
 FileImage::imageIndexMetadata FileImage::imageIndexMetadataDefault() {
@@ -574,53 +588,61 @@ FileImage::imageIndexMetadata FileImage::imageIndexMetadataDefault() {
     return iim;
 }
 
-void FileImage::encodeBlocksWithHash(std::ifstream &fileSource, std::ofstream &fileImage, std::vector<imageIndexMetadata> &viim) {
+void FileImage::encodeBlocksWithHash(std::vector<std::string> &fileList, std::ofstream &fileImage, std::vector<imageIndexMetadata> &viim) {
     SHA256Algorithm sha256;
     const std::size_t bufferDataSize = 4 * 1024;
     std::vector<char> bufferData(bufferDataSize);
 
     std::ofstream fileLog("fileLog.dat", std::ios::binary | std::ios::app);
 
-    while (fileSource.read(bufferData.data(), bufferDataSize) || fileSource.gcount() > 0) {
-        imageIndexMetadata iim = imageIndexMetadataDefault();
-
-        std::string hash = sha256.hashCalculateBlock(bufferData.data());
-        std::streamsize sz = fileSource.gcount();
-        uint64_t sz64 = static_cast<uint64_t>(sz);
+    for (const auto &file : fileList) {
+        std::ifstream fileSource(file, std::ios::binary);
         
-        std::vector<char> buffer(hash.size() + sizeof(sz64) + sz);
+        while (fileSource.read(bufferData.data(), bufferDataSize) || fileSource.gcount() > 0) {
+            imageIndexMetadata iim = imageIndexMetadataDefault();
 
-        std::memcpy(buffer.data(), hash.data(), hash.size());
-        std::memcpy(iim.hash, hash.data(), hash.size());
-        std::memcpy(buffer.data() + hash.size(), &sz64, sizeof(sz64));
-        iim.chunkSizeUncompressed = sz64;
-        std::memcpy(buffer.data() + hash.size() + sizeof(sz64), bufferData.data(), sz);
+            std::string hash = sha256.hashCalculateBlock(bufferData.data());
+            std::streamsize sz = fileSource.gcount();
+            uint64_t sz64 = static_cast<uint64_t>(sz);
+            
+            std::vector<char> buffer(hash.size() + sizeof(sz64) + sz);
 
-        std::string log = "[]> HASH: " + hash + " HASH SIZE: " + std::to_string(hash.size()) + " SZ: " + std::to_string(sz) + " SZ64: " + std::to_string(sz64) + " Offset " + std::to_string(fileImage.tellp()) + "\n";
-        fileLog.write(log.data(), log.length());
+            std::memcpy(buffer.data(), hash.data(), hash.size());
+            std::memcpy(iim.hash, hash.data(), hash.size());
+            std::memcpy(buffer.data() + hash.size(), &sz64, sizeof(sz64));
+            // iim.chunkSizeUncompressed = sz64;
+            std::memcpy(buffer.data() + hash.size() + sizeof(sz64), bufferData.data(), sz);
 
-        viim.push_back(iim);
+            std::string log = "[]> HASH: " + hash + " HASH SIZE: " + std::to_string(hash.size()) + " SZ: " + std::to_string(sz) + " SZ64: " + std::to_string(sz64) + " Offset " + std::to_string(fileImage.tellp()) + "\n";
+            fileLog.write(log.data(), log.length());
 
-        fileImage.write(buffer.data(), buffer.size());
+            // viim.push_back(iim);
+
+            fileImage.write(buffer.data(), buffer.size());
+        }
     }
 }
 
-void FileImage::imageCollect(const std::string& pathSource, const std::string& fileOutput) {
-    std::vector<std::string> filesPathRelativeList;
-    FileImage fi;
-
+std::vector<std::string> FileImage::fileCollectRecursively(const std::string& pathSource) {
+    std::vector<std::string> result;
     for (const auto &entry : std::filesystem::recursive_directory_iterator(pathSource)) {
         if (entry.is_regular_file()) {
-            std::string fileRelativePath = entry.path().lexically_relative(pathSource).string();
-            filesPathRelativeList.push_back(fileRelativePath);
+            result.push_back(std::filesystem::absolute(entry.path()).string()); 
+            std::cout << "[]> File added in queue: " << entry.path().c_str() << std::endl;
         }
     }
+    return result;
+}
 
+void FileImage::imageCollect(const std::string& pathSource, const std::string& fileOutput) {
+    FileUtilityProviderLocal fupl;
+
+    std::vector<std::string> filesPathRelativeList = fileCollectRecursively(pathSource);
     std::ofstream imageFile(fileOutput, std::ios::binary);
 
     // Common information about file.
     #pragma pack(push, 1)
-    struct imageHeader 
+    struct imageHeader
     {
         char magic[6] = "DBCKF";     // 6
         uint16_t version = 1;        // 6
@@ -628,6 +650,7 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
     };
     #pragma pack(pop)
     imageHeader header = {};
+    imageFile.write(reinterpret_cast<const char*>(&header), sizeof(header));
     
     // Configuration backup file.
     #pragma pack(push, 1)
@@ -637,19 +660,9 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
     };
     #pragma pack(pop)
     imageConfiguration config = {};
+    imageFile.write(reinterpret_cast<const char*>(&config), sizeof(config));
 
-    // Table file metadata.
-    #pragma pack(push, 1)
-    struct imageFileMetadata
-    {
-        uint16_t reserved[512] = {0};
-    };
-    #pragma pack(pop)
-    imageFileMetadata ifm = {};
-
-   std::vector<imageIndexMetadata> viim;
-
-    // Table file metadata.
+    // Table footer image.
     #pragma pack(push, 1)
     struct imageFooter
     {
@@ -657,25 +670,12 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
     };
     #pragma pack(pop)
     imageFooter footer = {};
-    
-    imageFile.write(reinterpret_cast<const char*>(&header), sizeof(header));
-    imageFile.write(reinterpret_cast<const char*>(&config), sizeof(config));
-    // Collecting data by chinks.
-    for (const auto &file : filesPathRelativeList) {
-        // Getting the absolute path to file.
-        auto filePathAbsolute = std::filesystem::path(pathSource) / file;
 
-        std::ifstream fileSource(filePathAbsolute, std::ios::binary);
+    std::vector<imageIndexMetadata> viim;
 
-        // Write blocks to image file.
-        fi.encodeBlocksWithHash(fileSource, imageFile, viim);
+    encodeBlocksWithHash(filesPathRelativeList, imageFile, viim);
 
-        std::cout << "Backed up: " << filePathAbsolute << std::endl;
-    }
-
-    imageFile.write(reinterpret_cast<const char*>(&ifm), sizeof(ifm));
-
-    imageFile.write(reinterpret_cast<const char*>(viim.data()), viim.size() * sizeof(imageIndexMetadata));
+    fupl.fileMetadataCollect(filesPathRelativeList, imageFile);
 
     imageFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
 
@@ -737,11 +737,10 @@ void FileImage::imageDisperse(const std::string& pathSource, const std::string& 
     std::cout << "Restore completed! Files: " << filesSize << std::endl;
 
 }
-// Block of destructors
 
-FileUtilityProviderLocal::~FileUtilityProviderLocal() {
-    // std::cout << "FileUtilityProviderLocal destroyed." << std::endl;
-}
+#pragma region plugs
+
+FileUtilityProviderLocal::~FileUtilityProviderLocal() {}
 
 FileUtilityAlgorithmProvider::~FileUtilityAlgorithmProvider() {
     // std::cout << "FileUtilityAlgorithmProvider destroyed." << std::endl;
@@ -758,3 +757,5 @@ FileUtility::~FileUtility() {
 FileUtilityProvider::~FileUtilityProvider() {
     // std::cout << "FileUtilityProvider destroyed." << std::endl;
 }
+
+#pragma endregion

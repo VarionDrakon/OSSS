@@ -14,10 +14,10 @@ class WebUtility {
     protected:
 
     private:
-        static std::vector<FileMetadata> fileMetadata; 
+        // static std::vector<FileMetadata> fileMetadata; 
 
     public:
-        void fileMetadataSet(const std::vector<FileMetadata> &fm);
+        // void fileMetadataSet(const std::vector<FileMetadata> &fm);
 
         WebUtility();
         
@@ -26,7 +26,7 @@ class WebUtility {
         static void runLocalHTTPServer();
         static void ev_handler(struct mg_connection *c, int ev, void *ev_data);
         static void deserializationFileListMetadata(struct mg_connection *c, int ev, void *ev_data);
-        static void serializeFileListMetadata(void (*connection)(char, void*), char* ptr);
+        // static void serializeFileListMetadata(void (*connection)(char, void*), char* ptr);
         // static size_t returnAttr(void (*out)(char, void *), void *ptr, va_list *ap);
 
         virtual ~WebUtility() {}

@@ -3,39 +3,39 @@
 
 WebUtility::WebUtility() {}
 
-std::vector<FileMetadata> WebUtility::fileMetadata;
+// std::vector<FileMetadata> WebUtility::fileMetadata;
 
-void WebUtility::fileMetadataSet(const std::vector<FileMetadata> &fm) {
-    fileMetadata = fm;
-}
+// void WebUtility::fileMetadataSet(const std::vector<FileMetadata> &fm) {
+//     fileMetadata = fm;
+// }
 
-void WebUtility::serializeFileListMetadata(void (*connection)(char, void*), char* ptr){
-    try {
-        const char* keys[] = { "File path", "File name", "File size", "File type", "Owner", "Date creation", "Hash" };
+// void WebUtility::serializeFileListMetadata(void (*connection)(char, void*), char* ptr){
+//     try {
+//         const char* keys[] = { "File path", "File name", "File size", "File type", "Owner", "Date creation", "Hash" };
 
-        char *constructor = "{\"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\"}";
+//         char *constructor = "{\"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\", \"%s\": \"%s\"}";
 
-        mg_xprintf(connection, ptr, "{\"%s\":[", keys[0]);
-        for (int f = 0; f < fileMetadata.size(); f++) {
-            const FileMetadata &meta = (fileMetadata)[f];
-            mg_xprintf(connection, ptr, constructor,
-                keys[0], meta.filePath.c_str(),
-                keys[1], meta.fileName.c_str(),
-                keys[2], meta.fileSize.c_str(),
-                keys[3], meta.fileTypeData.c_str(),
-                keys[4], meta.fileOwner.c_str(),
-                keys[5], meta.fileDateTime.c_str(),
-                keys[6], meta.fileHash.c_str()
-            );
+//         mg_xprintf(connection, ptr, "{\"%s\":[", keys[0]);
+//         for (int f = 0; f < fileMetadata.size(); f++) {
+//             const FileMetadata &meta = (fileMetadata)[f];
+//             mg_xprintf(connection, ptr, constructor,
+//                 keys[0], meta.filePath.c_str(),
+//                 keys[1], meta.fileName.c_str(),
+//                 keys[2], meta.fileSize.c_str(),
+//                 keys[3], meta.fileTypeData.c_str(),
+//                 keys[4], meta.fileOwner.c_str(),
+//                 keys[5], meta.fileDateTime.c_str(),
+//                 keys[6], meta.fileHash.c_str()
+//             );
 
-            mg_xprintf(connection, ptr, (f < fileMetadata.size() - 1) ? "," : "");
-        }
-        mg_xprintf(connection, ptr, "]}");
-    }
-    catch (const std::exception &e) {
-        std::cerr << e.what() << std::endl;
-    }
-}
+//             mg_xprintf(connection, ptr, (f < fileMetadata.size() - 1) ? "," : "");
+//         }
+//         mg_xprintf(connection, ptr, "]}");
+//     }
+//     catch (const std::exception &e) {
+//         std::cerr << e.what() << std::endl;
+//     }
+// }
 
 void WebUtility::ev_handler(struct mg_connection *c, int ev, void *ev_data) {
     if (ev == MG_EV_HTTP_MSG) {
@@ -56,7 +56,7 @@ void WebUtility::ev_handler(struct mg_connection *c, int ev, void *ev_data) {
             mg_http_reply(c, 200, "", "OK!");
         }
         else if (mg_match(hm->uri, mg_str("/api/data"), NULL)) {
-            mg_http_reply(c, 200, "", "%M", serializeFileListMetadata);
+            // mg_http_reply(c, 200, "", "%M", serializeFileListMetadata);
         }
         else {
             struct mg_http_serve_opts opts = {.root_dir = ".", .fs = &mg_fs_posix};

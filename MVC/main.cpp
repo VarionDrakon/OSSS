@@ -12,20 +12,20 @@ bool isTriggerCheckDirectory = false;
 
 int main() {
 
-    FileUtilityProviderLocal fupl;
-    // FileImage fi;
+    // FileUtilityProviderLocal fupl;
+    FileImage fi;
     WebUtility wu;
 
     std::string userPath;
     std::cout << "Enter path to folder for create backup file: ";
     std::getline(std::cin, userPath);
 
-    fupl.fileMetadataCollectRecursively(userPath);
-    // fi.imageCollect("/mnt/sda/utils/", "backFile.dat");
+    fi.imageCollect(userPath, "backFile.dat");
     // fi.imageDisperse("/mnt/sda/test-restore/", "backFile.dat");
-    wu.fileMetadataSet(fupl.fileMetadataGet());
 
-    wu.runLocalHTTPServer();
+    // wu.fileMetadataSet(fupl.fileMetadataGet());
+
+    // wu.runLocalHTTPServer();
 
     return 0;
 }
