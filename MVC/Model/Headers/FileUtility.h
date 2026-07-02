@@ -187,7 +187,7 @@ class FileImage {
     #pragma pack(push, 1)
     struct imageHeadMetadata
     {
-        char magic[8];                     // Magic number - File signature.
+        char magic[9];                     // Magic number - File signature.
         uint32_t formatVersion;            // Required to determine the selected file format version.
         uint32_t engineVersion;            // Required to determine the version of the engine used to create the file.
         char uuid[36];                     // Universally unique identifier for operation within a server infrastructure.
@@ -197,7 +197,7 @@ class FileImage {
         uint8_t deduplicated;              // Prepared for the future...
         char imageTimeStamp[30];           // Exact time of archive creation.
         char hostnameSource[65];           // Saved for future...
-        uint8_t reserved[362];             // Reserved and aligned under 512 bytes.
+        uint8_t reserved[361];             // Reserved and aligned under 512 bytes.
     };
     #pragma pack(pop)
     imageHeadMetadata imageHeadMetadataDefault();
