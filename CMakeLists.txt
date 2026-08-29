@@ -1,14 +1,43 @@
 cmake_minimum_required(VERSION 3.10)
 project(OSSS VERSION 1.0)
 
+include(FetchContent)
+
 # Settings C++
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CRYPTOPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/lib/cryptopp)
+FetchContent_Declare(
+    cryptopp-cmake
+    GIT_REPOSITORY https://github.com/abdes/cryptopp-cmake.git
+    GIT_TAG CRYPTOPP_8_9_0
+    GIT_SHALLOW TRUE
+)
 
-add_subdirectory(lib/cryptopp)
-add_subdirectory(lib/mongoose)
+FetchContent_Declare(
+    mongoose
+    GIT_REPOSITORY https://github.com/cesanta/mongoose.git
+    GIT_TAG 7.23
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(cryptopp-cmake mongoose)
+
+add_library(mongoose STATIC)
+target_sources(mongoose PRIVATE ${mongoose_SOURCE_DIR}/mongoose.c)
+
+set(MONGOOSE_INCLUDE_ROOT ${CMAKE_CURRENT_BINARY_DIR}/mongoose_includes)
+file(MAKE_DIRECTORY ${MONGOOSE_INCLUDE_ROOT}/mongoose)
+
+file(CREATE_LINK
+    ${mongoose_SOURCE_DIR}/mongoose.h
+    ${MONGOOSE_INCLUDE_ROOT}/mongoose/mongoose.h
+    SYMBOLIC
+)
+
+target_include_directories(mongoose PUBLIC
+    $<BUILD_INTERFACE:${MONGOOSE_INCLUDE_ROOT}>
+)
 
 # Automatic search for all sources
 set(SRC_FILES
@@ -26,20 +55,9 @@ set(HEADER_FILES
 # Create an executable file
 add_executable(osss ${SRC_FILES} ${HEADER_FILES})
 
-# Directories include
-target_include_directories(osss PRIVATE
-    lib/
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-# Link cryptopp library
 target_link_libraries(osss PRIVATE 
-    cryptopp
+    cryptopp::cryptopp
     mongoose
-)
-
-set_target_properties(osss PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin/debug
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin/release
 )
 
 # Platform-specific settings
