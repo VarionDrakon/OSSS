@@ -353,6 +353,17 @@ std::string FileUtilityProviderLocal::filePropertiesSizeGet(const std::filesyste
    
     return "Undefined";
 }
+void FileImage::fileMetadataCollect(std::ofstream &fileImage, const std::string &path, uint64_t fileSize, const std::string &fileHash) {
+    imageFileMetadata ifm = imageFileMetadataDefault();
+
+    pathAbsolute = path;
+    ifm.pathLength = static_cast<uint16_t>(pathAbsolute.size());
+    ifm.fileSize = fileSize;
+    std::memcpy(ifm.fileHash, fileHash.data(), std::min(fileHash.size(), sizeof(ifm.fileHash)));
+
+    fileImage.write(reinterpret_cast<const char*>(&ifm), sizeof(ifm));
+    fileImage.write(pathAbsolute.data(), ifm.pathLength);
+}
 
 std::string FileUtilityProviderLocal::filePropertiesCalcHash(const std::filesystem::path fileSystemObjectPath) {
     SHA256Algorithm sha256;
@@ -373,7 +384,6 @@ void FileUtilityProviderLocal::fileMetadataCollect(std::vector<std::string> &fil
     SHA256Algorithm sha256;
     FileImage fi;
 
-    fileMetadata fm = fileMetadataDefault();
     std::ofstream fileLog("fileLog.dat", std::ios::binary | std::ios::app);
 
     for (const auto &file : fileList) {
@@ -383,30 +393,11 @@ void FileUtilityProviderLocal::fileMetadataCollect(std::vector<std::string> &fil
                 return;
             }
             if (!std::filesystem::is_directory(file)) {
-                fm.filePath = filePropertiesPathGet(file);
-                fm.fileName = filePropertiesNameGet(file);
-                fm.fileSize = filePropertiesSizeGet(file);
-                fm.fileTypeData = "none";
-                fm.fileOwner = filePropertiesOwnerGet(file);
-                fm.fileDateTime = filePropertiesTimeGet(file);
-                fm.fileHash = filePropertiesCalcHash(file);
-
-                std::string log = "[]> fm.filePath: " + fm.filePath
-                + " fm.fileName: " + fm.fileName
-                + " fm.fileSize: " + fm.fileSize
-                + " fm.fileTypeData: " + fm.fileTypeData
-                + " fm.fileOwner " + fm.fileOwner
-                + " fm.fileDateTime " + fm.fileDateTime
-                + " fm.fileHash " + fm.fileHash + "\n \n";
-                fileLog.write(log.data(), log.length());
-
-                fi.stringSerialize(fileImage, fm.filePath);
-                fi.stringSerialize(fileImage, fm.fileName);
-                fi.stringSerialize(fileImage, fm.fileSize);
-                fi.stringSerialize(fileImage, fm.fileTypeData);
-                fi.stringSerialize(fileImage, fm.fileOwner);
-                fi.stringSerialize(fileImage, fm.fileDateTime);
-                fi.stringSerialize(fileImage, fm.fileHash);
+                std::string path = filePropertiesPathGet(file);
+                uint64_t size = std::filesystem::file_size(file);
+                std::string hash = filePropertiesCalcHash(file);
+                
+                fi.fileMetadataCollect(fileImage, path, size, hash);
 
             } else {
                 std::cout << "This is folder: " << file << " ?" << std::endl;
@@ -426,20 +417,7 @@ void FileImage::stringSerialize(std::ofstream &fileImage, const std::string &str
     fileImage.write(str.data(), strSize);
 }
 
-FileImage::imageIndexMetadata FileImage::imageIndexMetadataDefault() {
-    imageIndexMetadata iim = {};
-    
-    iim.hash[32] = {0};
-    iim.chunkSizeUncompressed = 0;
-    iim.chunkSizeCompressed = 0;
-    iim.chunkCompressionAlgorithm = 0;
-    iim.chunkFlags = 0;
-    iim.reserved[462] = {0};
-
-    return iim;
-}
-
-void FileImage::encodeBlocksWithHash(std::vector<std::string> &fileList, std::ofstream &fileImage, std::vector<imageIndexMetadata> &viim) {
+void FileImage::encodeBlocksWithHash(std::vector<std::string> &fileList, std::ofstream &fileImage, std::vector<imageFileMetadata> &vifm) {
     SHA256Algorithm sha256;
     const std::size_t bufferDataSize = 4 * 1024;
     std::vector<char> bufferData(bufferDataSize);
@@ -450,7 +428,7 @@ void FileImage::encodeBlocksWithHash(std::vector<std::string> &fileList, std::of
         std::ifstream fileSource(file, std::ios::binary);
         
         while (fileSource.read(bufferData.data(), bufferDataSize) || fileSource.gcount() > 0) {
-            imageIndexMetadata iim = imageIndexMetadataDefault();
+            imageFileMetadata ifm = imageFileMetadataDefault();
 
             std::string hash = sha256.hashCalculateBlock(bufferData.data());
             std::streamsize sz = fileSource.gcount();
@@ -459,7 +437,7 @@ void FileImage::encodeBlocksWithHash(std::vector<std::string> &fileList, std::of
             std::vector<char> buffer(hash.size() + sizeof(sz64) + sz);
 
             std::memcpy(buffer.data(), hash.data(), hash.size());
-            std::memcpy(iim.hash, hash.data(), hash.size());
+            std::memcpy(vifm.data(), hash.data(), hash.size());
             std::memcpy(buffer.data() + hash.size(), &sz64, sizeof(sz64));
             // iim.chunkSizeUncompressed = sz64;
             std::memcpy(buffer.data() + hash.size() + sizeof(sz64), bufferData.data(), sz);
@@ -514,7 +492,7 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
     #pragma pack(pop)
     imageFooter footer = {};
 
-    std::vector<imageIndexMetadata> viim;
+    std::vector<imageFileMetadata> viim;
 
     encodeBlocksWithHash(filesPathRelativeList, imageFile, viim);
 

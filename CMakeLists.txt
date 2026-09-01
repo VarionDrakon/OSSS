@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
-project(OSSS VERSION 1.0)
 
-include(FetchContent)
+if(NOT WIN32)
+    set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+    set(CMAKE_C_COMPILER "/usr/bin/clang")
+endif()
+
+project(OSSS VERSION 1.0)
 
 # Settings C++
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include(FetchContent)
 
 FetchContent_Declare(
     cryptopp-cmake
@@ -25,19 +31,10 @@ FetchContent_MakeAvailable(cryptopp-cmake mongoose)
 
 add_library(mongoose STATIC)
 target_sources(mongoose PRIVATE ${mongoose_SOURCE_DIR}/mongoose.c)
+target_include_directories(mongoose PUBLIC ${mongoose_SOURCE_DIR})
 
 set(MONGOOSE_INCLUDE_ROOT ${CMAKE_CURRENT_BINARY_DIR}/mongoose_includes)
-file(MAKE_DIRECTORY ${MONGOOSE_INCLUDE_ROOT}/mongoose)
-
-file(CREATE_LINK
-    ${mongoose_SOURCE_DIR}/mongoose.h
-    ${MONGOOSE_INCLUDE_ROOT}/mongoose/mongoose.h
-    SYMBOLIC
-)
-
-target_include_directories(mongoose PUBLIC
-    $<BUILD_INTERFACE:${MONGOOSE_INCLUDE_ROOT}>
-)
+file(COPY ${mongoose_SOURCE_DIR}/mongoose.h DESTINATION ${MONGOOSE_INCLUDE_ROOT}/mongoose)
 
 # Automatic search for all sources
 set(SRC_FILES
@@ -50,10 +47,13 @@ set(SRC_FILES
 set(HEADER_FILES
     MVC/Model/Headers/FileUtility.h
     MVC/Model/Headers/WebUtility.h
+    MVC/Model/Headers/HashUtility.h
 )
 
 # Create an executable file
 add_executable(osss ${SRC_FILES} ${HEADER_FILES})
+
+target_include_directories(osss PRIVATE ${MONGOOSE_INCLUDE_ROOT})
 
 target_link_libraries(osss PRIVATE 
     cryptopp::cryptopp
@@ -62,8 +62,18 @@ target_link_libraries(osss PRIVATE
 
 # Platform-specific settings
 if(WIN32)
+    set(PLATFORM "windows")
     target_link_libraries(osss ws2_32)
     set_target_properties(osss PROPERTIES SUFFIX ".exe")
-else()
+elseif(APPLE)
+    set(PLATFORM "osx")
+    set_target_properties(osss PROPERTIES SUFFIX ".bin")
+else(LINUX)
+    set(PLATFORM "linux")
     set_target_properties(osss PROPERTIES SUFFIX ".bin")
 endif()
+
+set_target_properties(osss PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/${PLATFORM}/debug"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/${PLATFORM}/release"
+)

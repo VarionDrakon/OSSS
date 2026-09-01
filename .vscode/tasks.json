@@ -26,32 +26,6 @@
             ],
             "group": "build",
             "dependsOn": "cmake-configure"
-        },
-        {
-            "label": "build-linux",
-            "type": "shell",
-            "command": "cmake",
-            "args": [
-                "--build",
-                "${workspaceFolder}/build",
-                "--config",
-                "Debug"
-            ],
-            "group": "build",
-            "dependsOn": "cmake-configure"
-        },
-        {
-            "label": "build-windows",
-            "type": "shell",
-            "command": "cmake",
-            "args": [
-                "--build",
-                "${workspaceFolder}/build",
-                "--config",
-                "Debug"
-            ],
-            "group": "build",
-            "dependsOn": "cmake-configure"
         }
     ]
 }

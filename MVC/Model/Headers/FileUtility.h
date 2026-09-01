@@ -225,17 +225,18 @@ class FileImage {
         char chunkHash[128];               // Just a hash sum...
         uint32_t chunkSize;                // The chunk size is needed to know in advance how many bytes to read.
         uint8_t chunkEncrypted;            // Prepared for the future...
-        uint8_t chinkCompressed;           // Prepared for the future...
-        char chunkData[chunkSize];         // A chunk with a pre-defined size.
+        uint8_t chunkCompressed;           // Prepared for the future...
+        
     };
     #pragma pack(pop)
     imageDataMetadata imageDataMetadataDefault(); 
+
+    std::string chunkData; // The chunk data is needed to store the actual data of the chunk.
 
     #pragma pack(push, 1)
     struct imageFileMetadata
     {
         uint16_t pathLength;               // The size of the path, to know how many bytes to read.
-        char pathAbsolute[pathLength];     // Absolute file path.
         char fileType[32];                 // Prepared for the future...
         uint32_t fileOwnerUId;             // Unique user identifier. Required to restore the file with its original parameters.
         uint32_t fileGroupGId;             // Unique groud identifier. Required to restore the file with its original parameters.
@@ -249,7 +250,9 @@ class FileImage {
         uint64_t *fileChunkOffsets;        // A byte array containing the offset value of a specific chunk from the beginning of the image. Required for deduplication.
     };
     #pragma pack(pop)
-    imageFileMetadata imageFileMetadataDefault();
+    imageFileMetadata imageFileMetadataDefault(); 
+
+    std::string pathAbsolute; // Absolute file path.
 
     #pragma pack(push, 1)
     struct imageHashMetadata
@@ -290,8 +293,10 @@ class FileImage {
     imageFooterMetadata imageFooterMetadataDefault();
 
     public:
+        void fileMetadataCollect(std::ofstream &fileImage, const std::string &path, uint64_t fileSize, const std::string &fileHash);
+
         std::vector<std::string> fileCollectRecursively(const std::string& pathSource);
-        void encodeBlocksWithHash(std::vector<std::string> &fileList, std::ofstream &fileImage, std::vector<imageIndexMetadata> &viim);
+        void encodeBlocksWithHash(std::vector<std::string> &fileList, std::ofstream &fileImage, std::vector<imageFileMetadata> &vifm);
         void stringSerialize(std::ofstream &fileImage, const std::string &str);
 
         void imageCollect(const std::string& pathSource, const std::string& fileOutput);

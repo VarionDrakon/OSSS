@@ -5,18 +5,18 @@
             "name": "Debug (CMake)",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/osss${buildTypeSuffix}",
+            "program": "${workspaceFolder}/build/osss",
             "args": [],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "cmake-build",
             "windows": {
-                "program": "${workspaceFolder}/build/Debug/osss.exe"
+                "program": "${workspaceFolder}/build/bin/windows/debug/osss.exe"
             },
             "linux": {
-                "program": "${workspaceFolder}/build/bin/debug/osss.bin"
+                "program": "${workspaceFolder}/build/bin/linux/debug/osss.bin"
             },
             "osx": {
-                "program": "${workspaceFolder}/build/bin/debug/osss.bin"
+                "program": "${workspaceFolder}/build/bin/osx/debug/osss.bin"
             }
         }
     ]
