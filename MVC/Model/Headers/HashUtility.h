@@ -25,8 +25,7 @@ class HashProviderObject {
 
     public:
         virtual std::string hashCalculateFile(const std::filesystem::path& filePath) = 0;
-        virtual std::string hashCalculateBlock(const char *data) = 0;
-
+        virtual std::string hashCalculateBlock(const char *data, size_t size) = 0;
         virtual ~HashProviderObject() {};
 };
 
@@ -43,7 +42,7 @@ class SHA256Algorithm : public HashAlgorithm {
     public:
 
         std::string hashCalculateFile(const std::filesystem::path& filePath) override;
-        std::string hashCalculateBlock(const char *data) override;
+        std::string hashCalculateBlock(const char *data, size_t size) override;
 
         virtual ~SHA256Algorithm() {}
 };

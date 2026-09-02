@@ -202,6 +202,21 @@ std::string FileUtilityProviderLocal::filePropertiesOwnerGet(std::filesystem::pa
 #include <pwd.h>
 #include <grp.h>
 
+FileUtility::fileMetadataStatic FileUtility::fileMetadataStaticDefault() {
+    fileMetadataStatic fms = {};
+    return fms;
+}
+
+FileUtility::fileMetadataDynamic FileUtility::fileMetadataDynamicDefault() {
+    fileMetadataDynamic fmd = {};
+    return fmd;
+}
+
+FileUtility::fileMetadata FileUtility::fileMetadataDefault() {
+    fileMetadata fm = {};
+    return fm;
+}
+
 std::string FileUtilityProviderLocal::filePropertiesPathGet(const std::filesystem::path fileSystemObjectPath) {
     std::string fsStrObj = fileSystemObjectPath.u8string();
     return fsStrObj;
@@ -268,33 +283,39 @@ std::string FileUtilityProviderLocal::filePropertiesTimeGet(const std::filesyste
     return result.str();
 }
 
-std::string FileUtilityProviderLocal::filePropertiesOwnerGet(const std::filesystem::path fileSystemObjectPath) {
+std::pair<uint32_t, uint32_t> FileUtilityProviderLocal::filePropertiesOwnerGet(const std::filesystem::path fileSystemObjectPath) {
 
     std::string fsStrObj = fileSystemObjectPath.u8string();
     std::replace(fsStrObj.begin(), fsStrObj.end(), '\\', '/');
 
     struct stat fileStat;
 
-    if (stat(fsStrObj.c_str(), &fileStat) == 0) {
+    // if (stat(fsStrObj.c_str(), &fileStat) == 0) {
 
-        // Get username.
-        uid_t uid = fileStat.st_uid;
-        struct passwd* pw = getpwuid(uid);
-        std::string ownerName = pw ? pw->pw_name : std::to_string(uid);
+    //     // Get username.
+    //     uid_t uid = fileStat.st_uid;
+    //     struct passwd* pw = getpwuid(uid);
+    //     std::string ownerName = pw ? pw->pw_name : std::to_string(uid);
         
-        // Get username group.
-        gid_t gid = fileStat.st_gid;
-        struct group* gr = getgrgid(gid);
-        std::string groupName = gr ? gr->gr_name : std::to_string(gid);
+    //     // Get username group.
+    //     gid_t gid = fileStat.st_gid;
+    //     struct group* gr = getgrgid(gid);
+    //     std::string groupName = gr ? gr->gr_name : std::to_string(gid);
 
-        std::string strObj = ownerName + ":" + groupName;
+    //     std::string strObj = ownerName + ":" + groupName;
 
-        return strObj;
-    }
-    else {
+    //     return strObj;
+    // }
+    // else {
+    //     throw std::system_error(errno, std::system_category(), "Error stat for file.");
+    //     return nullptr;
+    // }
+
+    if (stat(fsStrObj.c_str(), &fileStat) != 0) {
         throw std::system_error(errno, std::system_category(), "Error stat for file.");
-        return nullptr;
     }
+    
+    return {static_cast<uint32_t>(fileStat.st_uid), static_cast<uint32_t>(fileStat.st_gid)};
 }
 
 #endif
@@ -309,14 +330,9 @@ FileImage::imageConfigurationMetadata FileImage::imageConfigurationMetadataDefau
     return icm;
 }
 
-FileImage::imageDataMetadata FileImage::imageDataMetadataDefault() {
-    imageDataMetadata idm = {};
-    return idm;
-}
-
-FileImage::imageFileMetadata FileImage::imageFileMetadataDefault() {
-    imageFileMetadata ifm = {};
-    return ifm;
+FileImage::imageChunkMetadata FileImage::imageChunkMetadataDefault() {
+    imageChunkMetadata icm = {};
+    return icm;
 }
 
 FileImage::imageOffsetMetadata FileImage::imageOffsetMetadataDefault() {
@@ -353,17 +369,17 @@ std::string FileUtilityProviderLocal::filePropertiesSizeGet(const std::filesyste
    
     return "Undefined";
 }
-void FileImage::fileMetadataCollect(std::ofstream &fileImage, const std::string &path, uint64_t fileSize, const std::string &fileHash) {
-    imageFileMetadata ifm = imageFileMetadataDefault();
+// void FileImage::fileMetadataCollect(std::ofstream &fileImage, const std::string &path, uint64_t fileSize, const std::string &fileHash) {
+//     imageFileMetadata ifm = imageFileMetadataDefault();
 
-    pathAbsolute = path;
-    ifm.pathLength = static_cast<uint16_t>(pathAbsolute.size());
-    ifm.fileSize = fileSize;
-    std::memcpy(ifm.fileHash, fileHash.data(), std::min(fileHash.size(), sizeof(ifm.fileHash)));
+//     pathAbsolute = path;
+//     ifm.pathLength = static_cast<uint16_t>(pathAbsolute.size());
+//     ifm.fileSize = fileSize;
+//     std::memcpy(ifm.fileHash, fileHash.data(), std::min(fileHash.size(), sizeof(ifm.fileHash)));
 
-    fileImage.write(reinterpret_cast<const char*>(&ifm), sizeof(ifm));
-    fileImage.write(pathAbsolute.data(), ifm.pathLength);
-}
+//     fileImage.write(reinterpret_cast<const char*>(&ifm), sizeof(ifm));
+//     fileImage.write(pathAbsolute.data(), ifm.pathLength);
+// }
 
 std::string FileUtilityProviderLocal::filePropertiesCalcHash(const std::filesystem::path fileSystemObjectPath) {
     SHA256Algorithm sha256;
@@ -380,34 +396,68 @@ std::string FileUtilityProviderLocal::filePropertiesCalcHash(const std::filesyst
     return calcHash;
 }
 
-void FileUtilityProviderLocal::fileMetadataCollect(std::vector<std::string> &fileList, std::ofstream &fileImage) {
+void FileUtilityProviderLocal::fileMetadataCollector(const std::filesystem::path &filePath, uint32_t &fileChunkCount, std::vector<uint64_t> &fileChunkOffsetList) {
     SHA256Algorithm sha256;
-    FileImage fi;
+    FileUtility::fileMetadata fufm;
 
     std::ofstream fileLog("fileLog.dat", std::ios::binary | std::ios::app);
 
-    for (const auto &file : fileList) {
-        try {
-            if (!std::filesystem::exists(file)){
-                std::cout << "[]> File not found: " << file << std::endl;
-                return;
-            }
-            if (!std::filesystem::is_directory(file)) {
-                std::string path = filePropertiesPathGet(file);
-                uint64_t size = std::filesystem::file_size(file);
-                std::string hash = filePropertiesCalcHash(file);
-                
-                fi.fileMetadataCollect(fileImage, path, size, hash);
-
-            } else {
-                std::cout << "This is folder: " << file << " ?" << std::endl;
-            }
-        } 
-        catch (const std::exception& e) {
-            std::cerr << "Error during processing a file: " << file << " - " << e.what() << std::endl;
+    try {
+        if (!std::filesystem::exists(filePath)){
+            std::cout << "[]> File not found: " << filePath << std::endl;
+            return;
         }
-        std::cout << "[]> Collect metadata about files - Completed!" << std::endl;
+        if (!std::filesystem::is_directory(filePath)) {
+
+            fufm.metadataDynamic.pathAbsolute = filePropertiesPathGet(filePath);
+            
+            fufm.metadataStatic.pathLength = static_cast<uint16_t>(fufm.metadataDynamic.pathAbsolute.size());
+
+            auto [ownerUId, ownerGId] = filePropertiesOwnerGet(filePath);
+            fufm.metadataStatic.fileOwnerUId = ownerUId;
+            fufm.metadataStatic.fileOwnerGId = ownerGId;
+
+            fufm.metadataStatic.fileSize = std::filesystem::file_size(filePath);
+
+            std::string fileHash = filePropertiesCalcHash(filePath);
+            std::memcpy(fufm.metadataStatic.fileHash, fileHash.data(), std::min(fileHash.size(), sizeof(fufm.metadataStatic.fileHash)));
+
+            std::string fileCreatedTimeStamp = filePropertiesTimeGet(filePath, filePropertiesTimeTypeEnum::TimeCreation);
+            std::memcpy(fufm.metadataStatic.fileCreatedTimeStamp, fileCreatedTimeStamp.data(), std::min(fileCreatedTimeStamp.size(),sizeof(fufm.metadataStatic.fileCreatedTimeStamp)));
+
+            fufm.metadataStatic.fileChunkCount = fileChunkCount;
+            fufm.metadataDynamic.fileChunkOffsetList = fileChunkOffsetList;
+
+        } else {
+            std::cout << "This is folder: " << filePath << " ?" << std::endl;
+        }
+    } 
+    catch (const std::exception& e) {
+        std::cerr << "Error during processing a file: " << filePath << " - " << e.what() << std::endl;
     }
+    std::cout << "[]> Collect metadata about files - Completed!" << std::endl;
+
+    std::ofstream fileTable("fileTable.dat", std::ios::app);
+
+    std::string table = "fufm.metadataDynamic.pathAbsolute: " + fufm.metadataDynamic.pathAbsolute + "\n" +
+                        "fufm.metadataStatic.pathLength: " + std::to_string(fufm.metadataStatic.pathLength) + "\n" +
+                        "fufm.metadataStatic.fileOwnerUId: " + std::to_string(fufm.metadataStatic.fileOwnerUId) + "\n" +
+                        "fufm.metadataStatic.fileOwnerGId: " + std::to_string(fufm.metadataStatic.fileOwnerGId) + "\n" +
+                        "fufm.metadataStatic.filePermisions: " + std::to_string(fufm.metadataStatic.filePermisions) + "\n" +
+                        "fufm.metadataStatic.fileSize: " + std::to_string(fufm.metadataStatic.fileSize) + "\n" +
+                        "fufm.metadataStatic.fileHash: " + fufm.metadataStatic.fileHash + "\n" +
+                        "fufm.metadataStatic.fileCreatedTimeStamp: " + fufm.metadataStatic.fileCreatedTimeStamp + "\n" +
+                        "fufm.metadataStatic.fileModifiedTimeStamp: " + fufm.metadataStatic.fileModifiedTimeStamp + "\n" +
+                        "fufm.metadataStatic.fileAccessedTimeStamp: " + fufm.metadataStatic.fileAccessedTimeStamp + "\n" +
+                        "fufm.metadataStatic.fileChunkCount: " + std::to_string(fufm.metadataStatic.fileChunkCount) + "\n" +
+                        "fufm.metadataDynamic.fileChunkOffsetList: ";
+    for (auto chunkOffset : fufm.metadataDynamic.fileChunkOffsetList) {
+        table.append(" " + std::to_string(chunkOffset) + " ");
+    }
+
+    table.append("\n\n\n\n\n");
+
+    fileTable.write(table.data(), table.size());
 }
 
 void FileImage::stringSerialize(std::ofstream &fileImage, const std::string &str) {
@@ -417,37 +467,55 @@ void FileImage::stringSerialize(std::ofstream &fileImage, const std::string &str
     fileImage.write(str.data(), strSize);
 }
 
-void FileImage::encodeBlocksWithHash(std::vector<std::string> &fileList, std::ofstream &fileImage, std::vector<imageFileMetadata> &vifm) {
+void FileImage::fileEncode(const std::vector<std::string> &fileList, std::ofstream &fileOutput) {
+    FileUtilityProviderLocal fupl;
     SHA256Algorithm sha256;
-    const std::size_t bufferDataSize = 4 * 1024;
+    const std::size_t bufferDataSize = 4096; // 4 KB buffer size
     std::vector<char> bufferData(bufferDataSize);
-
-    std::ofstream fileLog("fileLog.dat", std::ios::binary | std::ios::app);
 
     for (const auto &file : fileList) {
         std::ifstream fileSource(file, std::ios::binary);
         
+        std::vector<uint64_t> chunkOffsetList = {};
+        uint32_t fileChunkCount = 0;
+
         while (fileSource.read(bufferData.data(), bufferDataSize) || fileSource.gcount() > 0) {
-            imageFileMetadata ifm = imageFileMetadataDefault();
 
-            std::string hash = sha256.hashCalculateBlock(bufferData.data());
-            std::streamsize sz = fileSource.gcount();
-            uint64_t sz64 = static_cast<uint64_t>(sz);
-            
-            std::vector<char> buffer(hash.size() + sizeof(sz64) + sz);
+            uint32_t bytesRead = static_cast<uint32_t>(fileSource.gcount());
+            std::string chunkHash = sha256.hashCalculateBlock(bufferData.data(), bytesRead);
+            uint64_t chunkOffset = 0;
 
-            std::memcpy(buffer.data(), hash.data(), hash.size());
-            std::memcpy(vifm.data(), hash.data(), hash.size());
-            std::memcpy(buffer.data() + hash.size(), &sz64, sizeof(sz64));
-            // iim.chunkSizeUncompressed = sz64;
-            std::memcpy(buffer.data() + hash.size() + sizeof(sz64), bufferData.data(), sz);
+            auto chunkExist = chunkHashOffsetMap.find(chunkHash);
+            if (chunkExist != chunkHashOffsetMap.end()) {
+                chunkOffset = chunkExist->second; // Return the existing offset if the chunk already exists.
+            }
+            else {
+                chunkOffset = static_cast<uint64_t>(fileOutput.tellp());
 
-            std::string log = "[]> HASH: " + hash + " HASH SIZE: " + std::to_string(hash.size()) + " SZ: " + std::to_string(sz) + " SZ64: " + std::to_string(sz64) + " Offset " + std::to_string(fileImage.tellp()) + "\n";
-            fileLog.write(log.data(), log.length());
+                imageChunkMetadata icm = imageChunkMetadataDefault();
 
-            // viim.push_back(iim);
+                std::memcpy(icm.chunkHash, chunkHash.data(), std::min(chunkHash.size(), sizeof(icm.chunkHash)));
+                icm.chunkSizeRaw = bytesRead;
+                icm.chunkSizeCompressed = bytesRead;
+                icm.chunkCompressed = 0;
+                icm.chunkEncrypted = 0;
+                
+                fileOutput.write(reinterpret_cast<const char*>(&icm), sizeof(icm));
+                fileOutput.write(bufferData.data(), bytesRead);
 
-            fileImage.write(buffer.data(), buffer.size());
+                chunkHashOffsetMap[chunkHash] = chunkOffset;
+            }
+
+            fileChunkCount++;
+            chunkOffsetList.push_back(chunkOffset);
+        }
+
+        fupl.fileMetadataCollector(file, fileChunkCount, chunkOffsetList);
+
+        for (auto chunkOffset : chunkOffsetList) {
+            std::ofstream fileLog("fileLog.dat", std::ios::binary | std::ios::app);
+            std::string chunkLog = "Chunk offset: " + std::to_string(chunkOffset) + " For file:" + file + " Count chunks: " + std::to_string(fileChunkCount) + "\n";
+            fileLog.write(chunkLog.data(), chunkLog.size());
         }
     }
 }
@@ -469,36 +537,38 @@ void FileImage::imageCollect(const std::string& pathSource, const std::string& f
     std::vector<std::string> filesPathRelativeList = fileCollectRecursively(pathSource);
     std::ofstream imageFile(fileOutput, std::ios::binary);
 
-    imageHeadMetadata ihm = imageHeadMetadataDefault();
+    // imageHeadMetadata ihm = imageHeadMetadataDefault();
 
-    imageFile.write(reinterpret_cast<const char*>(&ihm), sizeof(ihm));
+    // imageFile.write(reinterpret_cast<const char*>(&ihm), sizeof(ihm));
     
-    // Configuration backup file.
-    #pragma pack(push, 1)
-    struct imageConfiguration
-    {
-        uint16_t reserved[512] = {0};
-    };
-    #pragma pack(pop)
-    imageConfiguration config = {};
-    imageFile.write(reinterpret_cast<const char*>(&config), sizeof(config));
+    // // Configuration backup file.
+    // #pragma pack(push, 1)
+    // struct imageConfiguration
+    // {
+    //     uint16_t reserved[512] = {0};
+    // };
+    // #pragma pack(pop)
+    // imageConfiguration config = {};
+    // imageFile.write(reinterpret_cast<const char*>(&config), sizeof(config));
 
-    // Table footer image.
-    #pragma pack(push, 1)
-    struct imageFooter
-    {
-        uint16_t reserved[512] = {0};
-    };
-    #pragma pack(pop)
-    imageFooter footer = {};
+    // // Table footer image.
+    // #pragma pack(push, 1)
+    // struct imageFooter
+    // {
+    //     uint16_t reserved[512] = {0};
+    // };
+    // #pragma pack(pop)
+    // imageFooter footer = {};
 
-    std::vector<imageFileMetadata> viim;
+    // std::vector<imageFileMetadata> viim;
 
-    encodeBlocksWithHash(filesPathRelativeList, imageFile, viim);
+    // encodeBlocksWithHash(filesPathRelativeList, imageFile, viim);
 
-    fupl.fileMetadataCollect(filesPathRelativeList, imageFile);
+    // fupl.fileMetadataCollect(filesPathRelativeList, imageFile);
 
-    imageFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
+    // imageFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
+
+    fileEncode(filesPathRelativeList, imageFile);
 
     std::cout << "Backup created!" << std::endl;
 }

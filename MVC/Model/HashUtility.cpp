@@ -14,8 +14,6 @@ std::string SHA256Algorithm::hashCalculateFile(const std::filesystem::path& file
 
         CryptoPP::FileSource(filePath.c_str(), true, new CryptoPP::HashFilter(sha256, new CryptoPP::HexEncoder(new CryptoPP::StringSink(hashResult)))); // Types of algorithms in docs: https://cryptopp.com/wiki/HashFilter
 
-        hashResult.resize(sha256.DigestSize());
-
         return hashResult;
     }
     catch (const std::exception& e) {
@@ -24,15 +22,13 @@ std::string SHA256Algorithm::hashCalculateFile(const std::filesystem::path& file
     }    
 }
 
-std::string SHA256Algorithm::hashCalculateBlock(const char *data) {           
+std::string SHA256Algorithm::hashCalculateBlock(const char *data, size_t size) {           
     try {
         std::string hashResult;
         CryptoPP::SHA256 sha256;
         sha256.Restart();
 
-        CryptoPP::StringSource(data, true, new CryptoPP::HashFilter(sha256, new CryptoPP::HexEncoder(new CryptoPP::StringSink(hashResult))));
-
-        hashResult.resize(sha256.DigestSize());
+        CryptoPP::StringSource(reinterpret_cast<const CryptoPP::byte*>(data), size, true, new CryptoPP::HashFilter(sha256, new CryptoPP::HexEncoder(new CryptoPP::StringSink(hashResult))));
 
         return hashResult;
     }

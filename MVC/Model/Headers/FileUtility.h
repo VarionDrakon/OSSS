@@ -53,6 +53,39 @@ class FileUtility {
     protected:
 
     public:
+
+        #pragma pack(push, 1)
+        struct fileMetadataStatic
+        {
+            uint16_t pathLength;            // The size of the path, to know how many bytes to read.
+            char fileType[32];              // https://www.iana.org/assignments/media-types/media-types.xhtml, write format - "text/plain" 
+            uint32_t fileOwnerUId;          // Unique user identifier. Required to restore the file with its original parameters.
+            uint32_t fileOwnerGId;          // Unique groud identifier. Required to restore the file with its original parameters.
+            uint32_t filePermisions;        // Prepared for the future...
+            uint64_t fileSize;              // Original file size. Required to verify the recovered file.
+            char fileHash[128];             // The hash sum. Required to verify the recovered file.
+            char fileCreatedTimeStamp[30];  // A timestamp for the file. This information is obtained from the file system and is not available on all file systems. By default, the value is zero or corresponds to the year 1970. https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time (RFC 3339)
+            char fileModifiedTimeStamp[30]; // A timestamp for the file. This information is obtained from the file system and is not available on all file systems. By default, the value is zero or corresponds to the year 1970. https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time (RFC 3339)
+            char fileAccessedTimeStamp[30]; // A timestamp for the file. This information is obtained from the file system and is not available on all file systems. By default, the value is zero or corresponds to the year 1970. https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time (RFC 3339)
+            uint32_t fileChunkCount;        // The number of chunks the file was split into. Required for deduplication.
+        };
+        #pragma pack(pop) 
+        fileMetadataStatic fileMetadataStaticDefault(); 
+
+        struct fileMetadataDynamic
+        {
+            std::vector<uint64_t> fileChunkOffsetList; // A byte array containing the offset value of a specific chunk from the beginning of the image. Required for deduplication.
+            std::string pathAbsolute;           // Absolute file path.
+        };
+        fileMetadataDynamic fileMetadataDynamicDefault();
+
+        struct fileMetadata
+        {
+            fileMetadataStatic metadataStatic;   // Static metadata.
+            fileMetadataDynamic metadataDynamic; // Dynamic metadata.
+        };
+        fileMetadata fileMetadataDefault();
+        
         FileUtility() {};
 
         virtual ~FileUtility();
@@ -75,27 +108,18 @@ class FileUtilityProviderLocal : public FileUtilityProvider {
     private:
 
     public:
-        struct fileMetadata {
-            std::string filePath;
-            std::string fileName;
-            std::string fileSize;
-            std::string fileTypeData; // * https://www.iana.org/assignments/media-types/media-types.xhtml, write format - "text/plain" 
-            std::string fileOwner;
-            std::string fileDateTime; // * https://www.w3.org/TR/NOTE-datetime, write format - YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+03:00) 16.07.1997 time 19:20:30.45 according to Moscow time (RFC 3339)
-            std::string fileHash;
-        };
-        fileMetadata fileMetadataDefault();
 
-        FileUtilityProviderLocal() {};
+        void fileMetadataCollector(const std::filesystem::path &filePath, uint32_t &fileChunkCount, std::vector<uint64_t> &fileChunkOffsetList);
 
-        void fileMetadataCollect(std::vector<std::string> &fileList, std::ofstream &fileImage);
         std::string filePropertiesPathGet(const std::filesystem::path fileSystemObjectPath);
         std::string filePropertiesNameGet(const std::filesystem::path fileSystemObjectPath);
         std::string filePropertiesTimeGet(const std::filesystem::path fileSystemObjectPath, filePropertiesTimeTypeEnum filePropertiesTimeTypeEnum);
         std::string filePropertiesSizeGet(const std::filesystem::path filePath, const filePropertiesSizeEnum sizeUnit);
-        std::string filePropertiesOwnerGet(const std::filesystem::path fileSystemObjectPath);
+        std::pair<uint32_t, uint32_t> filePropertiesOwnerGet(const std::filesystem::path fileSystemObjectPath);
         std::string filePropertiesCalcHash(const std::filesystem::path fileSystemObjectPath);
 
+        FileUtilityProviderLocal() {};
+    
         virtual ~FileUtilityProviderLocal();
 };
 
@@ -220,44 +244,9 @@ class FileImage {
     imageConfigurationMetadata imageConfigurationMetadataDefault();
 
     #pragma pack(push, 1)
-    struct imageDataMetadata
-    {
-        char chunkHash[128];               // Just a hash sum...
-        uint32_t chunkSize;                // The chunk size is needed to know in advance how many bytes to read.
-        uint8_t chunkEncrypted;            // Prepared for the future...
-        uint8_t chunkCompressed;           // Prepared for the future...
-        
-    };
-    #pragma pack(pop)
-    imageDataMetadata imageDataMetadataDefault(); 
-
-    std::string chunkData; // The chunk data is needed to store the actual data of the chunk.
-
-    #pragma pack(push, 1)
-    struct imageFileMetadata
-    {
-        uint16_t pathLength;               // The size of the path, to know how many bytes to read.
-        char fileType[32];                 // Prepared for the future...
-        uint32_t fileOwnerUId;             // Unique user identifier. Required to restore the file with its original parameters.
-        uint32_t fileGroupGId;             // Unique groud identifier. Required to restore the file with its original parameters.
-        uint32_t filePermisions;           // Prepared for the future...
-        uint64_t fileSize;                 // Original file size. Required to verify the recovered file.
-        char fileHash[128];                // The hash sum. Required to verify the recovered file.
-        char fileCreatedTimeStamp[30];     // A timestamp for the file. This information is obtained from the file system and is not available on all file systems. By default, the value is zero or corresponds to the year 1970.
-        char fileModifiedTimeStamp[30];    // A timestamp for the file. This information is obtained from the file system and is not available on all file systems. By default, the value is zero or corresponds to the year 1970.
-        char fileAccessedTimeStamp[30];    // A timestamp for the file. This information is obtained from the file system and is not available on all file systems. By default, the value is zero or corresponds to the year 1970.
-        uint32_t fileChunkCount;           // The number of chunks the file was split into. Required for deduplication.
-        uint64_t *fileChunkOffsets;        // A byte array containing the offset value of a specific chunk from the beginning of the image. Required for deduplication.
-    };
-    #pragma pack(pop)
-    imageFileMetadata imageFileMetadataDefault(); 
-
-    std::string pathAbsolute; // Absolute file path.
-
-    #pragma pack(push, 1)
     struct imageHashMetadata
     {
-        char chunkHash[128];               // Prepared for the future...
+        char chunkHash[64];               // Prepared for the future...
         uint64_t chunkOffset;              // Prepared for the future...
         uint32_t fileReferenceCount;       // Prepared for the future...
     };
@@ -292,14 +281,33 @@ class FileImage {
     #pragma pack(pop)
     imageFooterMetadata imageFooterMetadataDefault();
 
+    #pragma pack(push, 1)
+    struct imageChunkMetadata
+    {
+        char chunkHash[64];             // Just a hash sum...
+        uint32_t chunkSizeRaw;          // A field storing the size of the raw chunk. It is used to store the size prior to compression.
+        uint32_t chunkSizeCompressed;   // A field storing the size of the actual chunk. It is used to store the chunk size if compression is enabled; otherwise, the size equals that of the original raw chunk.
+        uint8_t chunkEncrypted;         // Prepared for the future...
+        uint8_t chunkCompressed;        // Prepared for the future...
+        
+    };
+    #pragma pack(pop)
+    imageChunkMetadata imageChunkMetadataDefault(); 
+
+    std::unordered_map<std::string, uint64_t> chunkHashOffsetMap;
+
+    // std::string chunkData; // The chunk data is needed to store the actual data of the chunk.
+
     public:
-        void fileMetadataCollect(std::ofstream &fileImage, const std::string &path, uint64_t fileSize, const std::string &fileHash);
+        // void fileMetadataCollect(std::ofstream &fileImage, const std::string &path, uint64_t fileSize, const std::string &fileHash);
 
         std::vector<std::string> fileCollectRecursively(const std::string& pathSource);
-        void encodeBlocksWithHash(std::vector<std::string> &fileList, std::ofstream &fileImage, std::vector<imageFileMetadata> &vifm);
+        void fileEncode(const std::vector<std::string> &fileList, std::ofstream &fileOutput);
+        void imageCollect(const std::string& pathSource, const std::string& fileOutput);
+        
         void stringSerialize(std::ofstream &fileImage, const std::string &str);
 
-        void imageCollect(const std::string& pathSource, const std::string& fileOutput);
+
         void imageDisperse(const std::string& pathSource, const std::string& fileOutput);
         // void stringDeserialize(std::ofstream &fileImage, const std::string &str);
 };
